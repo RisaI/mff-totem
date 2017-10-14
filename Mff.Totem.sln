@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mff.Totem", "Mff.Totem\Mff.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mff.Totem.Android", "Mff.Totem.Android\Mff.Totem.Android.csproj", "{A65829A0-40F2-4CE3-AC2E-91642CAE2063}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mff.Totem.Core", "Mff.Totem.Core\Mff.Totem.Core.shproj", "{067E1228-1250-4698-935E-B8EFA4C3E8CC}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mff.Totem.Core", "Mff.Totem.Core\Mff.Totem.Core.shproj", "{3084080D-515D-40A2-94E9-C4219A273CEF}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
