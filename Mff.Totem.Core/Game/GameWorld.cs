@@ -23,12 +23,31 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public TotemGame Game
+		{
+			get;
+			private set;
+		}
+
 		public float TimeScale = 1f;
 
-		public GameWorld()
+		private Camera _camera;
+		public Camera Camera
 		{
+			get { return _camera; }
+			set
+			{
+				if (value != null)
+					_camera = value;
+			}
+		}
+
+		public GameWorld(TotemGame game)
+		{
+			Game = game;
 			Entities = new List<Entity>();
 			Physics = new World(Vector2.Zero);
+			_camera = new Camera(game);
 		}
 
 		/// <summary>
@@ -62,7 +81,7 @@ namespace Mff.Totem.Core
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : default(Matrix));
 			Entities.ForEach(e => e.Draw(spriteBatch));
 			spriteBatch.End();
 		}
