@@ -46,13 +46,15 @@ namespace Mff.Totem.Core
 		/// Adds a component to this entity and attaches it.
 		/// </summary>
 		/// <param name="component">Component.</param>
-		public void AddComponent(EntityComponent component)
+		/// <returns>The entity for chaining.</returns>
+		public Entity AddComponent(EntityComponent component)
 		{
 			if (!Components.Contains(component))
 			{
 				Components.Add(component);
 				component.Attach(this);
 			}
+			return this;
 		}
 
 		/// <summary>
