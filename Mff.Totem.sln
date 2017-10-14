@@ -5,7 +5,16 @@ VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mff.Totem", "Mff.Totem\Mff.Totem.csproj", "{8019B723-4D1E-44B2-AF62-7092E31FD255}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mff.Totem.Android", "Mff.Totem.Android\Mff.Totem.Android.csproj", "{A65829A0-40F2-4CE3-AC2E-91642CAE2063}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Mff.Totem.Core", "Mff.Totem.Core\Mff.Totem.Core.shproj", "{067E1228-1250-4698-935E-B8EFA4C3E8CC}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Mff.Totem.Core\Mff.Totem.Core.projitems*{067e1228-1250-4698-935e-b8efa4c3e8cc}*SharedItemsImports = 13
+		Mff.Totem.Core\Mff.Totem.Core.projitems*{8019b723-4d1e-44b2-af62-7092e31fd255}*SharedItemsImports = 4
+		Mff.Totem.Core\Mff.Totem.Core.projitems*{a65829a0-40f2-4ce3-ac2e-91642cae2063}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -15,6 +24,12 @@ Global
 		{8019B723-4D1E-44B2-AF62-7092E31FD255}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8019B723-4D1E-44B2-AF62-7092E31FD255}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8019B723-4D1E-44B2-AF62-7092E31FD255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A65829A0-40F2-4CE3-AC2E-91642CAE2063}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
