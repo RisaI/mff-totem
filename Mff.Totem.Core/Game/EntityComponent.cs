@@ -12,6 +12,11 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public GameWorld World
+		{
+			get { return Parent != null ? Parent.World : World; }
+		}
+
 		/// <summary>
 		/// Attach an entity to this component.
 		/// </summary>
@@ -29,5 +34,15 @@ namespace Mff.Totem.Core
 		/// </summary>
 		/// <param name="entity">Entity.</param>
 		protected abstract void OnEntityAttach(Entity entity);
+
+		/// <summary>
+		/// Called when an entity is spawned into a world.
+		/// </summary>
+		public abstract void Initialize();
+
+		/// <summary>
+		/// Called when parent entity gets destroyed.
+		/// </summary>
+		public abstract void Destroy();
 	}
 }

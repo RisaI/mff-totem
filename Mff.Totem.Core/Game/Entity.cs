@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
-	public sealed class Entity
+	public sealed class Entity : IUpdatable, IDrawable
 	{
 		/// <summary>
 		/// A unique ID of this entity.
@@ -37,11 +37,6 @@ namespace Mff.Totem.Core
 			Components = new List<EntityComponent>();
 		}
 
-		public Entity(GameWorld gameWorld) : this()
-		{
-			Initialize(gameWorld);
-		}
-
 		/// <summary>
 		/// Adds a component to this entity and attaches it.
 		/// </summary>
@@ -53,6 +48,8 @@ namespace Mff.Totem.Core
 			{
 				Components.Add(component);
 				component.Attach(this);
+				if (World != null)
+					component.Initialize();
 			}
 			return this;
 		}
@@ -94,9 +91,12 @@ namespace Mff.Totem.Core
 		/// Initialize this entity in a GameWorld.
 		/// </summary>
 		/// <param name="world">World.</param>
-		public void Initialize(GameWorld world)
+		/// <returns>The entity for chaining.</returns>
+		public Entity Initialize(GameWorld world)
 		{
 			World = world;
+			Components.ForEach(c => c.Initialize());
+			return this;
 		}
 
 		public void Update(GameTime gameTime)
@@ -118,6 +118,14 @@ namespace Mff.Totem.Core
 				if (drawable != null)
 					drawable.Draw(spriteBatch);
 			}
+		}
+
+		/// <summary>
+		/// Destroy this entity and it's components.
+		/// </summary>
+		public void Destroy()
+		{
+			Components.ForEach(c => c.Destroy());
 		}
 	}
 }

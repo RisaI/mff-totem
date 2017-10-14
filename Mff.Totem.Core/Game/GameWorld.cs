@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using FarseerPhysics.Dynamics;
 
 namespace Mff.Totem.Core
 {
@@ -12,9 +13,22 @@ namespace Mff.Totem.Core
 		/// </summary>
 		public List<Entity> Entities;
 
+		/// <summary>
+		/// The physics engine.
+		/// </summary>
+		/// <value>The physics.</value>
+		public World Physics
+		{
+			get;
+			private set;
+		}
+
+		public float TimeScale = 1f;
+
 		public GameWorld()
 		{
 			Entities = new List<Entity>();
+			Physics = new World(Vector2.Zero);
 		}
 
 		/// <summary>
@@ -23,7 +37,7 @@ namespace Mff.Totem.Core
 		/// <returns>The entity.</returns>
 		public Entity CreateEntity()
 		{
-			var ent = new Entity(this);
+			var ent = new Entity();
 			return SpawnEntity(ent);
 		}
 
@@ -36,11 +50,13 @@ namespace Mff.Totem.Core
 		{
 			if (!Entities.Contains(ent))
 				Entities.Add(ent);
+			ent.Initialize(this);
 			return ent;
 		}
 
 		public void Update(GameTime gameTime)
 		{
+			Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 			Entities.ForEach(e => e.Update(gameTime));
 		}
 
