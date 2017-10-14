@@ -13,3 +13,10 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin fonts/console.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/console.spritefont
+

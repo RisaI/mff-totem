@@ -9,6 +9,11 @@
     <Import_RootNamespace>Mff.Totem.Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)GameWorld.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContentLoader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TotemGame.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Game\" />
   </ItemGroup>
 </Project>
