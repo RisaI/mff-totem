@@ -17,13 +17,50 @@ namespace Mff.Totem.Core
 			get { return "dev"; }
 		}
 
-        GraphicsDeviceManager graphics;
-		SpriteBatch spriteBatch;
+        protected GraphicsDeviceManager graphics;
+		protected SpriteBatch spriteBatch;
+		protected DeveloperConsole Console;
+
+		/// <summary>
+		/// Returns screen size as a Vector2
+		/// </summary>
+		/// <value>The resolution.</value>
+		public Vector2 Resolution
+		{
+			get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
+		}
 
 		public TotemGame()
 		{
 			graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
+			Console = new DeveloperConsole(this);
+		}
+
+		protected override void LoadContent()
+		{
+			base.LoadContent();
+			spriteBatch = new SpriteBatch(GraphicsDevice);
+
+			// Load textues and fonts
+			ContentLoader.Load(this);
+		}
+
+		protected override void Update(GameTime gameTime)
+		{
+			base.Update(gameTime);
+
+			Input.Update();
+			Console.Update(gameTime);
+		}
+
+		protected override void Draw(GameTime gameTime)
+		{
+			base.Draw(gameTime);
+			GraphicsDevice.Clear(Color.White);
+
+			if (Console.Enabled)
+				Console.Draw(spriteBatch);
 		}
 	}
 }
