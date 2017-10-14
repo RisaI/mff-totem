@@ -28,6 +28,9 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		/// <summary>
+		/// A reference to the console font from ContentLoader for code clarity.
+		/// </summary>
 		public SpriteFont Font
 		{
 			get { return ContentLoader.Fonts["console"]; }
@@ -90,12 +93,14 @@ namespace Mff.Totem.Core
 		public DeveloperConsole(TotemGame game)
 		{
 			Game = game;
+
+			// Test input handling
 			Game.Window.TextInput += (sender, args) =>
 			{
 				if (Enabled && args.Character != '`' && args.Character != '~' && Font.Characters.Contains(args.Character))
 				{
 					if (!string.IsNullOrEmpty(Input))
-						Input = Input.Substring(0, Input.Length - _cursorIndex) + args.Character + Input.Substring(Input.Length - _cursorIndex);
+						Input = Input.Substring(0, Input.Length - _cursorIndex) + args.Character + Input.Substring(Input.Length - _cursorIndex); // Insert character at cursor
 					else
 						Input = string.Empty + args.Character;
 
@@ -163,6 +168,7 @@ namespace Mff.Totem.Core
 		/// <param name="gameTime">Game time.</param>
 		public void Update(GameTime gameTime)
 		{
+			// Cursor blinking
 			_cursorTimer += (float)gameTime.ElapsedGameTime.TotalSeconds;
 			if (_cursorTimer >= CURSOR_TIME)
 			{
@@ -170,6 +176,7 @@ namespace Mff.Totem.Core
 				_cursorVisible = !_cursorVisible;
 			}
 
+			// Repeating input on key hold
 			if (_inputTimer > 0)
 			{
 				if (Core.Input.KBState.IsKeyDown(Keys.Back) ||
@@ -181,7 +188,7 @@ namespace Mff.Totem.Core
 					_inputTimer = 0;
 			}
 
-			// Predchozi vstup
+			// Last input
 			if (Core.Input.KeyPressed(Keys.Up) && !string.IsNullOrWhiteSpace(PreviousInput))
 			{
 				Input = PreviousInput; // Restores the last input
@@ -279,13 +286,14 @@ namespace Mff.Totem.Core
 				if (!string.IsNullOrEmpty(Input))
 				{
 					var commands = Commands.Keys.ToList().FindAll(key => key.StartsWith(Input.ToLower(), StringComparison.InvariantCulture));
-					if (commands.Count == 1)
-						Input = commands[0] + " ";
-					else if (commands.Count > 1)
+					if (commands.Count == 1) // If only 1 similar command is available, finish the input string
+						Input = commands[0] + " "; 
+					else if (commands.Count > 1) // Otherwise list all commands that begin with input
 					{
 						string common = Input.ToLower();
 						int shortest = int.MaxValue;
 						commands.ForEach(c => { if (c.Length < shortest) { shortest = c.Length; } });
+						// If all similar commands start with the same substring, autocomplete until you reach a character that at least one command differs at
 						for (int iCh = common.Length; iCh < shortest; ++iCh)
 						{
 							bool contains = true;
@@ -298,13 +306,13 @@ namespace Mff.Totem.Core
 								}
 							}
 							if (contains)
-								common += commands[0][iCh];
+								common += commands[0][iCh]; // If all similar commands contain the character, add it to the input
 							else
 								break;
 						}
-						if (common.Length > Input.Length)
-							Input = common;
-						else
+						if (common.Length > Input.Length) // If more then one character was added to the input, change the input box
+							Input = common; 
+						else // Otherwise list all similar commands
 						{
 							string output = string.Empty;
 							commands.ForEach(c => { output += c + ", "; });
@@ -316,23 +324,30 @@ namespace Mff.Totem.Core
 				}
 			}
 
-			if (Core.Input.KeyPressed(Keys.OemTilde))
+			// Toggle the console
+			if (Core.Input.KeyPressed(Keys.OemTilde)) 
 			{
 				Enabled = !Enabled;
 			}
 		}
 
+		// Variables important for cursor rendering and character inputing
 		private bool _cursorVisible = true;
 		private float _cursorTimer = 0, _inputTimer = 0;
 		private int _cursorIndex = 0;
 
+		/// <summary>
+		/// Draw the console.
+		/// </summary>
+		/// <param name="spriteBatch">Sprite batch.</param>
 		public void Draw(SpriteBatch spriteBatch)
 		{
 			int cWidth = (int)Game.Resolution.X;
 			spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(0, 0, cWidth, HEIGHT);
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, new RasterizerState() { ScissorTestEnable = true });
-			spriteBatch.DrawRectangle(new Rectangle(0, 0, cWidth, HEIGHT), new Color(0, 0, 0, 200), 0f);
+			spriteBatch.DrawRectangle(new Rectangle(0, 0, cWidth, HEIGHT), new Color(0, 0, 0, 200), 0f); // Draw background
 
+			//Draw text
 			if (Output.Count > 1 || !string.IsNullOrEmpty(Output[0]))
 			{
 				int lastModifier = string.IsNullOrWhiteSpace(Output[Output.Count - 1]) ? 1 : 0;
@@ -372,6 +387,7 @@ namespace Mff.Totem.Core
 			}
 			spriteBatch.End();
 
+			// Draw input box
 			spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle(0, HEIGHT, cWidth, Font.LineSpacing);
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, new RasterizerState() { ScissorTestEnable = true });
 			spriteBatch.DrawRectangle(new Rectangle(0, HEIGHT, cWidth, Font.LineSpacing), new Color(0, 0, 0, 225), 0f);
@@ -388,6 +404,11 @@ namespace Mff.Totem.Core
 			spriteBatch.End();
 		}
 
+		/// <summary>
+		/// Execute a command from string and arguments.
+		/// </summary>
+		/// <param name="command">Name.</param>
+		/// <param name="args">Arguments.</param>
 		public void Command(string command, string[] args)
 		{
 			if (Commands.ContainsKey(command))
@@ -405,13 +426,23 @@ namespace Mff.Totem.Core
 				Console.WriteLine("Command '{0}' does not exist.", command);
 		}
 
+		/// <summary>
+		/// List of lines
+		/// </summary>
 		List<string> Output = new List<string>(2048) { "Initializing console.", string.Empty };
 
+		/// <summary>
+		/// Write a line to the console
+		/// </summary>
 		public void WriteLine()
 		{
 			Output.Add(string.Empty);
 		}
 
+		/// <summary>
+		/// Write a line to the console
+		/// </summary>
+		/// <param name="line">Text.</param>
 		public void WriteLine(string line)
 		{
 			if (line.Contains('\n'))
@@ -430,6 +461,10 @@ namespace Mff.Totem.Core
 			Output.Add(string.Empty);
 		}
 
+		/// <summary>
+		/// Write a character to the console
+		/// </summary>
+		/// <param name="value">Character.</param>
 		public void Write(char value)
 		{
 			if (value == '\n')
@@ -438,6 +473,9 @@ namespace Mff.Totem.Core
 				Output[Output.Count - 1] += value;
 		}
 
+		/// <summary>
+		/// Make cursor visible and restart it's blinking timer.
+		/// </summary>
 		public void RefreshCursor()
 		{
 			_cursorTimer = 0;
@@ -449,12 +487,19 @@ namespace Mff.Totem.Core
 			private Action<string[]> _action;
 			private int _minimumArguments = 0;
 
+			/// <summary>
+			/// Argument template
+			/// </summary>
+			/// <value>The arguments.</value>
 			public string[] Arguments
 			{
 				get;
 				private set;
 			}
 
+			/// <summary>
+			/// Argument string for 'help' command drawing.
+			/// </summary>
 			public string ArgumentString
 			{
 				get;
@@ -482,7 +527,7 @@ namespace Mff.Totem.Core
 							ArgumentString += ", ";
 
 						if (_minimumArguments == 0 && arguments[i].StartsWith("[", StringComparison.InvariantCulture)
-							&& arguments[i].EndsWith("]", StringComparison.InvariantCulture))
+							&& arguments[i].EndsWith("]", StringComparison.InvariantCulture)) // Skip optional parameters
 						{
 							_minimumArguments = i;
 						}
@@ -490,6 +535,10 @@ namespace Mff.Totem.Core
 				}
 			}
 
+			/// <summary>
+			/// Invoke the command, output an error if arguments are not according to the template
+			/// </summary>
+			/// <param name="args">Arguments.</param>
 			public void Invoke(string[] args)
 			{
 				if (args.Length < _minimumArguments)
@@ -499,6 +548,9 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		/// <summary>
+		/// Class that helps route System.Console output to a developer console instance.
+		/// </summary>
 		class ConsoleWriter : System.IO.TextWriter
 		{
 			public DeveloperConsole Console
