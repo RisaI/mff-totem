@@ -115,6 +115,9 @@
     <None Include="Content\assets\entities\human.entity">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\assets\entities\player.entity">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Farseer.DebugView\DebugView MonoGame.csproj">

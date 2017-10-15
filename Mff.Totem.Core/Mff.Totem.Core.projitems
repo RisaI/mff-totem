@@ -22,6 +22,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeserializationRegister.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\PlayerInputComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

@@ -10,6 +10,13 @@ namespace Mff.Totem.Core
 		static TotemGame()
 		{
 			DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
+			Random = new Random();
+		}
+
+		public static Random Random
+		{
+			get;
+			private set;
 		}
 
 		public static string ProjectName
@@ -47,6 +54,16 @@ namespace Mff.Totem.Core
 			Content.RootDirectory = "Content";
 			Console = new DeveloperConsole(this);
 			IsMouseVisible = true;
+		}
+
+		protected override void Initialize()
+		{
+			Window.ClientSizeChanged += (sender, e) =>
+			{
+				graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
+				graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+			};
+			base.Initialize();
 		}
 
 		protected override void LoadContent()

@@ -24,6 +24,8 @@ namespace Mff.Totem.Core
 	[Serializable("humanoid_body")]
 	public class HumanoidBody : BodyComponent
 	{
+		const float IDLE_FRICTION = 1024f;
+
 		public Body MainBody, ControllerBody;
 		public RevoluteJoint BodyJoint;
 
@@ -71,9 +73,12 @@ namespace Mff.Totem.Core
 			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
 			ControllerBody.Position = (FuturePosition != null ? (Vector2)FuturePosition / 64f : Vector2.Zero) + new Vector2(0, Height / 2);
 			ControllerBody.BodyType = BodyType.Dynamic;
+			ControllerBody.Friction = IDLE_FRICTION;
 
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
+			BodyJoint.MaxMotorTorque = 0;
+			BodyJoint.LimitEnabled = true;
 
 			if (FuturePosition != null)
 				MainBody.Position = (Vector2)FuturePosition / 64f;
@@ -111,7 +116,20 @@ namespace Mff.Totem.Core
 
 		public override void Move(Vector2 direction)
 		{
-			BodyJoint.MotorSpeed = direction.X;
+			// Convert the horizontal part from pixel per second to radians per second
+			var horizontal = (direction.X / 32f) / Width;
+			if (Math.Abs(horizontal) > 0.5f)
+			{
+				BodyJoint.LimitEnabled = false;
+				BodyJoint.MaxMotorTorque = IDLE_FRICTION;
+			}
+			else
+			{
+				BodyJoint.LimitEnabled = true;
+				BodyJoint.MaxMotorTorque = 0;
+			}
+
+			BodyJoint.MotorSpeed = horizontal;
 		}
 
 		public override EntityComponent Clone()

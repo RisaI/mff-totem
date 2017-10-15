@@ -1,0 +1,10 @@
+﻿{
+	"components": [
+		{
+			"name": "humanoid_body"
+		},
+		{
+			"name": "player_input"
+		}
+	]
+}

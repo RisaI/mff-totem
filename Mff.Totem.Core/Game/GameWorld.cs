@@ -16,6 +16,11 @@ namespace Mff.Totem.Core
 		public List<Entity> Entities;
 
 		/// <summary>
+		/// Entities queued for adding.
+		/// </summary>
+		private List<Entity> EntityQueue;
+
+		/// <summary>
 		/// The physics engine.
 		/// </summary>
 		/// <value>The physics.</value>
@@ -37,6 +42,12 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public Terrain Terrain
+		{
+			get;
+			private set;
+		}
+
 		public float TimeScale = 1f;
 
 		private Camera _camera;
@@ -53,20 +64,26 @@ namespace Mff.Totem.Core
 		public GameWorld(TotemGame game)
 		{
 			Game = game;
-			Entities = new List<Entity>();
+			Entities = new List<Entity>(512);
+			EntityQueue = new List<Entity>(64);
 
 			// Physics
-			Physics = new World(Vector2.Zero);
+			Physics = new World(new Vector2(0, 9.81f));
 
 			// Physical engine debug view
 			DebugView = new DebugViewXNA(Physics) { Enabled = true };
 			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
+			// Load basic terrain for debugging
+			Terrain = new Terrain(this);
+			Terrain.Generate();
+			Terrain.PlaceInWorld();
+
 			// Default camera
 			_camera = new Camera(game);
 
 			// Make the world less empty
-			CreateEntity("human");
+			CreateEntity("human").GetComponent<BodyComponent>().Position += new Vector2(128, 0);
 		}
 
 		/// <summary>
@@ -94,14 +111,20 @@ namespace Mff.Totem.Core
 		/// <param name="ent">The entity to add.</param>
 		public Entity SpawnEntity(Entity ent)
 		{
-			if (!Entities.Contains(ent))
-				Entities.Add(ent);
-			ent.Initialize(this);
+			if (!Entities.Contains(ent) && !EntityQueue.Contains(ent))
+				EntityQueue.Add(ent);
 			return ent;
 		}
 
 		public void Update(GameTime gameTime)
 		{
+			EntityQueue.ForEach(e =>
+			{
+				Entities.Add(e);
+				e.Initialize(this);
+			});
+			EntityQueue.Clear();
+
 			Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 			Entities.ForEach(e => e.Update(gameTime));
 		}
