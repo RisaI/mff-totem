@@ -36,14 +36,13 @@ namespace Mff.Totem.Core
 			Vector2 movement = Vector2.Zero;
 
 			if (Input.KBState.IsKeyDown(Keys.D))
-			{
 				movement.X += 120;
-			}
 
 			if (Input.KBState.IsKeyDown(Keys.A))
-			{
 				movement.X -= 120;
-			}
+
+			if (Input.KeyPressed(Keys.W))
+				movement.Y = -100;
 
 			body.Move(movement);
 		}

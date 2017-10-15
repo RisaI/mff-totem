@@ -31,7 +31,9 @@ namespace Mff.Totem.Core
 
 		public float Width = 0.5f, Height = 1.25f;
 
-		private Vector2? FuturePosition = null;
+		private Vector2? FuturePosition;
+		private bool CanJump;
+		private Fixture LastTerrainFixture;
 
 		public HumanoidBody()
 		{
@@ -74,6 +76,24 @@ namespace Mff.Totem.Core
 			ControllerBody.Position = (FuturePosition != null ? (Vector2)FuturePosition / 64f : Vector2.Zero) + new Vector2(0, Height / 2);
 			ControllerBody.BodyType = BodyType.Dynamic;
 			ControllerBody.Friction = IDLE_FRICTION;
+
+			ControllerBody.OnCollision += (fixtureA, fixtureB, contact) =>
+			{
+				if (fixtureB.UserData is Terrain)
+				{
+					CanJump = true;
+					LastTerrainFixture = fixtureB;
+				}
+
+				return true;
+			};
+			ControllerBody.OnSeparation += (fixtureA, fixtureB) =>
+			{
+				/*if (fixtureB == LastTerrainFixture && fixtureB.UserData is Terrain)
+				{
+					CanJump = false;
+				}*/
+			};
 
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
@@ -121,7 +141,8 @@ namespace Mff.Totem.Core
 			if (Math.Abs(horizontal) > 0.5f)
 			{
 				BodyJoint.LimitEnabled = false;
-				BodyJoint.MaxMotorTorque = IDLE_FRICTION;
+				BodyJoint.MaxMotorTorque = float.MaxValue;
+				BodyJoint.MotorSpeed = horizontal;
 			}
 			else
 			{
@@ -129,7 +150,14 @@ namespace Mff.Totem.Core
 				BodyJoint.MaxMotorTorque = 0;
 			}
 
-			BodyJoint.MotorSpeed = horizontal;
+			// Jumping
+			if (direction.Y < -0.5f && CanJump)
+			{
+				var jumpDir = new Vector2(0, (float)-Math.Sqrt(-direction.Y * World.Physics.Gravity.Y / 32f));
+				MainBody.LinearVelocity += jumpDir;
+				ControllerBody.LinearVelocity += jumpDir;
+				CanJump = false;
+			}
 		}
 
 		public override EntityComponent Clone()
