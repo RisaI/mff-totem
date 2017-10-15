@@ -46,6 +46,7 @@ namespace Mff.Totem.Core
 			graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
 			Console = new DeveloperConsole(this);
+			IsMouseVisible = true;
 		}
 
 		protected override void LoadContent()

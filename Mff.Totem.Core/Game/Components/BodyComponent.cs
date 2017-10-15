@@ -6,6 +6,7 @@ using FarseerPhysics.Collision;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Dynamics.Joints;
 using FarseerPhysics.Factories;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
@@ -45,12 +46,15 @@ namespace Mff.Totem.Core
 		{
 			get
 			{
-				return MainBody != null ? MainBody.Position * 64f : Vector2.Zero;
+				return MainBody != null ? MainBody.Position * 64f : (FuturePosition != null ? (Vector2)FuturePosition : Vector2.Zero);
 			}
 			set
 			{
 				if (MainBody != null)
+				{
 					MainBody.Position = value / 64f;
+					ControllerBody.Position = value / 64f + new Vector2(0, Height / 2);
+				}
 				else
 					FuturePosition = value;
 			}
@@ -61,16 +65,18 @@ namespace Mff.Totem.Core
 			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Parent);
 			MainBody.FixedRotation = true;
 			MainBody.BodyType = BodyType.Dynamic;
+			if (FuturePosition != null)
+				MainBody.Position = (Vector2)FuturePosition / 64f;
 
 			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
-			ControllerBody.Position = new Vector2(0, Height / 2);
+			ControllerBody.Position = (FuturePosition != null ? (Vector2)FuturePosition / 64f : Vector2.Zero) + new Vector2(0, Height / 2);
 			ControllerBody.BodyType = BodyType.Dynamic;
 
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
 
 			if (FuturePosition != null)
-				MainBody.Position = (Vector2)FuturePosition;
+				MainBody.Position = (Vector2)FuturePosition / 64f;
 		}
 
 		protected override void OnEntityAttach(Entity entity)
@@ -87,6 +93,7 @@ namespace Mff.Totem.Core
 		{
 			if (MainBody != null)
 			{
+				FuturePosition = MainBody.Position * 64f;
 				MainBody.Dispose();
 				ControllerBody.Dispose();
 			}

@@ -148,6 +148,29 @@ namespace Mff.Totem.Core
 			{
 				Game.Exit();
 			});
+
+			#region Entity commands
+			AddCommand("list_ents", "Lists all entities in GameWorld.", args => // List of entities
+			{
+				int index = 0;
+				Game.World.Entities.ForEach(e =>
+				{
+					string pos = "none";
+					var body = e.GetComponent<BodyComponent>();
+					if (body != null)
+						pos = body.Position.ToString();
+					Console.WriteLine("Index: {0}, UID: {1}, Position: {2}", index++, e.UID, pos);
+				});
+			});
+			AddCommand("ent_spawn", "Spawns an entity loaded from assets.", args =>
+			{
+				Vector2 pos = new Vector2(float.Parse(args[1]), float.Parse(args[2]));
+				var ent = Game.World.CreateEntity(args[0]);
+				var body = ent.GetComponent<BodyComponent>();
+				if (body != null)
+					body.Position = pos;
+			}, "asset", "x", "y");
+#endregion
 		}
 
 		/// <summary>

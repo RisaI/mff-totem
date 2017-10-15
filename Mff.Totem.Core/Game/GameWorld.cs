@@ -59,24 +59,32 @@ namespace Mff.Totem.Core
 			Physics = new World(Vector2.Zero);
 
 			// Physical engine debug view
-			DebugView = new DebugViewXNA(Physics);
+			DebugView = new DebugViewXNA(Physics) { Enabled = true };
 			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
 			// Default camera
 			_camera = new Camera(game);
 
 			// Make the world less empty
-			CreateEntity().AddComponent(new HumanoidBody());
+			CreateEntity("human");
 		}
 
 		/// <summary>
-		/// Create a new empty entity.
+		/// Create an empty entity.
 		/// </summary>
 		/// <returns>The entity.</returns>
 		public Entity CreateEntity()
 		{
-			var ent = new Entity();
-			return SpawnEntity(ent);
+			return SpawnEntity(new Entity());
+		}
+
+		/// <summary>
+		/// Create an entity from assets.
+		/// </summary>
+		/// <returns>The entity.</returns>
+		public Entity CreateEntity(string asset)
+		{
+			return SpawnEntity(ContentLoader.Entities[asset].Clone());
 		}
 
 		/// <summary>
@@ -110,7 +118,7 @@ namespace Mff.Totem.Core
 				DebugView.RenderDebugData(proj, view);
 			}
 
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : default(Matrix));
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			Entities.ForEach(e => e.Draw(spriteBatch));
 			spriteBatch.End();
 		}
