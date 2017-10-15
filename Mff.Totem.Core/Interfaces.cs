@@ -2,6 +2,9 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Mff.Totem.Core
 {
 	public interface IUpdatable
@@ -17,5 +20,11 @@ namespace Mff.Totem.Core
 	public interface ICloneable<T>
 	{
 		T Clone();
+	}
+
+	public interface IJsonSerializable
+	{
+		void ToJson(JsonWriter writer);
+		void FromJson(JObject obj);
 	}
 }

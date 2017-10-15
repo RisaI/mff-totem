@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Mff.Totem.Core
 {
-	public sealed class Entity : IUpdatable, IDrawable, ICloneable<Entity>
+	public sealed class Entity : IUpdatable, IDrawable, IJsonSerializable, ICloneable<Entity>
 	{
 		/// <summary>
 		/// A unique ID of this entity.
@@ -137,6 +140,34 @@ namespace Mff.Totem.Core
 			var entity = new Entity();
 			Components.ForEach(c => entity.AddComponent(c.Clone()));
 			return entity;
+		}
+
+		/// <summary>
+		/// Serialize this entity using a JsonWriter.
+		/// </summary>
+		/// <param name="writer">Writer.</param>
+		public void ToJson(JsonWriter writer)
+		{
+			writer.WriteStartObject();
+			writer.WritePropertyName("components");
+			writer.WriteStartArray(); // Array of components
+			Components.ForEach(c => c.ToJson(writer));
+			writer.WriteEndArray();
+			writer.WriteEndObject();
+		}
+
+		/// <summary>
+		/// Deserialize this entity from a JSON object.
+		/// </summary>
+		/// <param name="obj">Object.</param>
+		public void FromJson(JObject obj)
+		{
+			var components = (JArray)obj.GetValue("components");
+			for (int i = 0; i < components.Count; ++i)
+			{
+				var component = EntityComponent.CreateFromJSON((JObject)components[i]);
+				AddComponent(component);
+			}
 		}
 	}
 }

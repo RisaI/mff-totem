@@ -7,6 +7,11 @@ namespace Mff.Totem.Core
 {
 	public abstract class TotemGame : Game
 	{
+		static TotemGame()
+		{
+			DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
+		}
+
 		public static string ProjectName
 		{
 			get { return "mff-totem"; } 

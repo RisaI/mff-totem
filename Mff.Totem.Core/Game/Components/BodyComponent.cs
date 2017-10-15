@@ -20,12 +20,15 @@ namespace Mff.Totem.Core
 		public abstract void Move(Vector2 direction);
 	}
 
+	[Serializable("humanoid_body")]
 	public class HumanoidBody : BodyComponent
 	{
 		public Body MainBody, ControllerBody;
 		public RevoluteJoint BodyJoint;
 
 		public float Width = 0.5f, Height = 1.25f;
+
+		private Vector2? FuturePosition = null;
 
 		public HumanoidBody()
 		{
@@ -48,6 +51,8 @@ namespace Mff.Totem.Core
 			{
 				if (MainBody != null)
 					MainBody.Position = value / 64f;
+				else
+					FuturePosition = value;
 			}
 		}
 
@@ -63,6 +68,9 @@ namespace Mff.Totem.Core
 
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
+
+			if (FuturePosition != null)
+				MainBody.Position = (Vector2)FuturePosition;
 		}
 
 		protected override void OnEntityAttach(Entity entity)
@@ -102,6 +110,22 @@ namespace Mff.Totem.Core
 		public override EntityComponent Clone()
 		{
 			return new HumanoidBody(Width, Height);
+		}
+
+		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
+		{
+			if (obj["width"] != null)
+				Width = (float)obj["width"];
+			if (obj["height"] != null)
+				Height = (float)obj["height"];
+		}
+
+		protected override void WriteToJson(Newtonsoft.Json.JsonWriter writer)
+		{
+			writer.WritePropertyName("width");
+			writer.WriteValue(Width);
+			writer.WritePropertyName("height");
+			writer.WriteValue(Height);
 		}
 	}
 }
