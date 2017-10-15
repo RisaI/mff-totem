@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
-	public sealed class Entity : IUpdatable, IDrawable
+	public sealed class Entity : IUpdatable, IDrawable, ICloneable<Entity>
 	{
 		/// <summary>
 		/// A unique ID of this entity.
@@ -126,6 +126,17 @@ namespace Mff.Totem.Core
 		public void Destroy()
 		{
 			Components.ForEach(c => c.Destroy());
+		}
+
+		/// <summary>
+		/// Clone this entity and it's components. Does not preserve UID.
+		/// </summary>
+		/// <returns>The clone.</returns>
+		public Entity Clone()
+		{
+			var entity = new Entity();
+			Components.ForEach(c => entity.AddComponent(c.Clone()));
+			return entity;
 		}
 	}
 }

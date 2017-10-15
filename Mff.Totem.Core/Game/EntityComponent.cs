@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
-	public abstract class EntityComponent
+	public abstract class EntityComponent : ICloneable<EntityComponent>
 	{
 		public Entity Parent
 		{
@@ -44,5 +44,11 @@ namespace Mff.Totem.Core
 		/// Called when parent entity gets destroyed.
 		/// </summary>
 		public abstract void Destroy();
+
+		/// <summary>
+		/// Clone this instance.
+		/// </summary>
+		/// <returns>The clone.</returns>
+		public abstract EntityComponent Clone();
 	}
 }

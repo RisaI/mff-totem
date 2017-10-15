@@ -22,10 +22,21 @@ namespace Mff.Totem.Core
 
 	public class HumanoidBody : BodyComponent
 	{
-		const float BODY_WIDTH = 0.5f, BODY_HEIGHT = 0.25f;
-
 		public Body MainBody, ControllerBody;
 		public RevoluteJoint BodyJoint;
+
+		public float Width = 0.5f, Height = 0.25f;
+
+		public HumanoidBody()
+		{
+
+		}
+
+		public HumanoidBody(float width, float height)
+		{
+			Width = width;
+			Height = height;
+		}
 
 		public override Vector2 Position
 		{
@@ -42,10 +53,10 @@ namespace Mff.Totem.Core
 
 		void CreateBody()
 		{
-			MainBody = BodyFactory.CreateRectangle(World.Physics, BODY_WIDTH, BODY_HEIGHT, 1f, Parent);
+			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Parent);
 			MainBody.FixedRotation = true;
-			ControllerBody = BodyFactory.CreateCircle(World.Physics, BODY_WIDTH / 2, 1f, Parent);
-			ControllerBody.Position = new Vector2(0, BODY_HEIGHT / 2);
+			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
+			ControllerBody.Position = new Vector2(0, Height / 2);
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
 		}
@@ -82,6 +93,11 @@ namespace Mff.Totem.Core
 		public override void Move(Vector2 direction)
 		{
 			BodyJoint.MotorSpeed = direction.X;
+		}
+
+		public override EntityComponent Clone()
+		{
+			return new HumanoidBody(Width, Height);
 		}
 	}
 }
