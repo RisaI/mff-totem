@@ -30,6 +30,12 @@ namespace Mff.Totem.Core
 			get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
 		}
 
+		public GameWorld World
+		{
+			get;
+			private set;
+		}
+
 		public TotemGame()
 		{
 			graphics = new GraphicsDeviceManager(this);
@@ -44,6 +50,8 @@ namespace Mff.Totem.Core
 
 			// Load textues and fonts
 			ContentLoader.Load(this);
+
+			World = new GameWorld(this);
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -51,6 +59,10 @@ namespace Mff.Totem.Core
 			base.Update(gameTime);
 
 			Input.Update();
+
+			if (World != null)
+				World.Update(gameTime);
+
 			Console.Update(gameTime);
 		}
 
@@ -58,6 +70,9 @@ namespace Mff.Totem.Core
 		{
 			base.Draw(gameTime);
 			GraphicsDevice.Clear(Color.White);
+
+			if (World != null)
+				World.Draw(spriteBatch);
 
 			if (Console.Enabled)
 				Console.Draw(spriteBatch);

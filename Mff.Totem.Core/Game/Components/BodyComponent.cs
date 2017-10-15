@@ -25,7 +25,7 @@ namespace Mff.Totem.Core
 		public Body MainBody, ControllerBody;
 		public RevoluteJoint BodyJoint;
 
-		public float Width = 0.5f, Height = 0.25f;
+		public float Width = 0.5f, Height = 1.25f;
 
 		public HumanoidBody()
 		{
@@ -55,8 +55,12 @@ namespace Mff.Totem.Core
 		{
 			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Parent);
 			MainBody.FixedRotation = true;
+			MainBody.BodyType = BodyType.Dynamic;
+
 			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
 			ControllerBody.Position = new Vector2(0, Height / 2);
+			ControllerBody.BodyType = BodyType.Dynamic;
+
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
 		}

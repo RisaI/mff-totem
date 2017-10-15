@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+
+using FarseerPhysics.DebugView;
 using FarseerPhysics.Dynamics;
 
 namespace Mff.Totem.Core
@@ -18,6 +20,12 @@ namespace Mff.Totem.Core
 		/// </summary>
 		/// <value>The physics.</value>
 		public World Physics
+		{
+			get;
+			private set;
+		}
+
+		public DebugViewXNA DebugView
 		{
 			get;
 			private set;
@@ -46,8 +54,19 @@ namespace Mff.Totem.Core
 		{
 			Game = game;
 			Entities = new List<Entity>();
+
+			// Physics
 			Physics = new World(Vector2.Zero);
+
+			// Physical engine debug view
+			DebugView = new DebugViewXNA(Physics);
+			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
+
+			// Default camera
 			_camera = new Camera(game);
+
+			// Make the world less empty
+			CreateEntity().AddComponent(new HumanoidBody());
 		}
 
 		/// <summary>
@@ -81,6 +100,16 @@ namespace Mff.Totem.Core
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
+			// Render debug physics view
+			if (DebugView.Enabled)
+			{
+				Matrix proj = Matrix.CreateOrthographic(Game.Resolution.X / 64f, -Game.Resolution.Y / 64f, 0, 1);
+				Matrix view = Matrix.CreateScale(Camera.Zoom) * 
+				                    Matrix.CreateRotationZ(Camera.Rotation) * 
+				                    (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity);
+				DebugView.RenderDebugData(proj, view);
+			}
+
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : default(Matrix));
 			Entities.ForEach(e => e.Draw(spriteBatch));
 			spriteBatch.End();
