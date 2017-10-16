@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,7 +9,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
-	public sealed class Entity : IUpdatable, IDrawable, IJsonSerializable, ICloneable<Entity>
+	public sealed class Entity : IUpdatable, IDrawable, IJsonSerializable, ICloneable<Entity>, ISerializable
 	{
 		/// <summary>
 		/// A unique ID of this entity.
@@ -166,6 +166,24 @@ namespace Mff.Totem.Core
 			for (int i = 0; i < components.Count; ++i)
 			{
 				var component = EntityComponent.CreateFromJSON((JObject)components[i]);
+				AddComponent(component);
+			}
+		}
+
+		public void Serialize(BinaryWriter writer)
+		{
+			writer.Write(UID);
+			writer.Write((byte)Components.Count);
+			Components.ForEach(c => c.Serialize(writer));
+		}
+
+		public void Deserialize(BinaryReader reader)
+		{
+			UID = reader.ReadGuid();
+			var count = reader.ReadByte();
+			for (int i = 0; i < count; ++i)
+			{
+				var component = EntityComponent.CreateFromBinary(reader);
 				AddComponent(component);
 			}
 		}

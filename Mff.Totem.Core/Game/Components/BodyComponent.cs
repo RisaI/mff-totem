@@ -180,5 +180,21 @@ namespace Mff.Totem.Core
 			writer.WritePropertyName("height");
 			writer.WriteValue(Height);
 		}
+
+		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		{
+			writer.Write(Width);
+			writer.Write(Height);
+			writer.Write(Position);
+
+			// TODO: serialize body state (linear velocity...)
+		}
+
+		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		{
+			Width = reader.ReadSingle();
+			Height = reader.ReadSingle();
+			Position = reader.ReadVector2();
+		}
 	}
 }

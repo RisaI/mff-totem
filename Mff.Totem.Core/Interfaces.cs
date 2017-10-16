@@ -27,4 +27,10 @@ namespace Mff.Totem.Core
 		void ToJson(JsonWriter writer);
 		void FromJson(JObject obj);
 	}
+
+	public interface ISerializable
+	{
+		void Serialize(System.IO.BinaryWriter writer);
+		void Deserialize(System.IO.BinaryReader reader);
+	}
 }

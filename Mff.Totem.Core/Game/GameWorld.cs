@@ -5,10 +5,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 using FarseerPhysics.DebugView;
 using FarseerPhysics.Dynamics;
+using System.IO;
 
 namespace Mff.Totem.Core
 {
-	public class GameWorld : IUpdatable, IDrawable
+	public class GameWorld : IUpdatable, IDrawable, ISerializable
 	{
 		/// <summary>
 		/// List of entities currently present in this world.
@@ -83,7 +84,7 @@ namespace Mff.Totem.Core
 			_camera = new Camera(game);
 
 			// Make the world less empty
-			CreateEntity("human").GetComponent<BodyComponent>().Position += new Vector2(128, 0);
+			CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(128, 0);
 		}
 
 		/// <summary>
@@ -144,6 +145,25 @@ namespace Mff.Totem.Core
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			Entities.ForEach(e => e.Draw(spriteBatch));
 			spriteBatch.End();
+		}
+
+		public void Serialize(BinaryWriter writer)
+		{
+			// Entities
+			writer.Write((Int16)(Entities.Count + EntityQueue.Count));
+			Entities.ForEach(e => e.Serialize(writer));
+			EntityQueue.ForEach(e => e.Serialize(writer));
+		}
+
+		public void Deserialize(BinaryReader reader)
+		{
+			// Entities
+			var count = reader.ReadInt16();
+			for (int i = 0; i < count; ++i)
+			{
+				var ent = CreateEntity();
+				ent.Deserialize(reader);
+			}
 		}
 	}
 }

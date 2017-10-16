@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -52,5 +53,28 @@ namespace Mff.Totem
 		{
 			spriteBatch.Draw(ContentLoader.Pixel, area, null, color, 0, Vector2.Zero, SpriteEffects.None, depth);
 		}
+
+		#region Extensions
+		public static void Write(this BinaryWriter writer, Vector2 vector)
+		{
+			writer.Write(vector.X);
+			writer.Write(vector.Y);
+		}
+
+		public static void Write(this BinaryWriter writer, Guid guid)
+		{
+			writer.Write(guid.ToByteArray());
+		}
+
+		public static Vector2 ReadVector2(this BinaryReader reader)
+		{
+			return new Vector2(reader.ReadSingle(), reader.ReadSingle());
+		}
+
+		public static Guid ReadGuid(this BinaryReader reader)
+		{
+			return new Guid(reader.ReadBytes(16));
+		}
+		#endregion
 	}
 }

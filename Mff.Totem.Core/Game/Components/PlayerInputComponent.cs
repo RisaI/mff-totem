@@ -18,11 +18,6 @@ namespace Mff.Totem.Core
 			return new PlayerInputComponent();
 		}
 
-		public override void Destroy()
-		{
-			return;
-		}
-
 		private BodyComponent body;
 		public override void Initialize()
 		{
@@ -45,21 +40,6 @@ namespace Mff.Totem.Core
 				movement.Y = -100;
 
 			body.Move(movement);
-		}
-
-		protected override void OnEntityAttach(Entity entity)
-		{
-			return;
-		}
-
-		protected override void ReadFromJson(JObject obj)
-		{
-			return;
-		}
-
-		protected override void WriteToJson(JsonWriter writer)
-		{
-			return;
 		}
 	}
 }
