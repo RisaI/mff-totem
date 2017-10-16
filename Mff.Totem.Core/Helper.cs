@@ -4,6 +4,7 @@ using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json;
 
 namespace Mff.Totem
 {
@@ -54,6 +55,29 @@ namespace Mff.Totem
 			spriteBatch.Draw(ContentLoader.Pixel, area, null, color, 0, Vector2.Zero, SpriteEffects.None, depth);
 		}
 
+		/// <summary>
+		/// Read a Vector2 from JObject
+		/// </summary>
+		/// <returns>A vector.</returns>
+		/// <param name="obj">JObject.</param>
+		public static Vector2 JTokenToVector2(Newtonsoft.Json.Linq.JToken obj)
+		{
+			var clrs = ((string)obj).Split(';');
+			return new Vector2(float.Parse(clrs[0], NumberStyles.Any, CultureInfo.InvariantCulture), float.Parse(clrs[1], NumberStyles.Any, CultureInfo.InvariantCulture));
+		}
+
+		/// <summary>
+		/// Read a color from JObject.
+		/// </summary>
+		/// <returns>A color.</returns>
+		/// <param name="obj">JObject.</param>
+		public static Color JTokenToColor(Newtonsoft.Json.Linq.JToken obj)
+		{
+			var clrs = ((string)obj).Split(';');
+			return new Color(byte.Parse(clrs[0]), byte.Parse(clrs[1]), byte.Parse(clrs[2]), (clrs.Length >= 4 ? byte.Parse(clrs[3]) : (byte)255));
+		}
+
+
 		#region Extensions
 		public static void Write(this BinaryWriter writer, Vector2 vector)
 		{
@@ -66,6 +90,16 @@ namespace Mff.Totem
 			writer.Write(guid.ToByteArray());
 		}
 
+		public static void Write(this BinaryWriter writer, Color color)
+		{
+			writer.Write(color.PackedValue);
+		}
+
+		public static void Write(this BinaryWriter writer, Core.ISerializable serializable)
+		{
+			serializable.Serialize(writer);
+		}
+
 		public static Vector2 ReadVector2(this BinaryReader reader)
 		{
 			return new Vector2(reader.ReadSingle(), reader.ReadSingle());
@@ -74,6 +108,21 @@ namespace Mff.Totem
 		public static Guid ReadGuid(this BinaryReader reader)
 		{
 			return new Guid(reader.ReadBytes(16));
+		}
+
+		public static Color ReadColor(this BinaryReader reader)
+		{
+			return new Color(reader.ReadUInt32());
+		}
+
+		public static void WriteVector2(this JsonWriter writer, Vector2 vector)
+		{
+			writer.WriteValue(vector.X + ";" + vector.Y);
+		}
+
+		public static void WriteColor(this JsonWriter writer, Color color)
+		{
+			writer.WriteValue(color.R + ";" + color.G + ";" + color.B + ";" + color.A);
 		}
 		#endregion
 	}
