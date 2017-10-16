@@ -22,6 +22,11 @@ namespace Mff.Totem.Core
 		private List<Entity> EntityQueue;
 
 		/// <summary>
+		/// List of active particles.
+		/// </summary>
+		public List<Particle> Particles;
+
+		/// <summary>
 		/// The physics engine.
 		/// </summary>
 		/// <value>The physics.</value>
@@ -67,6 +72,9 @@ namespace Mff.Totem.Core
 			Game = game;
 			Entities = new List<Entity>(512);
 			EntityQueue = new List<Entity>(64);
+
+			// Particles
+			Particles = new List<Particle>(8192);
 
 			// Physics
 			Physics = new World(new Vector2(0, 9.81f));
@@ -128,6 +136,10 @@ namespace Mff.Totem.Core
 
 			Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 			Entities.ForEach(e => e.Update(gameTime));
+
+			/// Clear and update particles
+			Particles.RemoveAll(p => p.Remove);
+			Particles.ForEach(p => p.Update(gameTime));
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
@@ -144,6 +156,7 @@ namespace Mff.Totem.Core
 
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			Entities.ForEach(e => e.Draw(spriteBatch));
+			Particles.ForEach(p => p.Draw(spriteBatch));
 			spriteBatch.End();
 		}
 

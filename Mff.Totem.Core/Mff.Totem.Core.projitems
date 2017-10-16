@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DeserializationRegister.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\PlayerInputComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Particle.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
