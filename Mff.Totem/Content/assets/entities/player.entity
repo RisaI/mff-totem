@@ -4,6 +4,10 @@
 			"name": "humanoid_body"
 		},
 		{
+			"name": "sprite_component",
+			"sprite": "character"
+		},
+		{
 			"name": "player_input"
 		}
 	]

@@ -81,7 +81,7 @@ namespace Mff.Totem.Core
 		/// <param name="obj">JObject.</param>
 		public Sprite(JObject obj)
 		{
-			ReadFromJson(obj);
+			FromJson(obj);
 		}
 
 		/// <summary>

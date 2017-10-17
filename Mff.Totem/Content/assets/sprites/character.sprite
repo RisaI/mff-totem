@@ -1,0 +1,41 @@
+{
+  "asset": "character",
+  "fwidth": 64,
+  "fheight": 64,
+  "scale": "1;1.5",
+  "anchor": "0.5;1",
+  "color": "255;255;255;255",
+  "effect": "None",
+  "animregistry": {
+    "idle": {
+      "startframe": 64,
+      "endframe": 64,
+      "interval": 0,
+      "data": 0
+    },
+    "move_fast": {
+      "startframe": 4,
+      "endframe": 11,
+      "interval": 0.1,
+      "data": 0
+    },
+    "move": {
+      "startframe": 32,
+      "endframe": 39,
+      "interval": 0.1,
+      "data": 0
+    },
+    "jump": {
+      "startframe": 24,
+      "endframe": 27,
+      "interval": 0.15,
+      "data": 1
+    },
+    "death": {
+      "startframe": 16,
+      "endframe": 23,
+      "interval": 0.15,
+      "data": 1
+    }
+  }
+}

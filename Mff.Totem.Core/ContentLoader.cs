@@ -26,6 +26,7 @@ namespace Mff.Totem
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
 
 		public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
+		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
 
 		public static void Load(Game game)
 		{
@@ -34,10 +35,22 @@ namespace Mff.Totem
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
 			//TODO: Texture loading
+			Textures.Add("character", game.Content.Load<Texture2D>("textures/character"));
 
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
 		
+			foreach (string file in FindAllFiles("Content/assets/sprites", ".sprite"))
+			{
+				var name = Path.GetFileNameWithoutExtension(file);
+				Console.WriteLine("Loading a sprite: {0}", name);
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
+				{
+					Sprites.Add(name, new Core.Sprite(JObject.Load(reader)));
+				}
+			}
 
 			foreach (string file in FindAllFiles("Content/assets/entities", ".entity"))
 			{

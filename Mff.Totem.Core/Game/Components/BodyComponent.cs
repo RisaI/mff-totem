@@ -18,6 +18,11 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		public abstract Vector2 LegPosition
+		{
+			get;
+		}
+
 		public abstract void Move(Vector2 direction);
 	}
 
@@ -61,6 +66,14 @@ namespace Mff.Totem.Core
 				}
 				else
 					FuturePosition = value;
+			}
+		}
+
+		public override Vector2 LegPosition
+		{
+			get
+			{
+				return Position + new Vector2(0, 32f * (Height + Width));
 			}
 		}
 

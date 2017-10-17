@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,9 +20,11 @@ namespace Mff.Totem.Core
 		}
 
 		private BodyComponent body;
+		private SpriteComponent sprite;
 		public override void Initialize()
 		{
 			body = Parent.GetComponent<BodyComponent>();
+			sprite = Parent.GetComponent<SpriteComponent>();
 		}
 
 		public void Update(GameTime gameTime)
@@ -38,6 +41,16 @@ namespace Mff.Totem.Core
 
 			if (Input.KeyPressed(Keys.W))
 				movement.Y = -100;
+
+			if (Math.Abs(movement.X) > Helper.EPSILON)
+			{
+				sprite.PlayAnim("move");
+				sprite.Effect = movement.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+			}
+			else
+			{
+				sprite.PlayAnim("idle");
+			}
 
 			body.Move(movement);
 		}

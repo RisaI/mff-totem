@@ -10,6 +10,8 @@ namespace Mff.Totem
 {
 	public static class Helper
 	{
+		public const float EPSILON = 0.00001f;
+
 		/// <summary>
 		/// Converts an angle to direction.
 		/// </summary>
