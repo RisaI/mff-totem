@@ -82,11 +82,9 @@ namespace Mff.Totem.Core
 			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Parent);
 			MainBody.FixedRotation = true;
 			MainBody.BodyType = BodyType.Dynamic;
-			if (FuturePosition != null)
-				MainBody.Position = (Vector2)FuturePosition / 64f;
 
 			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
-			ControllerBody.Position = (FuturePosition != null ? (Vector2)FuturePosition / 64f : Vector2.Zero) + new Vector2(0, Height / 2);
+			ControllerBody.Position = new Vector2(0, Height / 2);
 			ControllerBody.BodyType = BodyType.Dynamic;
 			ControllerBody.Friction = IDLE_FRICTION;
 
@@ -114,7 +112,16 @@ namespace Mff.Totem.Core
 			BodyJoint.LimitEnabled = true;
 
 			if (FuturePosition != null)
-				MainBody.Position = (Vector2)FuturePosition / 64f;
+				Position = (Vector2)FuturePosition / 64f;
+
+			if (spawnInfo != null)
+			{
+				MainBody.LinearVelocity = spawnInfo.MVelocity;
+				ControllerBody.LinearVelocity = spawnInfo.CVelocity;
+				ControllerBody.AngularVelocity = spawnInfo.CAngVelocity;
+				ControllerBody.Rotation = spawnInfo.CRot;
+				spawnInfo = null;
+			}
 		}
 
 		protected override void OnEntityAttach(Entity entity)
@@ -200,14 +207,35 @@ namespace Mff.Totem.Core
 			writer.Write(Height);
 			writer.Write(Position);
 
-			// TODO: serialize body state (linear velocity...)
+			writer.Write(MainBody.LinearVelocity);
+			writer.Write(ControllerBody.LinearVelocity);
+			writer.Write(ControllerBody.AngularVelocity);
+			writer.Write(ControllerBody.Rotation);
 		}
 
+		private BodySpawnInfo spawnInfo;
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
 		{
 			Width = reader.ReadSingle();
 			Height = reader.ReadSingle();
 			Position = reader.ReadVector2();
+
+			//TODO: Load linear velocities
+			spawnInfo = new BodySpawnInfo(reader.ReadVector2(), reader.ReadVector2(), reader.ReadSingle(), reader.ReadSingle());
+		}
+
+		class BodySpawnInfo
+		{
+			public Vector2 MVelocity, CVelocity;
+			public float CAngVelocity, CRot;
+
+			public BodySpawnInfo(Vector2 mv, Vector2 cv, float cang, float crot)
+			{
+				MVelocity = mv;
+				CVelocity = cv;
+				CAngVelocity = cang;
+				CRot = crot;
+			}
 		}
 	}
 }
