@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using System.Text;
 using System.Text.RegularExpressions;
+using ClipperLib;
 
 namespace Mff.Totem.Core
 {
@@ -171,6 +172,10 @@ namespace Mff.Totem.Core
 					body.Position = pos;
 			}, "asset", "x", "y");
 #endregion
+			AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
+			{
+				Game.World.Terrain.DiffPolygons(new List<IntPoint>() { new IntPoint(200, 0), new IntPoint(250, 0), new IntPoint(250, 1990), new IntPoint(200, 2000) });
+			}, "asset", "x", "y");
 		}
 
 		/// <summary>
