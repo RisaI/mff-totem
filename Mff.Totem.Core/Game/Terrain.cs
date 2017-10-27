@@ -12,8 +12,7 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		const int POINTS = 100;
-		const int SPACING = 45, VERTICAL_STEP = 20;
+		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
 
 		public GameWorld World
 		{
@@ -21,53 +20,30 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public List<List<IntPoint>> Polygons;
+		public List<List<IntPoint>> Polygons, DamageMap;
 
 		public Terrain(GameWorld world)
 		{
 			World = world;
 			Polygons = new List<List<IntPoint>>();
+			DamageMap = new List<List<IntPoint>>();
 			c = new Clipper();
 		}
 
 		Clipper c;
 		public void Generate()
 		{
+			Random = new Random();
 			Polygons.Clear();
-			c.Clear();
-
-			int[] heights = new int[POINTS];
-			for (int i = 1; i < heights.Length; ++i)
-			{
-				// float weight = -((2*i - POINTS) * (-POINTS + 2*i)) / ((float)POINTS * POINTS * 2f) + 0.5f;
-				float weight = 1f - (2 * i / (float)POINTS);
-				heights[i] = heights[i - 1] + (int)(((float)TotemGame.Random.NextDouble() - 0.5f - weight * 0.2f) * VERTICAL_STEP);
-			}
-
-			for (int i = 1; i < heights.Length - 1; ++i)
-			{
-				heights[i] = (heights[i - 1] + heights[i + 1]) / 2;
-			}
-
-			List<IntPoint> MainLand = new List<IntPoint>();
-			MainLand.Add(new IntPoint(0,2000));
-			for (int i = 0; i < heights.Length; ++i)
-			{
-				MainLand.Add(new IntPoint(i * SPACING, 500 + heights[i]));
-			}
-			MainLand.Add(new IntPoint((heights.Length - 1)*SPACING, 2000));
-
-			c.AddPolygon(MainLand, PolyType.ptSubject);
-			//c.AddPolygon(new List<IntPoint>() { new IntPoint(200,0), new IntPoint(250, 0), new IntPoint(250,1990), new IntPoint(200,2000) }, PolyType.ptClip);
-			c.Execute(ClipType.ctDifference, Polygons);
+			DamageMap.Clear();
+			TerrainBody = BodyFactory.CreateBody(World.Physics, this);
+			GenerateChunk(0);
+			GenerateChunk(-1);
 		}
 
-		public void DiffPolygons(List<IntPoint> polygon)
+		public void CreateDamage(List<IntPoint> polygon)
 		{
-			c.Clear();
-			c.AddPolygons(Polygons, PolyType.ptSubject);
-			c.AddPolygon(polygon, PolyType.ptClip);
-			c.Execute(ClipType.ctDifference, Polygons);
+			DamageMap.Add(polygon);
 			PlaceInWorld();
 		}
 
@@ -75,14 +51,61 @@ namespace Mff.Totem.Core
 		public void PlaceInWorld()
 		{
 			ClearFromWorld();
-				TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
-
+			TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
 			Polygons.ForEach(p =>
 			{
-				Vertices verts = new Vertices();
-				p.ForEach(point => verts.Add(new Vector2(point.X, point.Y) / 64f));
-				FixtureFactory.AttachLoopShape(verts, TerrainBody, this);
+				FixtureFactory.AttachLoopShape(ConvertToVertices(p), TerrainBody, this);
 			});
+		}
+
+		private int lastLeft = 0, lastRight = -1, lastRightHeight = 500, lastLeftHeight = 500;
+		public void GenerateChunk(int i)
+		{
+			bool refresh = false;
+			if (i >= 0) // Generating from left to right
+			{
+				for (int c = i >= 0 ? lastRight + 1 : lastLeft - 1; c <= i; ++c)
+				{
+					CreateChunk(c * CHUNK_WIDTH, lastRightHeight, i >= 0);
+					refresh = true;
+					if (i >= 0)
+						lastRight = c;
+					else
+						lastLeft = c;
+				}
+			}
+
+			if (refresh) // Should the physics engine process changes?
+				World.Physics.ProcessChanges();
+		}
+
+		private Random Random;
+		private void CreateChunk(int x, int startY, bool fromLeft = true)
+		{
+			List<IntPoint> verts = new List<IntPoint>();
+
+			// Add end faces
+			verts.Add(fromLeft ? new IntPoint(x, MAX_DEPTH) : new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH));
+			verts.Add(fromLeft ? new IntPoint(x, startY) : new IntPoint(x + CHUNK_WIDTH, startY));
+
+			int lastHeight = startY;
+			for (int i = 1; i <= CHUNK_WIDTH / SPACING; ++i)
+			{
+				var height = lastHeight = lastHeight + Random.Next(-VERTICAL_STEP, VERTICAL_STEP);
+				verts.Add(new IntPoint(fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING, height));
+			}
+
+			// Save last generated height
+			if (fromLeft)
+				lastRightHeight = lastHeight;
+			else
+				lastLeftHeight = lastHeight;
+
+			// Add second end face point
+			verts.Add(fromLeft ? new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH) : new IntPoint(x, MAX_DEPTH));
+
+			Polygons.Add(verts);
+			FixtureFactory.AttachLoopShape(ConvertToVertices(verts), TerrainBody, this);
 		}
 
 		public void ClearFromWorld()
@@ -92,6 +115,14 @@ namespace Mff.Totem.Core
 				World.Physics.RemoveBody(TerrainBody);
 				TerrainBody = null;
 			}
+		}
+
+		public static Vertices ConvertToVertices(List<IntPoint> points)
+		{
+			Vector2[] v = new Vector2[points.Count];
+			int i = 0;
+			points.ForEach(p => v[i++] = new Vector2(p.X, p.Y) / 64f);
+			return new Vertices(v);
 		}
 	}
 }

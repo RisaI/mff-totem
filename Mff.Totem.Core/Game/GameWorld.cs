@@ -92,7 +92,7 @@ namespace Mff.Totem.Core
 			_camera = new Camera(game);
 
 			// Make the world less empty
-			CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(128, 0);
+			CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(0, -100);
 		}
 
 		/// <summary>

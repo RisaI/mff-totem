@@ -174,7 +174,7 @@ namespace Mff.Totem.Core
 #endregion
 			AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
 			{
-				Game.World.Terrain.DiffPolygons(new List<IntPoint>() { new IntPoint(200, 0), new IntPoint(250, 0), new IntPoint(250, 1990), new IntPoint(200, 2000) });
+				Game.World.Terrain.CreateDamage(new List<IntPoint>() { new IntPoint(200, 0), new IntPoint(250, 0), new IntPoint(250, 1990), new IntPoint(200, 2000) });
 			}, "asset", "x", "y");
 		}
 

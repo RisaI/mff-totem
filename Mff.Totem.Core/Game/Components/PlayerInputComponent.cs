@@ -52,6 +52,10 @@ namespace Mff.Totem.Core
 				sprite.PlayAnim("idle");
 			}
 
+			// Generate chunks in range (for testing purposes, should be reaplced with another system)
+			World.Terrain.GenerateChunk(((int)body.Position.X + 128) / Terrain.CHUNK_WIDTH); 
+			World.Terrain.GenerateChunk(Helper.NegDivision((int)body.Position.X - 128, Terrain.CHUNK_WIDTH));
+
 			body.Move(movement);
 		}
 	}
