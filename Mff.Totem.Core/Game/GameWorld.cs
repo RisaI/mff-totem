@@ -138,7 +138,10 @@ namespace Mff.Totem.Core
 			});
 			EntityQueue.Clear();
 
-			Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
+			lock (Physics)
+			{
+				Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
+			}
 			Entities.ForEach(e => e.Update(gameTime));
 
 			/// Clear and update particles
@@ -176,7 +179,8 @@ namespace Mff.Totem.Core
 				Matrix view = Matrix.CreateScale(Camera.Zoom) * 
 				                    Matrix.CreateRotationZ(Camera.Rotation) * 
 				                    (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity);
-				DebugView.RenderDebugData(proj, view);
+				lock (Physics)
+					DebugView.RenderDebugData(proj, view);
 			}
 
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);

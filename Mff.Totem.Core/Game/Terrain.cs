@@ -14,7 +14,7 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		public const int MAX_DEPTH = 10000, SPACING = 8, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
+		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
 
 		public GameWorld World
 		{
@@ -45,17 +45,11 @@ namespace Mff.Totem.Core
 			GenerateChunk(-1);
 		}
 
-		bool first = true;
-		Task<List<List<IntPoint>>> generationTask;
+		Task generationTask;
 		public void Update()
 		{
 			if (generationTask != null && generationTask.IsCompleted)
 			{
-				if (!generationTask.IsFaulted)
-				{
-					PlaceInWorld(generationTask.Result);
-					first = false;
-				}
 				generationTask.Dispose();
 				generationTask = null;
 			}
@@ -69,6 +63,9 @@ namespace Mff.Totem.Core
 		Body TerrainBody;
 		public void PlaceInWorld(List<List<IntPoint>> polygons, bool clearMap = true)
 		{
+			if (World.Physics == null)
+				return;
+
 			if (TerrainBody == null)
 				TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
 			else if (clearMap)
@@ -77,7 +74,7 @@ namespace Mff.Totem.Core
 			polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
 		}
 
-		private List<List<IntPoint>> GenerateActiveRegion(int a, int b)
+		private void GenerateActiveRegion(int a, int b)
 		{
 			c.Clear();
 			for (int i = Math.Max(a, Chunks.LowerBound); i < Math.Min(b, Chunks.UpperBound); ++i)
@@ -87,7 +84,7 @@ namespace Mff.Totem.Core
 			c.AddPolygons(DamageMap, PolyType.ptClip);
 			List<List<IntPoint>> result = new List<List<IntPoint>>();
 			c.Execute(ClipType.ctDifference, result);
-			return result;
+			PlaceInWorld(result);
 		}
 
 		private int lastLeft = 0, lastRight = -1, lastRightHeight = 500, lastLeftHeight = 500;
@@ -175,7 +172,7 @@ namespace Mff.Totem.Core
 					generationTask.Wait();
 					generationTask.Dispose();
 				}
-				generationTask = Task.Run(() => { return GenerateActiveRegion(regionA, regionB); });
+				generationTask = Task.Run(() => { GenerateActiveRegion(regionA, regionB); });
 			}
 		}
 
