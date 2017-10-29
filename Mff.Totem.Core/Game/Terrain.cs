@@ -7,12 +7,14 @@ using FarseerPhysics.Factories;
 using FarseerPhysics.Common;
 
 using ClipperLib;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
+		public const int MAX_DEPTH = 10000, SPACING = 8, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
 
 		public GameWorld World
 		{
@@ -21,12 +23,14 @@ namespace Mff.Totem.Core
 		}
 
 		public List<List<IntPoint>> Polygons, DamageMap;
+		DualList<List<IntPoint>> Chunks;
 
 		public Terrain(GameWorld world)
 		{
 			World = world;
 			Polygons = new List<List<IntPoint>>();
 			DamageMap = new List<List<IntPoint>>();
+			Chunks = new DualList<List<IntPoint>>(512);
 			c = new Clipper();
 		}
 
@@ -41,46 +45,67 @@ namespace Mff.Totem.Core
 			GenerateChunk(-1);
 		}
 
+		bool first = true;
+		Task<List<List<IntPoint>>> generationTask;
+		public void Update()
+		{
+			if (generationTask != null && generationTask.IsCompleted)
+			{
+				if (!generationTask.IsFaulted)
+				{
+					PlaceInWorld(generationTask.Result);
+					first = false;
+				}
+				generationTask.Dispose();
+				generationTask = null;
+			}
+		}
+
 		public void CreateDamage(List<IntPoint> polygon)
 		{
 			DamageMap.Add(polygon);
-			PlaceInWorld();
 		}
 
 		Body TerrainBody;
-		public void PlaceInWorld()
+		public void PlaceInWorld(List<List<IntPoint>> polygons, bool clearMap = true)
 		{
-			ClearFromWorld();
-			TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
-			Polygons.ForEach(p =>
+			if (TerrainBody == null)
+				TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
+			else if (clearMap)
+				TerrainBody.FixtureList.Clear();
+
+			polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
+		}
+
+		private List<List<IntPoint>> GenerateActiveRegion(int a, int b)
+		{
+			c.Clear();
+			for (int i = Math.Max(a, Chunks.LowerBound); i < Math.Min(b, Chunks.UpperBound); ++i)
 			{
-				FixtureFactory.AttachLoopShape(ConvertToVertices(p), TerrainBody, this);
-			});
+				c.AddPolygon(Chunks[i], PolyType.ptSubject);
+			}
+			c.AddPolygons(DamageMap, PolyType.ptClip);
+			List<List<IntPoint>> result = new List<List<IntPoint>>();
+			c.Execute(ClipType.ctDifference, result);
+			return result;
 		}
 
 		private int lastLeft = 0, lastRight = -1, lastRightHeight = 500, lastLeftHeight = 500;
 		public void GenerateChunk(int i)
 		{
-			bool refresh = false;
-			if (i >= 0) // Generating from left to right
+			for (int c = i >= 0 ? lastRight + 1 : lastLeft - 1; Math.Abs(c) <= Math.Abs(i); c += i >= 0 ? 1 : -1)
 			{
-				for (int c = i >= 0 ? lastRight + 1 : lastLeft - 1; c <= i; ++c)
-				{
-					CreateChunk(c * CHUNK_WIDTH, lastRightHeight, i >= 0);
-					refresh = true;
-					if (i >= 0)
-						lastRight = c;
-					else
-						lastLeft = c;
-				}
+				var chunk = CreateChunk(c * CHUNK_WIDTH, i >= 0 ? lastRightHeight : lastLeftHeight, i >= 0);
+				Chunks.Add(chunk, i >= 0);
+				if (i >= 0)
+					lastRight = c;
+				else
+					lastLeft = c;
 			}
-
-			if (refresh) // Should the physics engine process changes?
-				World.Physics.ProcessChanges();
 		}
 
 		private Random Random;
-		private void CreateChunk(int x, int startY, bool fromLeft = true)
+		private List<IntPoint> CreateChunk(int x, int startY, bool fromLeft = true)
 		{
 			List<IntPoint> verts = new List<IntPoint>();
 
@@ -91,7 +116,7 @@ namespace Mff.Totem.Core
 			int lastHeight = startY;
 			for (int i = 1; i <= CHUNK_WIDTH / SPACING; ++i)
 			{
-				var height = lastHeight = lastHeight + Random.Next(-VERTICAL_STEP, VERTICAL_STEP);
+				var height = lastHeight = lastHeight + (int)((Random.NextDouble() - 0.5f) * VERTICAL_STEP);
 				verts.Add(new IntPoint(fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING, height));
 			}
 
@@ -103,9 +128,7 @@ namespace Mff.Totem.Core
 
 			// Add second end face point
 			verts.Add(fromLeft ? new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH) : new IntPoint(x, MAX_DEPTH));
-
-			Polygons.Add(verts);
-			FixtureFactory.AttachLoopShape(ConvertToVertices(verts), TerrainBody, this);
+			return verts;
 		}
 
 		public void ClearFromWorld()
@@ -123,6 +146,81 @@ namespace Mff.Totem.Core
 			int i = 0;
 			points.ForEach(p => v[i++] = new Vector2(p.X, p.Y) / 64f);
 			return new Vertices(v);
+		}
+
+		int regionA = 0, regionB = 0;
+
+		/// <summary>
+		/// Sets the active region of terrain. Only chunks in this region will be displayed in world.
+		/// </summary>
+		/// <param name="a">Left bound.</param>
+		/// <param name="b">Right bound.</param>
+		public void SetActiveRegion(int a, int b)
+		{
+			if (a > b)
+			{
+				a = a ^ b;
+				b = a ^ b;
+				a = a ^ b;
+			}
+
+			int origA = regionA, origB = regionB;
+			regionA = Helper.NegDivision(a, CHUNK_WIDTH);
+			regionB = Helper.NegDivision(b, CHUNK_WIDTH) + 1;
+
+			if (regionA != origA || regionB != origB)
+			{
+				if (generationTask != null)
+				{
+					generationTask.Wait();
+					generationTask.Dispose();
+				}
+				generationTask = Task.Run(() => { return GenerateActiveRegion(regionA, regionB); });
+			}
+		}
+
+		class DualList<T>
+		{
+			private List<T> A, B;
+
+			public DualList(int initialCapacity)
+			{
+				A = new List<T>(initialCapacity / 2 + 1);
+				B = new List<T>(initialCapacity / 2);
+			}
+
+			public int UpperBound
+			{
+				get { return A.Count; }
+			}
+
+			public int LowerBound
+			{
+				get { return -B.Count; }
+			}
+
+			public void Add(T obj, bool positive)
+			{
+				if (positive)
+					A.Add(obj);
+				else
+					B.Add(obj);
+			}
+
+			public T this[int index]
+			{
+				get
+				{
+					return index >= 0 ? A[index] : B[-(index + 1)];
+				}
+				set
+				{
+					if (index >= 0)
+						A[index] = value;
+					else
+						B[-(index + 1)] = value;
+				}
+			}
 		}
 	}
 }

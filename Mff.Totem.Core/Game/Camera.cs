@@ -29,6 +29,26 @@ namespace Mff.Totem.Core
 			Position = Vector2.Lerp(Position, position, lerp);
 		}
 
+		public Vector2 ToScreenSpace(Vector2 worldSpace)
+		{
+			return Vector2.Transform(worldSpace, ViewMatrix);
+		}
+
+		public Vector2 ToWorldSpace(Vector2 screenSpace)
+		{
+			return Vector2.Transform(screenSpace, Matrix.Invert(ViewMatrix));
+		}
+
+		public float Left
+		{
+			get { return Position.X - (Game.Resolution.X / 2) / Zoom; }
+		}
+
+		public float Right
+		{
+			get { return Position.X + (Game.Resolution.X / 2) / Zoom; }
+		}
+
 		public Matrix ViewMatrix
 		{
 			get

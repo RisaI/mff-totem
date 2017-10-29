@@ -6,11 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 using FarseerPhysics.DebugView;
 using FarseerPhysics.Dynamics;
 using System.IO;
+using Microsoft.Xna.Framework.Input;
 
 namespace Mff.Totem.Core
 {
 	public class GameWorld : IUpdatable, IDrawable, ISerializable
 	{
+		const float CAMERA_SPEED = 25f;
+
 		/// <summary>
 		/// List of entities currently present in this world.
 		/// </summary>
@@ -55,6 +58,7 @@ namespace Mff.Totem.Core
 		}
 
 		public float TimeScale = 1f;
+		public bool CameraControls = false;
 
 		private Camera _camera;
 		public Camera Camera
@@ -86,13 +90,12 @@ namespace Mff.Totem.Core
 			// Load basic terrain for debugging
 			Terrain = new Terrain(this);
 			Terrain.Generate();
-			Terrain.PlaceInWorld();
 
 			// Default camera
 			_camera = new Camera(game);
 
 			// Make the world less empty
-			CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(0, -100);
+			// CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(0, -100);
 		}
 
 		/// <summary>
@@ -127,6 +130,7 @@ namespace Mff.Totem.Core
 
 		public void Update(GameTime gameTime)
 		{
+			Terrain.Update();
 			EntityQueue.ForEach(e =>
 			{
 				Entities.Add(e);
@@ -140,6 +144,27 @@ namespace Mff.Totem.Core
 			/// Clear and update particles
 			Particles.RemoveAll(p => p.Remove);
 			Particles.ForEach(p => p.Update(gameTime));
+
+			if (CameraControls && Camera != null)
+			{
+				float multiplier = 1f;
+
+				if (Input.KBState.IsKeyDown(Keys.LeftShift))
+					multiplier = 2.5f;
+
+				if (Input.KBState.IsKeyDown(Keys.A))
+					Camera.Position.X -= CAMERA_SPEED * multiplier;
+				if (Input.KBState.IsKeyDown(Keys.D))
+					Camera.Position.X += CAMERA_SPEED * multiplier;
+				if (Input.KBState.IsKeyDown(Keys.W))
+					Camera.Position.Y -= CAMERA_SPEED * multiplier;
+				if (Input.KBState.IsKeyDown(Keys.S))
+					Camera.Position.Y += CAMERA_SPEED * multiplier;
+
+				Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - 512, Terrain.CHUNK_WIDTH));
+				Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + 512, Terrain.CHUNK_WIDTH));
+				Terrain.SetActiveRegion((int)(Camera.Left), (int)(Camera.Right));
+			}
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
