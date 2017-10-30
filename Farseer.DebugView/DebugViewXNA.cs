@@ -131,21 +131,24 @@ namespace FarseerPhysics.DebugView
             {
                 foreach (Body b in World.BodyList)
                 {
-                    Transform xf;
-                    b.GetTransform(out xf);
-                    foreach (Fixture f in b.FixtureList)
-                    {
-                        if (b.Enabled == false)
-                            DrawShape(f, xf, InactiveShapeColor);
-                        else if (b.BodyType == BodyType.Static)
-                            DrawShape(f, xf, StaticShapeColor);
-                        else if (b.BodyType == BodyType.Kinematic)
-                            DrawShape(f, xf, KinematicShapeColor);
-                        else if (b.Awake == false)
-                            DrawShape(f, xf, SleepingShapeColor);
-                        else
-                            DrawShape(f, xf, DefaultShapeColor);
-                    }
+					lock (b)
+					{
+						Transform xf;
+						b.GetTransform(out xf);
+						foreach (Fixture f in b.FixtureList)
+						{
+							if (b.Enabled == false)
+								DrawShape(f, xf, InactiveShapeColor);
+							else if (b.BodyType == BodyType.Static)
+								DrawShape(f, xf, StaticShapeColor);
+							else if (b.BodyType == BodyType.Kinematic)
+								DrawShape(f, xf, KinematicShapeColor);
+							else if (b.Awake == false)
+								DrawShape(f, xf, SleepingShapeColor);
+							else
+								DrawShape(f, xf, DefaultShapeColor);
+						}
+					}
                 }
             }
 

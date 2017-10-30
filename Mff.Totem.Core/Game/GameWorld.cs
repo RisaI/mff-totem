@@ -163,11 +163,11 @@ namespace Mff.Totem.Core
 					Camera.Position.Y -= CAMERA_SPEED * multiplier;
 				if (Input.KBState.IsKeyDown(Keys.S))
 					Camera.Position.Y += CAMERA_SPEED * multiplier;
-
-				Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - 512, Terrain.CHUNK_WIDTH));
-				Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + 512, Terrain.CHUNK_WIDTH));
-				Terrain.SetActiveRegion((int)(Camera.Left), (int)(Camera.Right));
 			}
+
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - 512, Terrain.CHUNK_WIDTH));
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + 512, Terrain.CHUNK_WIDTH));
+			Terrain.SetActiveRegion((int)(Camera.Left), (int)(Camera.Right));
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
