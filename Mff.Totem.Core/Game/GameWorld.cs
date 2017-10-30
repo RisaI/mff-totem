@@ -150,6 +150,8 @@ namespace Mff.Totem.Core
 
 			if (CameraControls && Camera != null)
 			{
+                // FIXME Use PlayerInputComponent?
+
 				float multiplier = 1f;
 
 				if (Input.KBState.IsKeyDown(Keys.LeftShift))

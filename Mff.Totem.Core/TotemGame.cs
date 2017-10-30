@@ -5,48 +5,53 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Mff.Totem.Core
 {
-	public abstract class TotemGame : Game
-	{
-		static TotemGame()
-		{
-			DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
-			Random = new Random();
-		}
+    public abstract class TotemGame : Game
+    {
+        static TotemGame()
+        {
+            DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
+            Random = new Random();
+        }
 
-		public static Random Random
-		{
-			get;
-			private set;
-		}
+        public static Random Random
+        {
+            get;
+            private set;
+        }
 
-		public static string ProjectName
-		{
-			get { return "mff-totem"; } 
-		}
+        public static string ProjectName
+        {
+            get { return "mff-totem"; }
+        }
 
-		public static string Version
-		{
-			get { return "dev"; }
-		}
+        public static string Version
+        {
+            get { return "dev"; }
+        }
 
         protected GraphicsDeviceManager graphics;
-		protected SpriteBatch spriteBatch;
-		protected DeveloperConsole Console;
+        protected SpriteBatch spriteBatch;
+        protected DeveloperConsole Console;
 
-		/// <summary>
-		/// Returns screen size as a Vector2
-		/// </summary>
-		/// <value>The resolution.</value>
-		public Vector2 Resolution
-		{
-			get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
-		}
+        /// <summary>
+        /// Returns screen size as a Vector2
+        /// </summary>
+        /// <value>The resolution.</value>
+        public Vector2 Resolution
+        {
+            get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
+        }
 
-		public GameWorld World
-		{
-			get;
-			private set;
-		}
+        public GameWorld World
+        {
+            get;
+            private set;
+        }
+
+        public bool InputEnabled
+        {
+            get { return !Console.Enabled; }
+        }
 
 		public TotemGame()
 		{

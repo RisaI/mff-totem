@@ -358,7 +358,7 @@ namespace Mff.Totem.Core
 			}
 
 			// Toggle the console
-			if (Core.Input.KeyPressed(Keys.OemTilde)) 
+			if (Core.Input.KeyPressed(Keys.OemSemicolon)) 
 			{
 				Enabled = !Enabled;
 			}
@@ -391,7 +391,23 @@ namespace Mff.Totem.Core
 					var line = Output[Output.Count - 1 - i];
 					if (!string.IsNullOrWhiteSpace(line))
 					{
-						currentOffset += ((int)Font.MeasureString(line).X - 1) / cWidth + 1;
+                        //Escape unknown characters
+                        var escapedLine = new StringBuilder(line.Length);
+                        foreach (char ch in line)
+                        {
+                            if (Font.Characters.Contains(ch))
+                            {
+                                escapedLine.Append(ch);
+                            }
+                            else
+                            {
+                                escapedLine.Append('?');
+                            }
+                        }
+                        line = escapedLine.ToString();
+                        
+
+                        currentOffset += ((int)Font.MeasureString(line).X - 1) / cWidth + 1;
 						int localCounter = 1, standardOffset = (Offset % HEIGHT);
 						for (int s = 0; s < line.Length; ++s)
 						{
