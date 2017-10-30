@@ -63,15 +63,15 @@ namespace Mff.Totem.Core
 		Body TerrainBody;
 		public void PlaceInWorld(List<List<IntPoint>> polygons, bool clearMap = true)
 		{
-			if (World.Physics == null)
-				return;
+			lock (TerrainBody)
+			{
+				if (TerrainBody == null)
+					TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
+				else if (clearMap)
+					TerrainBody.FixtureList.Clear();
 
-			if (TerrainBody == null)
-				TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
-			else if (clearMap)
-				TerrainBody.FixtureList.Clear();
-
-			polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
+				polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
+			}
 		}
 
 		private void GenerateActiveRegion(int a, int b)
