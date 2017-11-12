@@ -97,10 +97,11 @@ namespace Mff.Totem.Core
 		protected override void Draw(GameTime gameTime)
 		{
 			base.Draw(gameTime);
-			GraphicsDevice.Clear(Color.Black);
 
 			if (World != null)
 				World.Draw(spriteBatch);
+			else
+				GraphicsDevice.Clear(Color.Black);
 
 			if (Console.Enabled)
 				Console.Draw(spriteBatch);

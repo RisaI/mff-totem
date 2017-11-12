@@ -27,6 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Particle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Sprite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\SpriteComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Background.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

@@ -181,6 +181,11 @@ namespace Mff.Totem.Core
 			{
 				Game.World.CameraControls = bool.Parse(args[0]);
 			}, "true/false");
+
+			AddCommand("timescale", "Set the timescale.", args =>
+			{
+				Game.World.TimeScale = float.Parse(args[0]);
+			}, "float");
 		}
 
 		/// <summary>

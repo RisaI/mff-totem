@@ -57,6 +57,18 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public Background Background
+		{
+			get;
+			set;
+		}
+
+		public DateTime WorldTime
+		{
+			get;
+			private set;
+		}
+
 		public float TimeScale = 1f;
 		public bool CameraControls = false;
 
@@ -94,6 +106,10 @@ namespace Mff.Totem.Core
 			// Default camera
 			_camera = new Camera(game);
 
+			WorldTime = new DateTime(2034, 5, 27, 12, 0, 0);
+
+			Background = new Backgrounds.BlankOutsideBG(this);
+
 			// Make the world less empty
 			// CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(0, -100);
 		}
@@ -130,6 +146,8 @@ namespace Mff.Totem.Core
 
 		public void Update(GameTime gameTime)
 		{
+			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
+
 			Terrain.Update();
 			EntityQueue.ForEach(e =>
 			{
@@ -170,10 +188,18 @@ namespace Mff.Totem.Core
 			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - 512, Terrain.CHUNK_WIDTH));
 			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + 512, Terrain.CHUNK_WIDTH));
 			Terrain.SetActiveRegion((int)(Camera.Left), (int)(Camera.Right));
+
+			if (Background != null)
+				Background.Update(gameTime);
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
+			if (Background != null)
+				Background.Draw(spriteBatch);
+			else
+				Game.GraphicsDevice.Clear(Color.Black);
+
 			// Render debug physics view
 			if (DebugView.Enabled)
 			{
