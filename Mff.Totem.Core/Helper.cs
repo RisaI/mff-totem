@@ -46,6 +46,14 @@ namespace Mff.Totem
 		}
 
 		/// <summary>
+		/// Negative division with a reverse behavior on negative numbers
+		/// </summary>
+		public static int NegModulo(int a, int b)
+		{
+			return a - NegDivision(a,b) * b;
+		}
+
+		/// <summary>
 		/// Draws a rectangle using a SpriteBatch instance.
 		/// </summary>
 		/// <param name="spriteBatch">Sprite batch.</param>

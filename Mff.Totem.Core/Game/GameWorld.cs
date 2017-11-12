@@ -110,6 +110,9 @@ namespace Mff.Totem.Core
 
 			Background = new Backgrounds.BlankOutsideBG(this);
 
+			PrepareRenderData((int)game.Resolution.X, (int)game.Resolution.Y);
+			Game.OnResolutionChange += PrepareRenderData;
+
 			// Make the world less empty
 			// CreateEntity("player").GetComponent<BodyComponent>().Position += new Vector2(0, -100);
 		}
@@ -168,7 +171,7 @@ namespace Mff.Totem.Core
 
 			if (CameraControls && Camera != null)
 			{
-                // FIXME Use PlayerInputComponent?
+				// FIXME Use PlayerInputComponent?
 
 				float multiplier = 1f;
 
@@ -193,12 +196,106 @@ namespace Mff.Totem.Core
 				Background.Update(gameTime);
 		}
 
+
+		DepthStencilState MaskStencil = new DepthStencilState()
+		{
+			StencilEnable = true,
+			StencilFunction = CompareFunction.Always,
+			StencilPass = StencilOperation.Replace,
+			ReferenceStencil = 1,
+			DepthBufferEnable = false
+		},
+		GroundStencil = new DepthStencilState()
+		{
+			StencilEnable = true,
+			StencilFunction = CompareFunction.Equal,
+			StencilPass = StencilOperation.Zero,
+			ReferenceStencil = 1,
+			DepthBufferEnable = false
+		};
+		AlphaTestEffect AlphaTest;
+		BasicEffect GroundEffect;
+		RenderTarget2D GroundMaskTexture, SkyTexture;
+
+		private void PrepareRenderData(int width, int height)
+		{
+			if (GroundEffect == null)
+				GroundEffect = new BasicEffect(Game.GraphicsDevice) { VertexColorEnabled = true };
+			GroundEffect.Projection = Matrix.CreateOrthographic(width, -height, 0, 1);
+
+			if (AlphaTest == null)
+				AlphaTest = new AlphaTestEffect(Game.GraphicsDevice);
+			AlphaTest.Projection = Matrix.CreateOrthographic(width, -height, 0, 1);
+			AlphaTest.View = Matrix.CreateTranslation(-width / 2, -height / 2, 0);
+
+			if (GroundMaskTexture != null)
+				GroundMaskTexture.Dispose();
+			GroundMaskTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
+
+			if (SkyTexture != null)
+				SkyTexture.Dispose();
+			SkyTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
+		}
+
 		public void Draw(SpriteBatch spriteBatch)
 		{
 			if (Background != null)
+			{
+				Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
 				Background.Draw(spriteBatch);
+				Game.GraphicsDevice.SetRenderTarget(null);
+			}
 			else
 				Game.GraphicsDevice.Clear(Color.Black);
+
+			// Ground rendering
+			if (Terrain.TriangulatedActiveArea != null)
+			{
+				Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)GroundMaskTexture);
+				Game.GraphicsDevice.Clear(Color.Transparent);
+
+				VertexPositionColor[] vertices = new VertexPositionColor[Terrain.TriangulatedActiveArea.Count * 3];
+				int index = 0;
+
+				Terrain.TriangulatedActiveArea.ForEach(t =>
+				{
+					t.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White));
+				});
+
+				GroundEffect.View = Camera.ViewMatrix *
+					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0);
+
+				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+				{
+					pass.Apply();
+					Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+				}
+
+				Game.GraphicsDevice.SetRenderTarget(null);
+
+				spriteBatch.Begin(SpriteSortMode.BackToFront);
+				spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
+				spriteBatch.End();
+
+				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, MaskStencil, null, AlphaTest);
+				spriteBatch.Draw(GroundMaskTexture, Vector2.Zero, Color.White);
+				spriteBatch.End();
+
+				var groundTexture = ContentLoader.Textures["dirt"];
+				int x = (int)(Game.Resolution.X / groundTexture.Width) + 2,
+					y = (int)(Game.Resolution.Y / groundTexture.Height) + 2;
+				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, GroundStencil);
+				for (int a1 = 0; a1 < y; ++a1)
+				{
+					for (int a0 = 0; a0 < x; ++a0)
+					{
+						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) - 
+						                 new Vector2(Helper.NegModulo((int)Camera.Position.X, groundTexture.Width), 
+						                             Helper.NegModulo((int)Camera.Position.Y, groundTexture.Height)), null, Color.White);
+					}
+				}
+				spriteBatch.End();
+			}
 
 			// Render debug physics view
 			if (DebugView.Enabled)

@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using FarseerPhysics.Dynamics;
 using FarseerPhysics.Factories;
 using FarseerPhysics.Common;
+using FarseerPhysics.Common.Decomposition;
 
 using ClipperLib;
 using System.Threading;
@@ -23,6 +24,7 @@ namespace Mff.Totem.Core
 		}
 
 		public List<List<IntPoint>> Polygons, DamageMap;
+		public List<Vertices> TriangulatedActiveArea;
 		DualList<List<IntPoint>> Chunks;
 
 		public Terrain(GameWorld world)
@@ -85,6 +87,14 @@ namespace Mff.Totem.Core
 			List<List<IntPoint>> result = new List<List<IntPoint>>();
 			c.Execute(ClipType.ctDifference, result);
 			PlaceInWorld(result);
+
+			List<Vertices> verts = new List<Vertices>();
+			result.ForEach(p =>
+			{
+				var triangulation = Triangulate.ConvexPartition(ConvertToVertices(p, false), TriangulationAlgorithm.Earclip);
+				verts.AddRange(triangulation);
+			});
+			TriangulatedActiveArea = verts;
 		}
 
 		private int lastLeft = 0, lastRight = -1, lastRightHeight = 500, lastLeftHeight = 500;
@@ -137,11 +147,14 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public static Vertices ConvertToVertices(List<IntPoint> points)
+		public static Vertices ConvertToVertices(List<IntPoint> points, bool divide = true)
 		{
 			Vector2[] v = new Vector2[points.Count];
 			int i = 0;
-			points.ForEach(p => v[i++] = new Vector2(p.X, p.Y) / 64f);
+			if (divide)
+				points.ForEach(p => v[i++] = new Vector2(p.X, p.Y) / 64f);
+			else 
+				points.ForEach(p => v[i++] = new Vector2(p.X, p.Y));
 			return new Vertices(v);
 		}
 

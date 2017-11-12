@@ -30,8 +30,15 @@ namespace Mff.Totem.Core
         }
 
         protected GraphicsDeviceManager graphics;
+		public GraphicsDeviceManager GraphicsManager
+		{
+			get { return graphics; }
+		}
+
         protected SpriteBatch spriteBatch;
         protected DeveloperConsole Console;
+
+		public event Action<int, int> OnResolutionChange;
 
         /// <summary>
         /// Returns screen size as a Vector2
@@ -67,6 +74,8 @@ namespace Mff.Totem.Core
 			{
 				graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
 				graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+				if (OnResolutionChange != null)
+					OnResolutionChange(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 			};
 			base.Initialize();
 		}

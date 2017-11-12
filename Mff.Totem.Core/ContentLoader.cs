@@ -36,6 +36,7 @@ namespace Mff.Totem
 
 			//TODO: Texture loading
 			Textures.Add("character", game.Content.Load<Texture2D>("textures/character"));
+			Textures.Add("dirt", game.Content.Load<Texture2D>("textures/dirt"));
 
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
