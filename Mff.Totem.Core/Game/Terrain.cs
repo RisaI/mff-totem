@@ -15,7 +15,7 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 5, CHUNK_WIDTH = SPACING * 32;
+		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 12, CHUNK_WIDTH = SPACING * 32;
 
 		public GameWorld World
 		{

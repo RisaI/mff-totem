@@ -188,9 +188,9 @@ namespace Mff.Totem.Core
 					Camera.Position.Y += CAMERA_SPEED * multiplier;
 			}
 
-			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - 512, Terrain.CHUNK_WIDTH));
-			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + 512, Terrain.CHUNK_WIDTH));
-			Terrain.SetActiveRegion((int)(Camera.Left), (int)(Camera.Right));
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
+			Terrain.SetActiveRegion((int)(Camera.Left) - Terrain.CHUNK_WIDTH / 2, (int)(Camera.Right) + Terrain.CHUNK_WIDTH / 2);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -239,14 +239,6 @@ namespace Mff.Totem.Core
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			if (Background != null)
-			{
-				Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
-				Background.Draw(spriteBatch);
-				Game.GraphicsDevice.SetRenderTarget(null);
-			}
-			else
-				Game.GraphicsDevice.Clear(Color.Black);
 
 			// Ground rendering
 			if (Terrain.TriangulatedActiveArea != null)
@@ -273,9 +265,15 @@ namespace Mff.Totem.Core
 
 				Game.GraphicsDevice.SetRenderTarget(null);
 
-				spriteBatch.Begin(SpriteSortMode.BackToFront);
-				spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
-				spriteBatch.End();
+				if (Background != null)
+				{
+					Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
+					Background.Draw(spriteBatch);
+					Game.GraphicsDevice.SetRenderTarget(null);
+					spriteBatch.Begin(SpriteSortMode.BackToFront);
+					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
+					spriteBatch.End();
+				}
 
 				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, MaskStencil, null, AlphaTest);
 				spriteBatch.Draw(GroundMaskTexture, Vector2.Zero, Color.White);
@@ -289,12 +287,19 @@ namespace Mff.Totem.Core
 				{
 					for (int a0 = 0; a0 < x; ++a0)
 					{
-						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) - 
-						                 new Vector2(Helper.NegModulo((int)Camera.Position.X, groundTexture.Width), 
-						                             Helper.NegModulo((int)Camera.Position.Y, groundTexture.Height)), null, Color.White);
+						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) -
+										 new Vector2(Helper.NegModulo((int)Camera.Position.X, groundTexture.Width),
+													 Helper.NegModulo((int)Camera.Position.Y, groundTexture.Height)), null, Color.White);
 					}
 				}
 				spriteBatch.End();
+			}
+			else
+			{
+				if (Background != null)
+					Background.Draw(spriteBatch);
+				else
+					Game.GraphicsDevice.Clear(Color.Black);
 			}
 
 			// Render debug physics view
