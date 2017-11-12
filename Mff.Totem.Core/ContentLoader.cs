@@ -22,21 +22,35 @@ namespace Mff.Totem
 			private set;
 		}
 
+		/// <summary>
+		/// A generated texture of night sky
+		/// </summary>
+		/// <value>Night sky.</value>
+		public static Texture2D GeneratedStarSky
+		{
+			get;
+			private set;
+		}
+
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
 
 		public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
 		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
 
-		public static void Load(Game game)
+		public static void Load(Core.TotemGame game)
 		{
 			// Generate a pixel texture
 			Pixel = new Texture2D(game.GraphicsDevice, 1, 1);
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
+			GenerateStarSky(game);
+
 			//TODO: Texture loading
 			Textures.Add("character", game.Content.Load<Texture2D>("textures/character"));
 			Textures.Add("dirt", game.Content.Load<Texture2D>("textures/dirt"));
+			Textures.Add("sun", game.Content.Load<Texture2D>("textures/sun"));
+			Textures.Add("moon", game.Content.Load<Texture2D>("textures/moon"));
 
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
@@ -66,6 +80,34 @@ namespace Mff.Totem
 					Entities.Add(name, ent);
 				}
 			}
+		}
+
+		static void GenerateStarSky(Core.TotemGame game)
+		{
+			int size = 256;
+			GeneratedStarSky = new Texture2D(game.GraphicsDevice, size, size);
+			Color[] colorMap = new Color[size * size];
+			for (int i = 0; i < size * size; ++i)
+			{
+				if (Core.TotemGame.Random.Next(280) != 0)
+					continue;
+
+				float intensity = 0.3f + 0.7f * (float)Core.TotemGame.Random.NextDouble();
+				Color main = Color.Lerp(Color.Transparent, Color.White, intensity),
+					secondary = Color.Lerp(main, Color.Transparent, 0.75f);
+
+				colorMap[i] = main;
+				if (i >= size)
+					colorMap[i - size] = secondary;
+				if (i < size * (size - 1))
+					colorMap[i + size] = secondary;
+				int mod = i % size;
+				if (mod > 0)
+					colorMap[i - 1] = secondary;
+				if (mod < size - 1)
+					colorMap[i + 1] = secondary;
+			}
+			GeneratedStarSky.SetData<Color>(colorMap);
 		}
 
 		/// <summary>
