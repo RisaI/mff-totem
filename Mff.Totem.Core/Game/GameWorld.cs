@@ -105,6 +105,7 @@ namespace Mff.Totem.Core
 
 			// Default camera
 			_camera = new Camera(game);
+			_camera.Position.Y = Terrain.HeightMap(0);
 
 			WorldTime = new DateTime(2034, 5, 27, 12, 0, 0);
 

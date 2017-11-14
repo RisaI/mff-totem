@@ -15,7 +15,11 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		public const int MAX_DEPTH = 10000, SPACING = 32, VERTICAL_STEP = 12, CHUNK_WIDTH = SPACING * 32;
+		public const int MAX_DEPTH = 10000, SPACING = 32, CHUNK_WIDTH = SPACING * 32;
+		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
+		public const float STEP_WIDTH = 8f * CHUNK_WIDTH;
+
+		public int Seed;
 
 		public GameWorld World
 		{
@@ -37,9 +41,10 @@ namespace Mff.Totem.Core
 		}
 
 		Clipper c;
-		public void Generate()
+		public void Generate(int seed = 0)
 		{
 			Random = new Random();
+			Seed = seed != 0 ? seed : Random.Next();
 			Polygons.Clear();
 			DamageMap.Clear();
 			TerrainBody = BodyFactory.CreateBody(World.Physics, this);
@@ -97,12 +102,12 @@ namespace Mff.Totem.Core
 			TriangulatedActiveArea = verts;
 		}
 
-		private int lastLeft = 0, lastRight = -1, lastRightHeight = 500, lastLeftHeight = 500;
+		private int lastLeft = 0, lastRight = -1;
 		public void GenerateChunk(int i)
 		{
 			for (int c = i >= 0 ? lastRight + 1 : lastLeft - 1; Math.Abs(c) <= Math.Abs(i); c += i >= 0 ? 1 : -1)
 			{
-				var chunk = CreateChunk(c * CHUNK_WIDTH, i >= 0 ? lastRightHeight : lastLeftHeight, i >= 0);
+				var chunk = CreateChunk(c * CHUNK_WIDTH, i >= 0);
 				Chunks.Add(chunk, i >= 0);
 				if (i >= 0)
 					lastRight = c;
@@ -112,26 +117,19 @@ namespace Mff.Totem.Core
 		}
 
 		private Random Random;
-		private List<IntPoint> CreateChunk(int x, int startY, bool fromLeft = true)
+		private List<IntPoint> CreateChunk(int x, bool fromLeft = true)
 		{
 			List<IntPoint> verts = new List<IntPoint>();
 
 			// Add end faces
 			verts.Add(fromLeft ? new IntPoint(x, MAX_DEPTH) : new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH));
-			verts.Add(fromLeft ? new IntPoint(x, startY) : new IntPoint(x + CHUNK_WIDTH, startY));
+			verts.Add(fromLeft ? new IntPoint(x, HeightMap(x)) : new IntPoint(x + CHUNK_WIDTH, HeightMap(x+CHUNK_WIDTH)));
 
-			int lastHeight = startY;
 			for (int i = 1; i <= CHUNK_WIDTH / SPACING; ++i)
 			{
-				var height = lastHeight = lastHeight + (int)((Random.NextDouble() - 0.5f) * VERTICAL_STEP);
-				verts.Add(new IntPoint(fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING, height));
+				int x0 = fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING;
+				verts.Add(new IntPoint(x0, HeightMap(x0)));
 			}
-
-			// Save last generated height
-			if (fromLeft)
-				lastRightHeight = lastHeight;
-			else
-				lastLeftHeight = lastHeight;
 
 			// Add second end face point
 			verts.Add(fromLeft ? new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH) : new IntPoint(x, MAX_DEPTH));
@@ -187,6 +185,26 @@ namespace Mff.Totem.Core
 				}
 				generationTask = Task.Run(() => { GenerateActiveRegion(regionA, regionB); });
 			}
+		}
+
+		public int HeightMap(float x)
+		{
+			x /= STEP_WIDTH;
+			int lower = (int)x - (x < 0 ? 1 : 0);
+			int hash = Hash(lower);
+
+			double p0 = new Random(Seed + Hash(lower -1)).NextDouble(),
+				p1 = new Random(Seed + hash).NextDouble(),
+				p2 = new Random(Seed + Hash(lower + 1)).NextDouble(),
+			p3 = new Random(Seed + Hash(lower + 2)).NextDouble();
+			var r = MathHelper.CatmullRom((float)p0, (float)p1, (float)p2, (float)p3, x - lower) - 0.5f;
+			return BASE_HEIGHT + (int)(r * BASE_STEP);
+		}
+
+		public int Hash(int i)
+		{
+			uint a = (uint)i;
+			return (int)((a * 2654435761) % (uint.MaxValue));
 		}
 
 		class DualList<T>
