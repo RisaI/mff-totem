@@ -53,18 +53,20 @@ namespace Mff.Totem.Core
 		{
 			get
 			{
-				return Matrix.CreateScale(Zoom, Zoom, 1) * 
+				return Matrix.CreateTranslation(-Position.X, -Position.Y, 0) *
+					         Matrix.CreateScale(Zoom, Zoom, 1) * 
 					         Matrix.CreateRotationZ(Rotation) *
-					         Matrix.CreateTranslation(Game.Resolution.X / 2 - Position.X, Game.Resolution.Y / 2 - Position.Y, 0);
+					         Matrix.CreateTranslation(Game.Resolution.X / 2, Game.Resolution.Y / 2, 0);
 			}
 		}
 
 		public Matrix GetScaledTranslation(float x, float y)
 		{
-			return Matrix.CreateScale(Zoom, Zoom, 1) *
+			return Matrix.CreateTranslation(-Position.X, -Position.Y, 0) *
+				         Matrix.CreateScale(Zoom, Zoom, 1) *
 						 Matrix.CreateRotationZ(Rotation) *
 				         Matrix.CreateScale(x, y, 1) *
-						 Matrix.CreateTranslation(Game.Resolution.X / 2 - Position.X, Game.Resolution.Y / 2 - Position.Y, 0);
+						 Matrix.CreateTranslation(Game.Resolution.X / 2, Game.Resolution.Y / 2, 0);
 		}
 	}
 }
