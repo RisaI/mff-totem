@@ -28,12 +28,47 @@ namespace Mff.Totem.Core
 
 		}
 
-		public virtual void Update(GameTime gameTime) { }
-		public virtual void DrawWeatherEffects(SpriteBatch spriteBatch) { }
+		public virtual void Update(GameWorld world, GameTime gameTime) { }
+		public virtual void DrawWeatherEffects(GameWorld world, SpriteBatch spriteBatch) { }
 
 		public virtual Weather Clone()
 		{
 			return new Weather();
+		}
+	}
+
+	public class RainWeather : Weather
+	{
+		const int X_DELTA = 12, Y_DELTA = 480;
+
+		public RainWeather()
+		{
+			SkyTint = 0.5f;
+			SkyTintColor = Color.LightGray;
+		}
+
+		float Time;
+		public override void Update(GameWorld world, GameTime gameTime)
+		{
+			base.Update(world, gameTime);
+			Time += (float)gameTime.ElapsedGameTime.TotalSeconds * world.TimeScale;
+		}
+
+		public override void DrawWeatherEffects(GameWorld world, SpriteBatch spriteBatch)
+		{
+			int x = (int)world.Camera.Left;
+			x -= Helper.NegModulo(x, X_DELTA);
+			for (int dx = 0; x + dx < world.Camera.Right; dx += X_DELTA)
+			{
+				int height = world.Terrain.HeightMap(x + dx);
+				float offset = Y_DELTA * ( 1 - ((Time + (float)Math.Sin(Helper.Hash(x + dx))) % 1f));
+
+				for (int i = 0; i < Math.Max(height - world.Camera.Top, 0) / Y_DELTA; ++i)
+				{
+					spriteBatch.Draw(ContentLoader.Pixel, new Vector2(x + dx, height - offset - i * Y_DELTA),
+									 null, Color.Blue, 0, new Vector2(0.5f, 1f), new Vector2(1, 8f), SpriteEffects.None, 0f);
+				}
+			}
 		}
 	}
 }

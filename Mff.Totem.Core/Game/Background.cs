@@ -45,7 +45,7 @@ namespace Mff.Totem.Core
 
 			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
 			{
-
+				Parallax = ContentLoader.Parallaxes["basic"];
 			}
 
 			public override void Update(GameTime gameTime)
@@ -57,7 +57,7 @@ namespace Mff.Totem.Core
 
 			protected override void OnDraw(SpriteBatch spriteBatch)
 			{
-                spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
 				double hour = World.WorldTime.TimeOfDay.TotalHours;
 				float nightTint = NightTint(World.WorldTime.TimeOfDay.TotalHours);
 
@@ -99,7 +99,34 @@ namespace Mff.Totem.Core
 									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
 				}
 				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
+				DrawParallax(spriteBatch, nightTint);
 				spriteBatch.End();
+			}
+
+			public Texture2D[] Parallax
+			{
+				get;
+				set;
+			}
+
+            protected void DrawParallax(SpriteBatch spriteBatch, float nightTint)
+			{
+				if (Parallax == null)
+					return;
+				
+				Color clr = Color.Lerp(Color.White, new Color(25, 25, 25, 255), nightTint);
+				for (int i = 0; i < Parallax.Length; ++i)
+				{
+					var texture = Parallax[i];
+					float scale = World.Game.Resolution.Y / texture.Height;
+					float width = scale * texture.Width;
+					int count = Math.Max(2, (int)(World.Game.Resolution.X / width) + 1);
+					float offsetX = Helper.NegModulo((int)(World.Camera.Position.X / (float)Math.Pow(2, 2 + i)), (int)width),
+						offsetY = -((World.Camera.Position.Y) / (float)Math.Pow(2, 8 + i));
+
+					for (int c = 0; c < count; ++c)
+						spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY)), null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.None, 0.5f - 0.01f * i);
+				}
 			}
 
 			private float NightTint(double hour)

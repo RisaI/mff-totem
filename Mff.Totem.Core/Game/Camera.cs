@@ -44,6 +44,11 @@ namespace Mff.Totem.Core
 			get { return Position.X - (Game.Resolution.X / 2) / Zoom; }
 		}
 
+		public float Top
+		{
+			get { return Position.Y - (Game.Resolution.Y / 2) / Zoom; }
+		}
+
 		public float Right
 		{
 			get { return Position.X + (Game.Resolution.X / 2) / Zoom; }

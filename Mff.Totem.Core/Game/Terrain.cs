@@ -191,20 +191,14 @@ namespace Mff.Totem.Core
 		{
 			x /= STEP_WIDTH;
 			int lower = (int)x - (x < 0 ? 1 : 0);
-			uint hash = Hash(lower);
+			uint hash = Helper.Hash(lower);
 
-			double p0 = HashToDouble(Seed + Hash(lower -1)),
+			double p0 = HashToDouble(Seed + Helper.Hash(lower -1)),
 				p1 = HashToDouble(Seed + hash),
-				p2 = HashToDouble(Seed + Hash(lower + 1)),
-			p3 = HashToDouble(Seed + Hash(lower + 2));
+				p2 = HashToDouble(Seed + Helper.Hash(lower + 1)),
+			p3 = HashToDouble(Seed + Helper.Hash(lower + 2));
 			var r = MathHelper.CatmullRom((float)p0, (float)p1, (float)p2, (float)p3, x - lower) - 0.5f;
-			return BASE_HEIGHT + (int)(r * BASE_STEP + HashToDouble(hash + Hash((int)(CHUNK_WIDTH*x))) * 4);
-		}
-
-		public uint Hash(int i)
-		{
-			uint a = (uint)i;
-			return ((a * 2654435761) % (uint.MaxValue));
+			return BASE_HEIGHT + (int)(r * BASE_STEP + HashToDouble(hash + Helper.Hash((int)(CHUNK_WIDTH*x))) * 4);
 		}
 
 		public double HashToDouble(uint hash)

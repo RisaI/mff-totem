@@ -180,6 +180,8 @@ namespace Mff.Totem.Core
 			Particles.ForEach(p => p.Update(gameTime));
 			Particles.RemoveAll(p => p.Remove);
 
+			Weather.Update(this, gameTime);
+
 			if (CameraControls && Camera != null)
 			{
 				// FIXME Use PlayerInputComponent?
@@ -278,12 +280,12 @@ namespace Mff.Totem.Core
 
 				if (Background != null)
 				{
-					/*Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
+					Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
 					Background.Draw(spriteBatch);
 					Game.GraphicsDevice.SetRenderTarget(null);
 					spriteBatch.Begin(SpriteSortMode.BackToFront);
 					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
-					spriteBatch.End();*/
+					spriteBatch.End();
 				}
 
 				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, MaskStencil, null, AlphaTest);
@@ -312,6 +314,10 @@ namespace Mff.Totem.Core
 				else
 					Game.GraphicsDevice.Clear(Color.Black);
 			}
+
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+			Weather.DrawWeatherEffects(this, spriteBatch);
+			spriteBatch.End();
 
 			// Render debug physics view
 			if (DebugView.Enabled)

@@ -135,5 +135,12 @@ namespace Mff.Totem
 			writer.WriteValue(color.R + ";" + color.G + ";" + color.B + ";" + color.A);
 		}
 		#endregion
+
+
+		public static uint Hash(int i)
+		{
+			uint a = (uint)i;
+			return ((a * 2654435761) % (uint.MaxValue));
+		}
 	}
 }

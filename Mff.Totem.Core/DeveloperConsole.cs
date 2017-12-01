@@ -186,6 +186,19 @@ namespace Mff.Totem.Core
 			{
 				Game.World.TimeScale = float.Parse(args[0]);
 			}, "float");
+
+			AddCommand("weather", "Set the weather.", args =>
+			{
+				switch (args[0].ToLower())
+				{
+					case "rain":
+						Game.World.Weather = new RainWeather();
+						break;
+					default:
+						Game.World.Weather = null;
+						break;
+				}
+			}, "float");
 		}
 
 		/// <summary>

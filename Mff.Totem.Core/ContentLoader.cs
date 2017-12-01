@@ -33,6 +33,7 @@ namespace Mff.Totem
 		}
 
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
+		public static Dictionary<string, Texture2D[]> Parallaxes = new Dictionary<string, Texture2D[]>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
 
 		public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
@@ -51,6 +52,7 @@ namespace Mff.Totem
 			Textures.Add("dirt", game.Content.Load<Texture2D>("textures/dirt"));
 			Textures.Add("sun", game.Content.Load<Texture2D>("textures/sun"));
 			Textures.Add("moon", game.Content.Load<Texture2D>("textures/moon"));
+			LoadParallax(game, "basic", "parallax0", "parallax1", "parallax2", "parallax3", "parallax4");
 
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
@@ -80,6 +82,16 @@ namespace Mff.Totem
 					Entities.Add(name, ent);
 				}
 			}
+		}
+
+		static void LoadParallax(Core.TotemGame game, string asset, params string[] layers)
+		{
+			Texture2D[] textures = new Texture2D[layers.Length];
+			for (int i = 0; i < layers.Length; ++i)
+			{
+				textures[i] = game.Content.Load<Texture2D>("textures/parallax/" + layers[i]);
+			}
+			Parallaxes.Add(asset, textures);
 		}
 
 		static void GenerateStarSky(Core.TotemGame game)
