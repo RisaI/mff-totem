@@ -1,10 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Mff.Totem.Core;
 
 namespace Mff.Totem
 {
@@ -141,6 +143,60 @@ namespace Mff.Totem
 		{
 			uint a = (uint)i;
 			return ((a * 2654435761) % (uint.MaxValue));
+		}
+
+		public static float Max(params float[] values)
+		{
+			return values.Max();
+		}
+
+		public static float Min(params float[] values)
+		{
+			return values.Min();
+		}
+	}
+
+	public class RectangleF : ICloneable<RectangleF>
+	{
+		public float Left, Right, Top, Bottom;
+
+		public float Width
+		{
+			get { return Right - Left; }
+		}
+
+		public float Height
+		{
+			get { return Bottom - Top; }
+		}
+
+		public RectangleF(float l, float r, float t, float b)
+		{
+			Left = l;
+			Right = r;
+			Top = t;
+			Bottom = b;
+		}
+
+		public void Scale(float scale)
+		{
+			Left *= scale;
+			Right *= scale;
+			Top *= scale;
+			Bottom *= scale;
+		}
+
+		public void Translate(Vector2 t)
+		{
+			Left += t.X;
+			Right += t.X;
+			Top += t.Y;
+			Bottom += t.Y;
+		}
+
+		public RectangleF Clone()
+		{
+			return new RectangleF(Left, Right, Top, Bottom);
 		}
 	}
 }

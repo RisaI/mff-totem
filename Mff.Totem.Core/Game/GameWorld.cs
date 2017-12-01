@@ -199,11 +199,15 @@ namespace Mff.Totem.Core
 					Camera.Position.Y -= CAMERA_SPEED * multiplier;
 				if (Input.KBState.IsKeyDown(Keys.S))
 					Camera.Position.Y += CAMERA_SPEED * multiplier;
+				if (Input.KBState.IsKeyDown(Keys.Add))
+					Camera.Rotation += 0.1f;
+				if (Input.KBState.IsKeyDown(Keys.Subtract))
+					Camera.Rotation -= 0.1f;
 			}
 
-			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Left - Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
-			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.Right + Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
-			Terrain.SetActiveRegion((int)(Camera.Left) - Terrain.CHUNK_WIDTH / 2, (int)(Camera.Right) + Terrain.CHUNK_WIDTH / 2);
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.BoundingBox.Left - Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
+			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.BoundingBox.Right + Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
+			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Terrain.CHUNK_WIDTH / 2, (int)(Camera.BoundingBox.Right) + Terrain.CHUNK_WIDTH / 2);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -293,16 +297,19 @@ namespace Mff.Totem.Core
 				spriteBatch.End();
 
 				var groundTexture = ContentLoader.Textures["dirt"];
-				int x = (int)(Game.Resolution.X / groundTexture.Width) + 2,
-					y = (int)(Game.Resolution.Y / groundTexture.Height) + 2;
-				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, GroundStencil);
+				int x = (int)(Camera.BoundingBox.Width / groundTexture.Width) + 2,
+					y = (int)(Camera.BoundingBox.Height / groundTexture.Height) + 2;
+				float startX = Camera.BoundingBox.Left,
+					startY = Camera.BoundingBox.Top;
+				startX -= Helper.NegModulo((int)startX, groundTexture.Width);
+				startY -= Helper.NegModulo((int)startY, groundTexture.Height);
+				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, GroundStencil, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 				for (int a1 = 0; a1 < y; ++a1)
 				{
 					for (int a0 = 0; a0 < x; ++a0)
 					{
-						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) -
-										 new Vector2(Helper.NegModulo((int)Camera.Position.X, groundTexture.Width),
-													 Helper.NegModulo((int)Camera.Position.Y, groundTexture.Height)), null, Color.White);
+						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) +
+										 new Vector2(startX, startY), null, Color.White);
 					}
 				}
 				spriteBatch.End();
@@ -323,9 +330,9 @@ namespace Mff.Totem.Core
 			if (DebugView.Enabled)
 			{
 				Matrix proj = Matrix.CreateOrthographic(Game.Resolution.X / 64f, -Game.Resolution.Y / 64f, 0, 1);
-				Matrix view = Matrix.CreateScale(Camera.Zoom) * 
-				                    Matrix.CreateRotationZ(Camera.Rotation) * 
-				                    (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity);
+				Matrix view = (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity) *
+									Matrix.CreateRotationZ(Camera.Rotation) *
+									Matrix.CreateScale(Camera.Zoom);
 				lock (Physics)
 					DebugView.RenderDebugData(proj, view);
 			}

@@ -30,7 +30,6 @@ namespace Mff.Totem.Core
 			OnDraw(spriteBatch);
 		}
 
-
 		public abstract void Update(GameTime gameTime);
 		protected abstract void OnDraw(SpriteBatch spriteBatch);
 	}

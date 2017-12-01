@@ -56,14 +56,14 @@ namespace Mff.Totem.Core
 
 		public override void DrawWeatherEffects(GameWorld world, SpriteBatch spriteBatch)
 		{
-			int x = (int)world.Camera.Left;
+			int x = (int)world.Camera.BoundingBox.Left;
 			x -= Helper.NegModulo(x, X_DELTA);
-			for (int dx = 0; x + dx < world.Camera.Right; dx += X_DELTA)
+			for (int dx = 0; x + dx < world.Camera.BoundingBox.Right; dx += X_DELTA)
 			{
 				int height = world.Terrain.HeightMap(x + dx);
 				float offset = Y_DELTA * ( 1 - ((Time + (float)Math.Sin(Helper.Hash(x + dx))) % 1f));
 
-				for (int i = 0; i < Math.Max(height - world.Camera.Top, 0) / Y_DELTA; ++i)
+				for (int i = 0; i < Math.Max(height - world.Camera.BoundingBox.Top, 0) / Y_DELTA; ++i)
 				{
 					spriteBatch.Draw(ContentLoader.Pixel, new Vector2(x + dx, height - offset - i * Y_DELTA),
 									 null, Color.Blue, 0, new Vector2(0.5f, 1f), new Vector2(1, 8f), SpriteEffects.None, 0f);
