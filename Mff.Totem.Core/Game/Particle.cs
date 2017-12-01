@@ -66,45 +66,4 @@ namespace Mff.Totem.Core
 
 		public abstract Particle Clone();
 	}
-
-	public class RainParticle : Particle
-	{
-		private Vector2 _position;
-		public override Vector2 Position
-		{
-			get { return _position; }
-			set
-			{
-				_position = value;
-				RecalculatePath();
-			}
-		}
-
-		protected override void OnSpawn()
-		{
-			RecalculatePath();
-			World.Physics.RayCast((arg1, arg2, arg3, arg4) => {
-				
-				return arg4;
-			}, _position / 64f, (_position + new Vector2(0, 600)) / 64f);
-		}
-
-		private void RecalculatePath()
-		{
-			if (World == null)
-				return;
-
-
-		}
-
-		public override Particle Clone()
-		{
-			return new RainParticle();
-		}
-
-		public override void Draw(SpriteBatch spriteBatch)
-		{
-			
-		}
-	}
 }

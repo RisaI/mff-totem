@@ -63,6 +63,16 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		private Weather _weather = Weather.DefaultWeather;
+		public Weather Weather
+		{
+			get { return _weather; }
+			set
+			{
+				_weather = value ?? Weather.DefaultWeather;
+			}
+		}
+
 		public DateTime WorldTime
 		{
 			get;
@@ -109,7 +119,7 @@ namespace Mff.Totem.Core
 
 			WorldTime = new DateTime(2034, 5, 27, 12, 0, 0);
 
-			Background = new Backgrounds.BlankOutsideBG(this);
+			Background = new Backgrounds.OutsideBG(this);
 
 			PrepareRenderData((int)game.Resolution.X, (int)game.Resolution.Y);
 			Game.OnResolutionChange += PrepareRenderData;
@@ -268,12 +278,12 @@ namespace Mff.Totem.Core
 
 				if (Background != null)
 				{
-					Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
+					/*Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
 					Background.Draw(spriteBatch);
 					Game.GraphicsDevice.SetRenderTarget(null);
 					spriteBatch.Begin(SpriteSortMode.BackToFront);
 					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
-					spriteBatch.End();
+					spriteBatch.End();*/
 				}
 
 				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, MaskStencil, null, AlphaTest);

@@ -37,19 +37,22 @@ namespace Mff.Totem.Core
 
 	namespace Backgrounds
 	{
-		public class BlankOutsideBG : Background
+		public class OutsideBG : Background
 		{
-            Color skyTint;
+			public Color SkyColor = Color.LightSkyBlue;
+			Color SkyTintColor;
+			float SkyTint;
 
-			public BlankOutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
+			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
 			{
 
 			}
 
 			public override void Update(GameTime gameTime)
 			{
-				skyTint = Color.Lerp(skyTint, Color.LightSkyBlue, 0.05f);
-				ClearColor = Color.Lerp(Color.Black, Color.Lerp(Color.LightSkyBlue, skyTint, 0.6f), 1f - NightTint(World.WorldTime.TimeOfDay.TotalHours));
+				SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
+				SkyTint = MathHelper.Lerp(SkyTint, World.Weather.SkyTint, 0.07f);
+				ClearColor = Color.Lerp(Color.Black, SkyColor, 1f - NightTint(World.WorldTime.TimeOfDay.TotalHours));
 			}
 
 			protected override void OnDraw(SpriteBatch spriteBatch)
@@ -95,6 +98,7 @@ namespace Mff.Totem.Core
 					spriteBatch.Draw(moonTexture, World.Game.Resolution / 2 + new Vector2(1.3f, 1) * Helper.AngleToDirection(angle_moon) * World.Game.Resolution / 2, null,
 									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
 				}
+				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
 				spriteBatch.End();
 			}
 
