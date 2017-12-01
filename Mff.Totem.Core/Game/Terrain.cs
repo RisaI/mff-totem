@@ -19,7 +19,7 @@ namespace Mff.Totem.Core
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
 		public const float STEP_WIDTH = 8f * CHUNK_WIDTH;
 
-		public int Seed;
+		public uint Seed;
 
 		public GameWorld World
 		{
@@ -41,10 +41,10 @@ namespace Mff.Totem.Core
 		}
 
 		Clipper c;
-		public void Generate(int seed = 0)
+		public void Generate(uint seed = 0)
 		{
 			Random = new Random();
-			Seed = seed != 0 ? seed : Random.Next();
+			Seed = seed != 0 ? seed : (uint)Random.Next();
 			Polygons.Clear();
 			DamageMap.Clear();
 			TerrainBody = BodyFactory.CreateBody(World.Physics, this);
@@ -191,20 +191,25 @@ namespace Mff.Totem.Core
 		{
 			x /= STEP_WIDTH;
 			int lower = (int)x - (x < 0 ? 1 : 0);
-			int hash = Hash(lower);
+			uint hash = Hash(lower);
 
-			double p0 = new Random(Seed + Hash(lower -1)).NextDouble(),
-				p1 = new Random(Seed + hash).NextDouble(),
-				p2 = new Random(Seed + Hash(lower + 1)).NextDouble(),
-			p3 = new Random(Seed + Hash(lower + 2)).NextDouble();
+			double p0 = HashToDouble(Seed + Hash(lower -1)),
+				p1 = HashToDouble(Seed + hash),
+				p2 = HashToDouble(Seed + Hash(lower + 1)),
+			p3 = HashToDouble(Seed + Hash(lower + 2));
 			var r = MathHelper.CatmullRom((float)p0, (float)p1, (float)p2, (float)p3, x - lower) - 0.5f;
-			return BASE_HEIGHT + (int)(r * BASE_STEP);
+			return BASE_HEIGHT + (int)(r * BASE_STEP + HashToDouble(hash + Hash((int)(CHUNK_WIDTH*x))) * 4);
 		}
 
-		public int Hash(int i)
+		public uint Hash(int i)
 		{
 			uint a = (uint)i;
-			return (int)((a * 2654435761) % (uint.MaxValue));
+			return ((a * 2654435761) % (uint.MaxValue));
+		}
+
+		public double HashToDouble(uint hash)
+		{
+			return (hash / (double)uint.MaxValue) % 1;
 		}
 
 		class DualList<T>

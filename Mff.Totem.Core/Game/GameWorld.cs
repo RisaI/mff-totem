@@ -70,7 +70,7 @@ namespace Mff.Totem.Core
 		}
 
 		public float TimeScale = 1f;
-		public bool CameraControls = false;
+		public bool CameraControls = true;
 
 		private Camera _camera;
 		public Camera Camera
@@ -167,8 +167,8 @@ namespace Mff.Totem.Core
 			Entities.ForEach(e => e.Update(gameTime));
 
 			/// Clear and update particles
-			Particles.RemoveAll(p => p.Remove);
 			Particles.ForEach(p => p.Update(gameTime));
+			Particles.RemoveAll(p => p.Remove);
 
 			if (CameraControls && Camera != null)
 			{
