@@ -43,6 +43,11 @@ namespace Mff.Totem.Core
 			return PrevKBState.IsKeyDown(key) && KBState.IsKeyUp(key);
 		}
 
+		public static bool LMBPressed
+		{
+			get { return PrevMState.LeftButton == ButtonState.Released && MState.LeftButton == ButtonState.Pressed; }
+		}
+
 		/// <summary>
 		/// Returns the mouse position as a vector.
 		/// </summary>

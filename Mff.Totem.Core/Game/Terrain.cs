@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
@@ -65,6 +66,16 @@ namespace Mff.Totem.Core
 		public void CreateDamage(List<IntPoint> polygon)
 		{
 			DamageMap.Add(polygon);
+			c.Clear();
+			c.AddPolygons(DamageMap, PolyType.ptSubject);
+			DamageMap.Clear();
+			c.Execute(ClipType.ctUnion, DamageMap, PolyFillType.pftPositive, PolyFillType.pftPositive);
+			CreateGenerationTask();
+		}
+
+		public void CreateDamage(params IntPoint[] points)
+		{
+			CreateDamage(points.ToList());
 		}
 
 		Body TerrainBody;
@@ -75,7 +86,8 @@ namespace Mff.Totem.Core
 				if (TerrainBody == null)
 					TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
 				else if (clearMap)
-					TerrainBody.FixtureList.Clear();
+					for (int i = 0; i < TerrainBody.FixtureList.Count; ++i)
+						TerrainBody.DestroyFixture(TerrainBody.FixtureList[i]);
 
 				polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
 			}
@@ -123,12 +135,12 @@ namespace Mff.Totem.Core
 
 			// Add end faces
 			verts.Add(fromLeft ? new IntPoint(x, MAX_DEPTH) : new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH));
-			verts.Add(fromLeft ? new IntPoint(x, HeightMap(x)) : new IntPoint(x + CHUNK_WIDTH, HeightMap(x+CHUNK_WIDTH)));
+			verts.Add(fromLeft ? new IntPoint(x, (int)HeightMap(x)) : new IntPoint(x + CHUNK_WIDTH, (int)HeightMap(x+CHUNK_WIDTH)));
 
 			for (int i = 1; i <= CHUNK_WIDTH / SPACING; ++i)
 			{
 				int x0 = fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING;
-				verts.Add(new IntPoint(x0, HeightMap(x0)));
+				verts.Add(new IntPoint(x0, (int)HeightMap(x0)));
 			}
 
 			// Add second end face point
@@ -178,16 +190,21 @@ namespace Mff.Totem.Core
 
 			if (regionA != origA || regionB != origB)
 			{
-				if (generationTask != null)
-				{
-					generationTask.Wait();
-					generationTask.Dispose();
-				}
-				generationTask = Task.Run(() => { GenerateActiveRegion(regionA, regionB); });
+				CreateGenerationTask();
 			}
 		}
 
-		public int HeightMap(float x)
+		void CreateGenerationTask()
+		{
+			if (generationTask != null)
+			{
+				generationTask.Wait();
+				generationTask.Dispose();
+			}
+			generationTask = Task.Run(() => { GenerateActiveRegion(regionA, regionB); });
+		}
+
+		public float HeightMap(float x)
 		{
 			x /= STEP_WIDTH;
 			int lower = (int)x - (x < 0 ? 1 : 0);
@@ -198,7 +215,7 @@ namespace Mff.Totem.Core
 				p2 = HashToDouble(Seed + Helper.Hash(lower + 1)),
 			p3 = HashToDouble(Seed + Helper.Hash(lower + 2));
 			var r = MathHelper.CatmullRom((float)p0, (float)p1, (float)p2, (float)p3, x - lower) - 0.5f;
-			return BASE_HEIGHT + (int)(r * BASE_STEP + HashToDouble(hash + Helper.Hash((int)(CHUNK_WIDTH*x))) * 4);
+			return BASE_HEIGHT + (float)(r * BASE_STEP + HashToDouble(hash + Helper.Hash((int)(CHUNK_WIDTH*x))) * 4);
 		}
 
 		public double HashToDouble(uint hash)

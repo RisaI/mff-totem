@@ -203,6 +203,17 @@ namespace Mff.Totem.Core
 					Camera.Rotation += 0.1f;
 				if (Input.KBState.IsKeyDown(Keys.Subtract))
 					Camera.Rotation -= 0.1f;
+
+				if (Input.LMBPressed)
+				{
+					var worldMPos = Camera.ToWorldSpace(Input.MousePosition);
+					Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
+						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
+						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
+						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
+						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
+					});
+				}
 			}
 
 			Terrain.GenerateChunk(Helper.NegDivision((int)Camera.BoundingBox.Left - Terrain.CHUNK_WIDTH * 3, Terrain.CHUNK_WIDTH));
@@ -288,7 +299,7 @@ namespace Mff.Totem.Core
 					Background.Draw(spriteBatch);
 					Game.GraphicsDevice.SetRenderTarget(null);
 					spriteBatch.Begin(SpriteSortMode.BackToFront);
-					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
+					//spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
 					spriteBatch.End();
 				}
 

@@ -165,12 +165,12 @@ namespace Mff.Totem.Core
 			});
 			AddCommand("ent_spawn", "Spawns an entity loaded from assets.", args =>
 			{
-				Vector2 pos = new Vector2(float.Parse(args[1]), float.Parse(args[2]));
+				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : Game.World.Terrain.HeightMap(float.Parse(args[1])));
 				var ent = Game.World.CreateEntity(args[0]);
 				var body = ent.GetComponent<BodyComponent>();
 				if (body != null)
-					body.Position = pos;
-			}, "asset", "x", "y");
+					body.LegPosition = pos;
+			}, "asset", "x", "[y]");
 #endregion
 			AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
 			{
@@ -186,6 +186,12 @@ namespace Mff.Totem.Core
 			{
 				Game.World.TimeScale = float.Parse(args[0]);
 			}, "float");
+
+			AddCommand("heightmap", "Get the height for specified x.", args =>
+			{
+				var x = float.Parse(args[0]);
+				Console.WriteLine("Height on {0}: {1}", x, Game.World.Terrain.HeightMap(x));
+			}, "x");
 
 			AddCommand("weather", "Set the weather.", args =>
 			{

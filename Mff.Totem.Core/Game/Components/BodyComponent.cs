@@ -21,6 +21,7 @@ namespace Mff.Totem.Core
 		public abstract Vector2 LegPosition
 		{
 			get;
+			set;
 		}
 
 		public abstract void Move(Vector2 direction);
@@ -75,6 +76,7 @@ namespace Mff.Totem.Core
 			{
 				return Position + new Vector2(0, 32f * (Height + Width));
 			}
+			set { Position = value - new Vector2(0, 32f * (Height + Height)); }
 		}
 
 		void CreateBody()
@@ -112,7 +114,7 @@ namespace Mff.Totem.Core
 			BodyJoint.LimitEnabled = true;
 
 			if (FuturePosition != null)
-				Position = (Vector2)FuturePosition / 64f;
+				Position = (Vector2)FuturePosition;
 
 			if (spawnInfo != null)
 			{
