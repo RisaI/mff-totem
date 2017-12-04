@@ -35,13 +35,13 @@ namespace Mff.Totem.Core
 
             if (World.Game.InputEnabled)
             {
-                if (Input.KBState.IsKeyDown(Keys.D))
+				if (World.Game.Input.GetInput(Inputs.Right, InputState.Down))
                     movement.X += 120;
 
-                if (Input.KBState.IsKeyDown(Keys.A))
+                if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
                     movement.X -= 120;
 
-                if (Input.KeyPressed(Keys.W))
+                if (World.Game.Input.GetInput(Inputs.Up, InputState.Down))
                     movement.Y = -100;
             }
 

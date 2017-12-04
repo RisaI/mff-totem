@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContentLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TotemGame.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DeveloperConsole.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Entity.cs" />
@@ -29,9 +28,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\SpriteComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Background.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Weather.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gui\GuiManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Gui\" />
   </ItemGroup>
 </Project>

@@ -35,6 +35,18 @@ namespace Mff.Totem.Core
 			get { return graphics; }
 		}
 
+		public Input Input
+		{
+			get;
+			protected set;
+		}
+
+		public Gui.GuiManager GuiManager
+		{
+			get;
+			private set;
+		}
+
         protected SpriteBatch spriteBatch;
         protected DeveloperConsole Console;
 
@@ -65,6 +77,8 @@ namespace Mff.Totem.Core
 			graphics = new GraphicsDeviceManager(this);
 			Content.RootDirectory = "Content";
 			Console = new DeveloperConsole(this);
+			GuiManager = new Gui.GuiManager(this);
+			Input = new DesktopInput(this);
 			IsMouseVisible = true;
 		}
 
@@ -95,7 +109,7 @@ namespace Mff.Totem.Core
 		{
 			base.Update(gameTime);
 
-			Input.Update();
+			Input.Update(gameTime);
 
 			if (World != null)
 				World.Update(gameTime);

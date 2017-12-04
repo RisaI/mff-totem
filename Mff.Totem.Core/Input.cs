@@ -1,60 +1,67 @@
 ﻿using System;
+using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace Mff.Totem.Core
 {
-	/// <summary>
-	/// Holds methods for input handling.
-	/// </summary>
-	public static class Input
+	public abstract class Input
 	{
-		public static MouseState MState, PrevMState;
-		public static KeyboardState KBState, PrevKBState;
-
-		/// <summary>
-		/// Refreshes input states, should be called once every update.
-		/// </summary>
-		public static void Update()
+		public TotemGame Game
 		{
-			PrevMState = MState;
-			MState = Mouse.GetState();
-
-			PrevKBState = KBState;
-			KBState = Keyboard.GetState();
+			get;
+			private set;
 		}
 
-		/// <summary>
-		/// Was a key pressed this update?
-		/// </summary>
-		/// <param name="key">Key.</param>
-		public static bool KeyPressed(Keys key)
+		public Input(TotemGame game)
 		{
-			return KBState.IsKeyDown(key) && PrevKBState.IsKeyUp(key);
+			Game = game;
 		}
 
-		/// <summary>
-		/// Was a key released this update?
-		/// </summary>
-		/// <param name="key">Key.</param>
-		public static bool KeyReleased(Keys key)
-		{
-			return PrevKBState.IsKeyDown(key) && KBState.IsKeyUp(key);
-		}
+		public abstract void Update(GameTime gameTime);
+		public abstract bool GetInput(Inputs i, InputState state);
+		public abstract bool InputInsideRectangle(Rectangle rect, InputState state);
+		public abstract bool InputOutsideRectangle(Rectangle rect, InputState state);
 
-		public static bool LMBPressed
-		{
-			get { return PrevMState.LeftButton == ButtonState.Released && MState.LeftButton == ButtonState.Pressed; }
-		}
+		public abstract PointerInput GetPointerInput(byte id);
+		public abstract List<PointerInput> GetPointerInputs();
+		public abstract List<PointerInput> GetPointerInputsOutsideGui();
 
-		/// <summary>
-		/// Returns the mouse position as a vector.
-		/// </summary>
-		/// <value>The mouse position.</value>
-		public static Vector2 MousePosition
+		public event Action<char> OnTextInput;
+		protected void RegisterTextEvent(char ch)
 		{
-			get { return new Vector2(MState.X, MState.Y); }
+			OnTextInput?.Invoke(ch);
 		}
+	}
+
+	public enum Inputs
+	{
+		Up,
+		Down,
+		Left,
+		Right,
+		A,
+		B,
+		Plus,
+		Minus,
+		Sprint,
+		Pause,
+		Inventory
+	}
+
+	public enum InputState
+	{
+		Pressed,
+		Down,
+		Up,
+		Released
+	}
+
+	public struct PointerInput
+	{
+		public Vector2 Position;
+		public byte ID;
+		public InputState State;
 	}
 }

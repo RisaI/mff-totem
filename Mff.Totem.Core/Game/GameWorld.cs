@@ -188,25 +188,25 @@ namespace Mff.Totem.Core
 
 				float multiplier = 1f;
 
-				if (Input.KBState.IsKeyDown(Keys.LeftShift))
+				if (Game.Input.GetInput(Inputs.Sprint, InputState.Down))
 					multiplier = 2.5f;
 
-				if (Input.KBState.IsKeyDown(Keys.A))
+				if (Game.Input.GetInput(Inputs.Left, InputState.Down))
 					Camera.Position.X -= CAMERA_SPEED * multiplier;
-				if (Input.KBState.IsKeyDown(Keys.D))
+				if (Game.Input.GetInput(Inputs.Right, InputState.Down))
 					Camera.Position.X += CAMERA_SPEED * multiplier;
-				if (Input.KBState.IsKeyDown(Keys.W))
+				if (Game.Input.GetInput(Inputs.Up, InputState.Down))
 					Camera.Position.Y -= CAMERA_SPEED * multiplier;
-				if (Input.KBState.IsKeyDown(Keys.S))
+				if (Game.Input.GetInput(Inputs.Down, InputState.Down))
 					Camera.Position.Y += CAMERA_SPEED * multiplier;
-				if (Input.KBState.IsKeyDown(Keys.Add))
+				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
 					Camera.Rotation += 0.1f;
-				if (Input.KBState.IsKeyDown(Keys.Subtract))
+				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
 					Camera.Rotation -= 0.1f;
 
-				if (Input.LMBPressed)
+				if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
 				{
-					var worldMPos = Camera.ToWorldSpace(Input.MousePosition);
+					var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
 					Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
 						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
 						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),

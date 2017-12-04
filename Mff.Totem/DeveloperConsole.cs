@@ -29,6 +29,11 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		DesktopInput KInput
+		{
+			get { return (DesktopInput)Game.Input; }
+		}
+
 		/// <summary>
 		/// A reference to the console font from ContentLoader for code clarity.
 		/// </summary>
@@ -236,23 +241,23 @@ namespace Mff.Totem.Core
 			// Repeating input on key hold
 			if (_inputTimer > 0)
 			{
-				if (Core.Input.KBState.IsKeyDown(Keys.Back) ||
-					Core.Input.KBState.IsKeyDown(Keys.Delete) ||
-					Core.Input.KBState.IsKeyDown(Keys.Left) ||
-					Core.Input.KBState.IsKeyDown(Keys.Right))
+				if (KInput.KBState.IsKeyDown(Keys.Back) ||
+					KInput.KBState.IsKeyDown(Keys.Delete) ||
+					KInput.KBState.IsKeyDown(Keys.Left) ||
+					KInput.KBState.IsKeyDown(Keys.Right))
 					_inputTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 				else
 					_inputTimer = 0;
 			}
 
 			// Last input
-			if (Core.Input.KeyPressed(Keys.Up) && !string.IsNullOrWhiteSpace(PreviousInput))
+			if (KInput.GetKeyState(Keys.Up) == InputState.Pressed && !string.IsNullOrWhiteSpace(PreviousInput))
 			{
 				Input = PreviousInput; // Restores the last input
 			}
 			if (Input != null)
 			{
-				if (Core.Input.KeyPressed(Keys.Enter)) // Should the input be executed?
+				if (KInput.GetKeyState(Keys.Enter) == InputState.Pressed) // Should the input be executed?
 				{
 					Input = Input.Trim();
 
@@ -276,9 +281,9 @@ namespace Mff.Totem.Core
 				else
 				{
 					// Backspace and delete
-					if (Core.Input.KBState.IsKeyDown(Keys.Back) && Input.Length - _cursorIndex > 0 && _inputTimer <= 0)
+					if (KInput.KBState.IsKeyDown(Keys.Back) && Input.Length - _cursorIndex > 0 && _inputTimer <= 0)
 					{
-						_inputTimer += Mff.Totem.Core.Input.KeyPressed(Keys.Back) ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += KInput.GetKeyState(Keys.Back) == InputState.Pressed ? INPUT_TIME_F : INPUT_TIME;
 						if (_cursorIndex == 0)
 							Input = Input.Substring(0, Input.Length - 1); // Remove a character
 						else
@@ -286,9 +291,9 @@ namespace Mff.Totem.Core
 
 						RefreshCursor();
 					}
-					else if (Core.Input.KBState.IsKeyDown(Keys.Delete) && _cursorIndex > 0 && _inputTimer <= 0)
+					else if (KInput.KBState.IsKeyDown(Keys.Delete) && _cursorIndex > 0 && _inputTimer <= 0)
 					{
-						_inputTimer += Core.Input.KeyPressed(Keys.Delete) ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += KInput.GetKeyState(Keys.Delete) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						Input = Input.Substring(0, Input.Length - _cursorIndex) + Input.Substring(Input.Length - _cursorIndex + 1);
 						if (Input.Length != _cursorIndex)
 							--_cursorIndex;
@@ -296,30 +301,30 @@ namespace Mff.Totem.Core
 					}
 
 					// Cursor navigation
-					if (Core.Input.KBState.IsKeyDown(Keys.Left) && _inputTimer <= 0)
+					if (KInput.KBState.IsKeyDown(Keys.Left) && _inputTimer <= 0)
 					{
-						_inputTimer += Core.Input.KeyPressed(Keys.Left) ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += KInput.GetKeyState(Keys.Left) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						_cursorIndex = MathHelper.Min(Input.Length, _cursorIndex + 1);
 						RefreshCursor();
 					}
-					if (Core.Input.KBState.IsKeyDown(Keys.Right) && _inputTimer <= 0)
+					if (KInput.KBState.IsKeyDown(Keys.Right) && _inputTimer <= 0)
 					{
-						_inputTimer += Core.Input.KeyPressed(Keys.Right) ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += KInput.GetKeyState(Keys.Right) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						_cursorIndex = MathHelper.Max(0, _cursorIndex - 1);
 						RefreshCursor();
 					}
 				}
 
-				if (Core.Input.KeyPressed(Keys.End))
+				if (KInput.GetKeyState(Keys.End) == InputState.Released)
 				{
 					_cursorIndex = 0; // Go to end
 				}
-				else if (Core.Input.KeyPressed(Keys.Home))
+				else if (KInput.GetKeyState(Keys.Home) == InputState.Released)
 				{
 					_cursorIndex = Input.Length; // Go to the beggining
 				}
 
-				if (Core.Input.KeyPressed(Keys.Escape))
+				if (KInput.GetKeyState(Keys.Escape) == InputState.Released)
 				{
 					Input = null; // Clear input
 				}
@@ -327,17 +332,17 @@ namespace Mff.Totem.Core
 			}
 
 			// Scrolling
-			if (Core.Input.KeyPressed(Keys.PageUp))
+			if (KInput.GetKeyState(Keys.PageUp) == InputState.Released)
 			{
 				Offset += SCROLL; // Scroll up
 			}
-			else if (Core.Input.KeyPressed(Keys.PageDown))
+			else if (KInput.GetKeyState(Keys.PageDown) == InputState.Released)
 			{
 				Offset -= SCROLL; // Scroll down
 			}
 
 			// Autocomplete
-			if (Core.Input.KeyPressed(Keys.Tab) && !string.IsNullOrEmpty(Input))
+			if (KInput.GetKeyState(Keys.Tab) == InputState.Released && !string.IsNullOrEmpty(Input))
 			{
 				Input = Input.TrimStart();
 				if (!string.IsNullOrEmpty(Input))
@@ -382,7 +387,7 @@ namespace Mff.Totem.Core
 			}
 
 			// Toggle the console
-			if (Core.Input.KeyPressed(Keys.OemSemicolon)) 
+			if (KInput.GetKeyState(Keys.OemSemicolon) == InputState.Pressed) 
 			{
 				Enabled = !Enabled;
 			}
