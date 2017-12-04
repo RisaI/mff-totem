@@ -114,6 +114,8 @@ namespace Mff.Totem.Core
 			if (World != null)
 				World.Update(gameTime);
 
+			GuiManager.Update(gameTime);
+
 			Console.Update(gameTime);
 		}
 
@@ -125,6 +127,8 @@ namespace Mff.Totem.Core
 				World.Draw(spriteBatch);
 			else
 				GraphicsDevice.Clear(Color.Black);
+
+			GuiManager.Draw(spriteBatch);
 
 			if (Console.Enabled)
 				Console.Draw(spriteBatch);

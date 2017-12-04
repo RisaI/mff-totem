@@ -240,7 +240,7 @@ namespace Mff.Totem.Gui
 
 			protected void DrawBody(SpriteBatch spriteBatch, bool drawBar = true)
 			{
-				var font = ContentLoader.Fonts["console"];
+				var font = ContentLoader.Fonts["menu"];
 				spriteBatch.Draw(ContentLoader.Pixel, Area, null, Color.Black, 0, Vector2.Zero, SpriteEffects.None, 0f);
 				if (drawBar)
 				{

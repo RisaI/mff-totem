@@ -210,6 +210,12 @@ namespace Mff.Totem.Core
 						break;
 				}
 			}, "float");
+
+			AddCommand("guitest", "Show GUI test.", args =>
+			{
+				if (args.Length > 0)
+					new Gui.MessageBox(args[0], Game.GuiManager);
+			}, "text");
 		}
 
 		/// <summary>
