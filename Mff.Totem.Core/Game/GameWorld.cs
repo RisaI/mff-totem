@@ -299,7 +299,7 @@ namespace Mff.Totem.Core
 					Background.Draw(spriteBatch);
 					Game.GraphicsDevice.SetRenderTarget(null);
 					spriteBatch.Begin(SpriteSortMode.BackToFront);
-					//spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
+					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
 					spriteBatch.End();
 				}
 

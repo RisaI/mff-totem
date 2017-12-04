@@ -47,6 +47,11 @@ namespace Mff.Totem.Core
 				Parallax = ContentLoader.Parallaxes["basic"];
 			}
 
+			Vector2 Resolution
+			{
+				get { return World.Game.Resolution; }
+			}
+
 			public override void Update(GameTime gameTime)
 			{
 				SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
@@ -56,7 +61,11 @@ namespace Mff.Totem.Core
 
 			protected override void OnDraw(SpriteBatch spriteBatch)
 			{
-				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+				var matrix = //Matrix.CreateTranslation(-World.Game.Resolution.X / 2, -World.Game.Resolution.Y / 2, 0) *
+								   Matrix.CreateRotationZ(World.Camera.Rotation) *
+				                   Matrix.CreateTranslation(World.Game.Resolution.X / 2, World.Game.Resolution.Y / 2, 0);
+
+				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, matrix);
 				double hour = World.WorldTime.TimeOfDay.TotalHours;
 				float nightTint = NightTint(World.WorldTime.TimeOfDay.TotalHours);
 
@@ -73,7 +82,7 @@ namespace Mff.Totem.Core
 						{
 							for (int y = 0; y < height; ++y)
 							{
-								spriteBatch.Draw(starTexture, new Vector2(x, y) * 256, null, stars, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.01f);
+								spriteBatch.Draw(starTexture, new Vector2(x, y) * 256 - Resolution / 2, null, stars, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.01f);
 							}
 						}
 					}
@@ -84,7 +93,7 @@ namespace Mff.Totem.Core
 				{
 					float angle = MathHelper.PiOver2 - (float)(hour - 12) / 16 * MathHelper.Pi;
 					Texture2D sunTexture = ContentLoader.Textures["sun"];
-					spriteBatch.Draw(sunTexture, World.Game.Resolution / 2 + new Vector2(1.3f, 1) * Helper.AngleToDirection(angle) * World.Game.Resolution / 2, null,
+					spriteBatch.Draw(sunTexture, new Vector2(1.3f, 1) * Helper.AngleToDirection(angle) * World.Game.Resolution / 2, null,
 									 Color.Yellow, 0, sunTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
 				}
 				if (hour > 16 || hour < 8)
@@ -94,7 +103,7 @@ namespace Mff.Totem.Core
 						hour += 24;
 					float angle_moon = MathHelper.PiOver2 - (float)(hour - 12) / 16 * MathHelper.Pi;
 					Texture2D moonTexture = ContentLoader.Textures["moon"];
-					spriteBatch.Draw(moonTexture, World.Game.Resolution / 2 + new Vector2(1.3f, 1) * Helper.AngleToDirection(angle_moon) * World.Game.Resolution / 2, null,
+					spriteBatch.Draw(moonTexture, new Vector2(1.3f, 1) * Helper.AngleToDirection(angle_moon) * World.Game.Resolution / 2, null,
 									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
 				}
 				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
@@ -124,7 +133,10 @@ namespace Mff.Totem.Core
 						offsetY = -((World.Camera.Position.Y) / (float)Math.Pow(2, 8 + i));
 
 					for (int c = 0; c < count; ++c)
-						spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY)), null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.None, 0.5f - 0.01f * i);
+					{
+						spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY)) - Resolution / 2, null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.None, 0.5f - 0.01f * i);
+						spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY) + texture.Height * scale) - Resolution / 2, null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.FlipVertically, 0.5f - 0.01f * i);
+					}
 				}
 			}
 

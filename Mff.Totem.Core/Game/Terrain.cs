@@ -67,9 +67,9 @@ namespace Mff.Totem.Core
 		{
 			DamageMap.Add(polygon);
 			c.Clear();
-			c.AddPolygons(DamageMap, PolyType.ptSubject);
+			c.AddPolygons(DamageMap, PolyType.ptClip);
 			DamageMap.Clear();
-			c.Execute(ClipType.ctUnion, DamageMap, PolyFillType.pftPositive, PolyFillType.pftPositive);
+			c.Execute(ClipType.ctXor, DamageMap, PolyFillType.pftPositive, PolyFillType.pftNonZero);
 			CreateGenerationTask();
 		}
 
@@ -86,8 +86,14 @@ namespace Mff.Totem.Core
 				if (TerrainBody == null)
 					TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
 				else if (clearMap)
-					for (int i = 0; i < TerrainBody.FixtureList.Count; ++i)
-						TerrainBody.DestroyFixture(TerrainBody.FixtureList[i]);
+				{
+					while (TerrainBody.FixtureList.Count > 0)
+					{
+						for (int i = 0; i < TerrainBody.FixtureList.Count; ++i)
+							TerrainBody.DestroyFixture(TerrainBody.FixtureList[i]);
+						World.Physics.ProcessChanges();
+					}
+				}
 
 				polygons.ForEach(r => FixtureFactory.AttachLoopShape(ConvertToVertices(r), TerrainBody, this));
 			}
@@ -102,7 +108,7 @@ namespace Mff.Totem.Core
 			}
 			c.AddPolygons(DamageMap, PolyType.ptClip);
 			List<List<IntPoint>> result = new List<List<IntPoint>>();
-			c.Execute(ClipType.ctDifference, result);
+			c.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 			PlaceInWorld(result);
 
 			List<Vertices> verts = new List<Vertices>();
