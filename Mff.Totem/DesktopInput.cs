@@ -14,7 +14,7 @@ namespace Mff.Totem
 
 		public DesktopInput(TotemGame game) : base(game)
 		{
-			game.Window.TextInput += (sender, e) => { RegisterTextEvent(e.Character); };
+			//game.Window.TextInput += (sender, e) => { RegisterTextEvent(e.Character); };
 		}
 
 		public bool inGui;
@@ -28,12 +28,12 @@ namespace Mff.Totem
 			PrevMState = MState;
 			MState = Mouse.GetState();
 
-			LMB = new PointerInput() { ID = 0, Position = MState.Position.ToVector2(), State = LMBState };
-			RMB = new PointerInput() { ID = 1, Position = MState.Position.ToVector2(), State = RMBState };
-			MMB = new PointerInput() { ID = 2, Position = MState.Position.ToVector2(), State = MMBState };
+			LMB = new PointerInput() { ID = 0, Position = MousePosition, State = LMBState };
+			RMB = new PointerInput() { ID = 1, Position = MousePosition, State = RMBState };
+			MMB = new PointerInput() { ID = 2, Position = MousePosition, State = MMBState };
 
 			Gui.GuiManager.Gui g;
-			if ((g = Game.GuiManager.IsPointInGui(MState.Position.ToVector2())) != null)
+			if ((g = Game.GuiManager.IsPointInGui(MousePosition)) != null)
 			{
 				inGui = true;
 				g.OnInput(LMB);
@@ -97,7 +97,7 @@ namespace Mff.Totem
 
 		public override bool InputInsideRectangle(Rectangle rect, InputState state)
 		{
-			if (rect.Contains(MousePosition))
+			if (rect.Contains(MousePosition.ToPoint()))
 			{
 				return LMBState == state || RMBState == state || MMBState == state;
 			}
@@ -106,7 +106,7 @@ namespace Mff.Totem
 
 		public override bool InputOutsideRectangle(Rectangle rect, InputState state)
 		{
-			if (!rect.Contains(MousePosition))
+			if (!rect.Contains(MousePosition.ToPoint()))
 			{
 				return LMBState == state || RMBState == state || MMBState == state;
 			}
@@ -152,7 +152,7 @@ namespace Mff.Totem
 
 		public Vector2 MousePosition
 		{
-			get { return MState.Position.ToVector2(); }
+			get { return new Vector2(MState.X, MState.Y); }
 		}
 	}
 }

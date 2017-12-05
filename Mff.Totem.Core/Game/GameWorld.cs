@@ -252,10 +252,8 @@ namespace Mff.Totem.Core
                 Background.Draw(spriteBatch);
             }
 
-            Game.Penumbra.AmbientColor = Color.Lerp(Color.White, Color.Black, NightTint(WorldTime.Hour));
-
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
-            Game.Penumbra.BeginDraw();
+			//Game.Krypton.LightMapPrepare();
             Game.GraphicsDevice.Clear(Color.Transparent);
 
             // Ground rendering
@@ -289,11 +287,11 @@ namespace Mff.Totem.Core
             Particles.ForEach(p => p.Draw(spriteBatch));
             spriteBatch.End();
 
-            Game.Penumbra.Draw(GTime);
+			//Game.Krypton.Draw(GTime);
 
 
             Game.GraphicsDevice.SetRenderTarget(null);
-            spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, null);
+			spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
             spriteBatch.Draw(BackgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
             spriteBatch.Draw(ForegroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
             spriteBatch.End();

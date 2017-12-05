@@ -124,7 +124,7 @@ namespace Mff.Totem
 
 		public static Color ReadColor(this BinaryReader reader)
 		{
-			return new Color(reader.ReadUInt32());
+			return new Color() { PackedValue = reader.ReadUInt32() };
 		}
 
 		public static void WriteVector2(this JsonWriter writer, Vector2 vector)
@@ -138,6 +138,15 @@ namespace Mff.Totem
 		}
 		#endregion
 
+		public static Point ToPoint(this Vector2 vec)
+		{
+			return new Point((int)vec.X, (int)vec.Y);
+		}
+
+		public static Vector2 ToVector2(this Point p)
+		{
+			return new Vector2(p.X, p.Y);
+		}
 
 		public static uint Hash(int i)
 		{

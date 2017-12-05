@@ -72,7 +72,7 @@ namespace Mff.Totem.Gui
 		public Gui IsPointInGui(Vector2 point)
 		{
 			Gui f = null;
-			Guis.ForEach(g => { if (g.Area.Contains(point) && (f == null || f.Layer < g.Layer)) { f = g; } });
+			Guis.ForEach(g => { if (g.Area.Contains(point.ToPoint()) && (f == null || f.Layer < g.Layer)) { f = g; } });
 			return f;
 		}
 
@@ -188,7 +188,7 @@ namespace Mff.Totem.Gui
 				switch (input.State)
 				{
 					case InputState.Pressed:
-						if (CloseButton.Contains(input.Position))
+						if (CloseButton.Contains(input.Position.ToPoint()))
 						{
 							Remove = true;
 							return;
@@ -235,7 +235,9 @@ namespace Mff.Totem.Gui
 
 			public virtual void RecalculateArea()
 			{
-				_area = new Rectangle(Position.ToPoint(), (Size * Manager.GuiScale).ToPoint());
+				var pos = Position.ToPoint();
+				var size = (Size * Manager.GuiScale).ToPoint();
+				_area = new Rectangle(pos.X, pos.Y, size.X, size.Y);
 			}
 
 			protected void DrawBody(SpriteBatch spriteBatch, bool drawBar = true)
@@ -246,7 +248,7 @@ namespace Mff.Totem.Gui
 				{
 					spriteBatch.Draw(ContentLoader.Pixel, new Rectangle(Area.X, Area.Y, Area.Width, ScaledBarHeight), null, Color.Gray, 0, Vector2.Zero, SpriteEffects.None, 0.99f);
 					var closeSize = font.MeasureString("X");
-					spriteBatch.DrawString(font, "X", CloseButton.Center.ToVector2(), Color.LightGray, 0f, closeSize / 2, CloseButton.Size.ToVector2() / closeSize, SpriteEffects.None, 1f);
+					spriteBatch.DrawString(font, "X", CloseButton.Center.ToVector2(), Color.LightGray, 0f, closeSize / 2, new Vector2(CloseButton.Width, CloseButton.Height) / closeSize, SpriteEffects.None, 1f);
 					if (!string.IsNullOrWhiteSpace(WindowName))
 					{
 						var size = font.MeasureString(WindowName);

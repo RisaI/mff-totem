@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+using Krypton;
+
 namespace Mff.Totem.Core
 {
     public abstract class TotemGame : Game
@@ -47,7 +49,7 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-        public Penumbra.PenumbraComponent Penumbra
+		public KryptonEngine Krypton
         {
             get;
             private set;
@@ -85,8 +87,8 @@ namespace Mff.Totem.Core
 			Console = new DeveloperConsole(this);
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
-            Penumbra = new Penumbra.PenumbraComponent(this);
-            Penumbra.AmbientColor = Color.Gray;
+			Krypton = new KryptonEngine(this, "shaders/lighting");
+			graphics.GraphicsProfile = GraphicsProfile.Reach;
 			IsMouseVisible = true;
 		}
 
@@ -96,11 +98,10 @@ namespace Mff.Totem.Core
 			{
 				graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
 				graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
-                Penumbra.Initialize();
 				if (OnResolutionChange != null)
 					OnResolutionChange(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 			};
-            Penumbra.Initialize();
+			Krypton.Initialize();
             base.Initialize();
 		}
 
@@ -110,6 +111,7 @@ namespace Mff.Totem.Core
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
 			// Load textues and fonts
+			Krypton.Initialize();
 			ContentLoader.Load(this);
 
 			World = new GameWorld(this);
@@ -121,7 +123,7 @@ namespace Mff.Totem.Core
 
 			Input.Update(gameTime);
 
-            Penumbra.Update(gameTime);
+			Krypton.Update(gameTime);
             if (World != null)
 				World.Update(gameTime);
 

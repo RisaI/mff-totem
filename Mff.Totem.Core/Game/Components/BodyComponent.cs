@@ -81,12 +81,11 @@ namespace Mff.Totem.Core
 
 		void CreateBody()
 		{
-			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Parent);
+			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Vector2.Zero, 0, BodyType.Dynamic, Parent);
 			MainBody.FixedRotation = true;
 			MainBody.BodyType = BodyType.Dynamic;
 
-			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, Parent);
-			ControllerBody.Position = new Vector2(0, Height / 2);
+			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, new Vector2(0, Height / 2), BodyType.Dynamic, Parent);
 			ControllerBody.BodyType = BodyType.Dynamic;
 			ControllerBody.Friction = IDLE_FRICTION;
 

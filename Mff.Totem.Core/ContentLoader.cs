@@ -59,8 +59,9 @@ namespace Mff.Totem
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
 			Fonts.Add("menu", game.Content.Load<SpriteFont>("fonts/menu"));
 
+
             // Load shaders
-            Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));
+			Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));
 		
 			foreach (string file in FindAllFiles("Content/assets/sprites", ".sprite"))
 			{

@@ -48,7 +48,7 @@ namespace Mff.Totem.Core
 			Seed = seed != 0 ? seed : (uint)Random.Next();
 			Polygons.Clear();
 			DamageMap.Clear();
-			TerrainBody = BodyFactory.CreateBody(World.Physics, this);
+			TerrainBody = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
 			GenerateChunk(0);
 			GenerateChunk(-1);
 		}
@@ -84,7 +84,7 @@ namespace Mff.Totem.Core
 			lock (TerrainBody)
 			{
 				if (TerrainBody == null)
-					TerrainBody = new Body(World.Physics, Vector2.Zero, 0, this) { BodyType = BodyType.Static, };
+					TerrainBody = new Body(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
 				else if (clearMap)
 				{
 					while (TerrainBody.FixtureList.Count > 0)

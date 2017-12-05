@@ -20,6 +20,13 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/console.spritefont
 
+#begin fonts/menu.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:fonts/menu.spritefont
+
 #begin textures/character.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -55,18 +62,6 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:textures/moon.png
-
-#begin textures/sun.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:textures/sun.png
 
 #begin textures/parallax/parallax0.png
 /importer:TextureImporter
@@ -128,16 +123,15 @@
 /processorParam:TextureFormat=Color
 /build:textures/parallax/parallax4.png
 
-#begin fonts/menu.spritefont
-/importer:FontDescriptionImporter
-/processor:FontDescriptionProcessor
+#begin textures/sun.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
 /processorParam:PremultiplyAlpha=True
-/processorParam:TextureFormat=Compressed
-/build:fonts/menu.spritefont
-
-#begin shaders/GroundShader.fx
-/importer:EffectImporter
-/processor:EffectProcessor
-/processorParam:DebugMode=Auto
-/build:shaders/GroundShader.fx
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:textures/sun.png
 

@@ -53,7 +53,7 @@ namespace Mff.Totem.Core
 			get { return _off; }
 			set
 			{
-				_off = MathHelper.Clamp(value, 0, Math.Max(0, Output.Count - 2));
+				_off = (int)MathHelper.Clamp(value, 0, Math.Max(0, Output.Count - 2));
 			}
 		}
 
@@ -101,7 +101,7 @@ namespace Mff.Totem.Core
 			Game = game;
 
 			// Test input handling
-			Game.Window.TextInput += (sender, args) =>
+			/*Game.Window.TextInput += (sender, args) =>
 			{
 				if (Enabled && args.Character != '`' && args.Character != '~' && Font.Characters.Contains(args.Character))
 				{
@@ -112,7 +112,7 @@ namespace Mff.Totem.Core
 
 					RefreshCursor();
 				}
-			};
+			};*/
 			Console.SetOut(new ConsoleWriter(this));
 
 			AddCommand("help", "Shows the help menu.", args => // Help command
@@ -310,13 +310,13 @@ namespace Mff.Totem.Core
 					if (KInput.KBState.IsKeyDown(Keys.Left) && _inputTimer <= 0)
 					{
 						_inputTimer += KInput.GetKeyState(Keys.Left) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
-						_cursorIndex = MathHelper.Min(Input.Length, _cursorIndex + 1);
+						_cursorIndex = (int)MathHelper.Min(Input.Length, _cursorIndex + 1);
 						RefreshCursor();
 					}
 					if (KInput.KBState.IsKeyDown(Keys.Right) && _inputTimer <= 0)
 					{
 						_inputTimer += KInput.GetKeyState(Keys.Right) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
-						_cursorIndex = MathHelper.Max(0, _cursorIndex - 1);
+						_cursorIndex = (int)MathHelper.Max(0, _cursorIndex - 1);
 						RefreshCursor();
 					}
 				}
@@ -419,7 +419,7 @@ namespace Mff.Totem.Core
 			if (Output.Count > 1 || !string.IsNullOrEmpty(Output[0]))
 			{
 				int lastModifier = string.IsNullOrWhiteSpace(Output[Output.Count - 1]) ? 1 : 0;
-				int drawRange = MathHelper.Min(HEIGHT / Font.LineSpacing + 1, Output.Count - lastModifier);
+				int drawRange = (int)MathHelper.Min(HEIGHT / Font.LineSpacing + 1, Output.Count - lastModifier);
 				int currentOffset = 0;
 				for (int i = Offset + lastModifier; i < Math.Min(Output.Count, drawRange + Offset + lastModifier); ++i)
 				{
