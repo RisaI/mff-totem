@@ -135,3 +135,9 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/menu.spritefont
 
+#begin shaders/GroundShader.fx
+/importer:EffectImporter
+/processor:EffectProcessor
+/processorParam:DebugMode=Auto
+/build:shaders/GroundShader.fx
+

@@ -35,8 +35,9 @@ namespace Mff.Totem
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
 		public static Dictionary<string, Texture2D[]> Parallaxes = new Dictionary<string, Texture2D[]>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
+        public static Dictionary<string, Effect> Shaders = new Dictionary<string, Effect>();
 
-		public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
+        public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
 		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
 
 		public static void Load(Core.TotemGame game)
@@ -57,6 +58,9 @@ namespace Mff.Totem
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
 			Fonts.Add("menu", game.Content.Load<SpriteFont>("fonts/menu"));
+
+            // Load shaders
+            Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));
 		
 			foreach (string file in FindAllFiles("Content/assets/sprites", ".sprite"))
 			{

@@ -47,6 +47,12 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+        public Penumbra.PenumbraComponent Penumbra
+        {
+            get;
+            private set;
+        }
+
         protected SpriteBatch spriteBatch;
         protected DeveloperConsole Console;
 
@@ -79,6 +85,8 @@ namespace Mff.Totem.Core
 			Console = new DeveloperConsole(this);
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
+            Penumbra = new Penumbra.PenumbraComponent(this);
+            Penumbra.AmbientColor = Color.Gray;
 			IsMouseVisible = true;
 		}
 
@@ -88,10 +96,12 @@ namespace Mff.Totem.Core
 			{
 				graphics.PreferredBackBufferWidth = Window.ClientBounds.Width;
 				graphics.PreferredBackBufferHeight = Window.ClientBounds.Height;
+                Penumbra.Initialize();
 				if (OnResolutionChange != null)
 					OnResolutionChange(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 			};
-			base.Initialize();
+            Penumbra.Initialize();
+            base.Initialize();
 		}
 
 		protected override void LoadContent()
@@ -111,7 +121,8 @@ namespace Mff.Totem.Core
 
 			Input.Update(gameTime);
 
-			if (World != null)
+            Penumbra.Update(gameTime);
+            if (World != null)
 				World.Update(gameTime);
 
 			GuiManager.Update(gameTime);
@@ -121,17 +132,18 @@ namespace Mff.Totem.Core
 
 		protected override void Draw(GameTime gameTime)
 		{
-			base.Draw(gameTime);
 
-			if (World != null)
-				World.Draw(spriteBatch);
-			else
-				GraphicsDevice.Clear(Color.Black);
+            if (World != null)
+            {
+                World.Draw(spriteBatch);
+            }
+            else
+                GraphicsDevice.Clear(Color.Black);
 
 			GuiManager.Draw(spriteBatch);
 
 			if (Console.Enabled)
 				Console.Draw(spriteBatch);
-		}
+        }
 	}
 }

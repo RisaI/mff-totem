@@ -158,8 +158,10 @@ namespace Mff.Totem.Core
 			return ent;
 		}
 
+        private GameTime GTime;
 		public void Update(GameTime gameTime)
 		{
+            GTime = gameTime;
 			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
 			Terrain.Update();
@@ -223,138 +225,97 @@ namespace Mff.Totem.Core
 			if (Background != null)
 				Background.Update(gameTime);
 		}
-
-
-		DepthStencilState MaskStencil = new DepthStencilState()
-		{
-			StencilEnable = true,
-			StencilFunction = CompareFunction.Always,
-			StencilPass = StencilOperation.Replace,
-			ReferenceStencil = 1,
-			DepthBufferEnable = false
-		},
-		GroundStencil = new DepthStencilState()
-		{
-			StencilEnable = true,
-			StencilFunction = CompareFunction.Equal,
-			StencilPass = StencilOperation.Zero,
-			ReferenceStencil = 1,
-			DepthBufferEnable = false
-		};
-		AlphaTestEffect AlphaTest;
-		BasicEffect GroundEffect;
-		RenderTarget2D GroundMaskTexture, SkyTexture;
+        
+		Effect GroundEffect;
+		RenderTarget2D ForegroundTexture, BackgroundTexture;
 
 		private void PrepareRenderData(int width, int height)
 		{
 			if (GroundEffect == null)
-				GroundEffect = new BasicEffect(Game.GraphicsDevice) { VertexColorEnabled = true };
-			GroundEffect.Projection = Matrix.CreateOrthographic(width, -height, 0, 1);
+				GroundEffect = ContentLoader.Shaders["ground"];
+			GroundEffect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(width, -height, 0, 1));
+            
+			if (ForegroundTexture != null)
+				ForegroundTexture.Dispose();
+			ForegroundTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
 
-			if (AlphaTest == null)
-				AlphaTest = new AlphaTestEffect(Game.GraphicsDevice);
-			AlphaTest.Projection = Matrix.CreateOrthographic(width, -height, 0, 1);
-			AlphaTest.View = Matrix.CreateTranslation(-width / 2, -height / 2, 0);
-
-			if (GroundMaskTexture != null)
-				GroundMaskTexture.Dispose();
-			GroundMaskTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
-
-			if (SkyTexture != null)
-				SkyTexture.Dispose();
-			SkyTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
+			if (BackgroundTexture != null)
+				BackgroundTexture.Dispose();
+			BackgroundTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
 		}
 
-		public void Draw(SpriteBatch spriteBatch)
-		{
+        public void Draw(SpriteBatch spriteBatch)
+        {
+            if (Background != null)
+            {
+                Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)BackgroundTexture);
+                Background.Draw(spriteBatch);
+            }
 
-			// Ground rendering
-			if (Terrain.TriangulatedActiveArea != null)
-			{
-				Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)GroundMaskTexture);
-				Game.GraphicsDevice.Clear(Color.Transparent);
+            Game.Penumbra.AmbientColor = Color.Lerp(Color.White, Color.Black, NightTint(WorldTime.Hour));
 
-				VertexPositionColor[] vertices = new VertexPositionColor[Terrain.TriangulatedActiveArea.Count * 3];
-				int index = 0;
+            Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
+            Game.Penumbra.BeginDraw();
+            Game.GraphicsDevice.Clear(Color.Transparent);
 
-				Terrain.TriangulatedActiveArea.ForEach(t =>
-				{
-					t.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White));
-				});
+            // Ground rendering
+            if (Terrain.TriangulatedActiveArea != null)
+            {
+                VertexPositionColor[] vertices = new VertexPositionColor[Terrain.TriangulatedActiveArea.Count * 3];
+                int index = 0;
 
-				GroundEffect.View = Camera.ViewMatrix *
-					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0);
+                Terrain.TriangulatedActiveArea.ForEach(t =>
+                {
+                    t.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White));
+                });
 
-				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
-				{
-					pass.Apply();
-					Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
-				}
+                GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
+                    Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
+                GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
-				Game.GraphicsDevice.SetRenderTarget(null);
+                foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+                {
+                    pass.Apply();
+                    Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+                }
+            }
 
-				if (Background != null)
-				{
-					Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)SkyTexture);
-					Background.Draw(spriteBatch);
-					Game.GraphicsDevice.SetRenderTarget(null);
-					spriteBatch.Begin(SpriteSortMode.BackToFront);
-					spriteBatch.Draw(SkyTexture, Vector2.Zero, Color.White);
-					spriteBatch.End();
-				}
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+            Weather.DrawWeatherEffects(this, spriteBatch);
+            spriteBatch.End();
+            
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+            Entities.ForEach(e => e.Draw(spriteBatch));
+            Particles.ForEach(p => p.Draw(spriteBatch));
+            spriteBatch.End();
 
-				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, MaskStencil, null, AlphaTest);
-				spriteBatch.Draw(GroundMaskTexture, Vector2.Zero, Color.White);
-				spriteBatch.End();
+            Game.Penumbra.Draw(GTime);
 
-				var groundTexture = ContentLoader.Textures["dirt"];
-				int x = (int)(Camera.BoundingBox.Width / groundTexture.Width) + 2,
-					y = (int)(Camera.BoundingBox.Height / groundTexture.Height) + 2;
-				float startX = Camera.BoundingBox.Left,
-					startY = Camera.BoundingBox.Top;
-				startX -= Helper.NegModulo((int)startX, groundTexture.Width);
-				startY -= Helper.NegModulo((int)startY, groundTexture.Height);
-				spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, GroundStencil, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-				for (int a1 = 0; a1 < y; ++a1)
-				{
-					for (int a0 = 0; a0 < x; ++a0)
-					{
-						spriteBatch.Draw(groundTexture, groundTexture.Size() * new Vector2(a0, a1) +
-										 new Vector2(startX, startY), null, Color.White);
-					}
-				}
-				spriteBatch.End();
-			}
-			else
-			{
-				if (Background != null)
-					Background.Draw(spriteBatch);
-				else
-					Game.GraphicsDevice.Clear(Color.Black);
-			}
 
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-			Weather.DrawWeatherEffects(this, spriteBatch);
-			spriteBatch.End();
+            Game.GraphicsDevice.SetRenderTarget(null);
+            spriteBatch.Begin(SpriteSortMode.BackToFront, null, null, null);
+            spriteBatch.Draw(BackgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
+            spriteBatch.Draw(ForegroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+            spriteBatch.End();
 
-			// Render debug physics view
-			if (DebugView.Enabled)
-			{
-				Matrix proj = Matrix.CreateOrthographic(Game.Resolution.X / 64f, -Game.Resolution.Y / 64f, 0, 1);
-				Matrix view = (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity) *
-									Matrix.CreateRotationZ(Camera.Rotation) *
-									Matrix.CreateScale(Camera.Zoom);
-				lock (Physics)
-					DebugView.RenderDebugData(proj, view);
-			}
+            // Render debug physics view
+            if (DebugView.Enabled)
+            {
+                Matrix proj = Matrix.CreateOrthographic(Game.Resolution.X / 64f, -Game.Resolution.Y / 64f, 0, 1);
+                Matrix view = (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity) *
+                                    Matrix.CreateRotationZ(Camera.Rotation) *
+                                    Matrix.CreateScale(Camera.Zoom);
+                lock (Physics)
+                    DebugView.RenderDebugData(proj, view);
+            }
+        }
 
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-			Entities.ForEach(e => e.Draw(spriteBatch));
-			Particles.ForEach(p => p.Draw(spriteBatch));
-			spriteBatch.End();
-		}
+        public float NightTint(double hour)
+        {
+            return hour <= 4 || hour >= 20 ? 1 : (float)(hour > 8 && hour < 16 ? 0 : 1f - Math.Pow(Math.Cos(Math.PI * (hour / 8 - 1)), 2));
+        }
 
-		public void Serialize(BinaryWriter writer)
+        public void Serialize(BinaryWriter writer)
 		{
 			// Entities
 			writer.Write((Int16)(Entities.Count + EntityQueue.Count));

@@ -12,7 +12,7 @@ namespace Mff.Totem
         
 		public Game1() : base()
 		{
-			
+            this.Window.AllowUserResizing = true;	
         }
 
         protected override void Initialize()
