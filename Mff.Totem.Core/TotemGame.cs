@@ -87,8 +87,8 @@ namespace Mff.Totem.Core
 			Console = new DeveloperConsole(this);
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
-			Krypton = new KryptonEngine(this, "shaders/lighting");
-			graphics.GraphicsProfile = GraphicsProfile.Reach;
+			/*Krypton = new KryptonEngine(this, "shaders/lighting");
+			Krypton.AmbientColor = Color.Red;*/
 			IsMouseVisible = true;
 		}
 
@@ -101,8 +101,7 @@ namespace Mff.Totem.Core
 				if (OnResolutionChange != null)
 					OnResolutionChange(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 			};
-			Krypton.Initialize();
-            base.Initialize();
+			base.Initialize();
 		}
 
 		protected override void LoadContent()
@@ -111,7 +110,7 @@ namespace Mff.Totem.Core
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
 			// Load textues and fonts
-			Krypton.Initialize();
+			// Krypton.Initialize();
 			ContentLoader.Load(this);
 
 			World = new GameWorld(this);
@@ -123,8 +122,7 @@ namespace Mff.Totem.Core
 
 			Input.Update(gameTime);
 
-			Krypton.Update(gameTime);
-            if (World != null)
+			if (World != null)
 				World.Update(gameTime);
 
 			GuiManager.Update(gameTime);

@@ -32,6 +32,12 @@ namespace Mff.Totem
 			private set;
 		}
 
+		public static Texture2D LightTexture
+		{
+			get;
+			private set;
+		}
+
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
 		public static Dictionary<string, Texture2D[]> Parallaxes = new Dictionary<string, Texture2D[]>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
@@ -46,6 +52,8 @@ namespace Mff.Totem
 			Pixel = new Texture2D(game.GraphicsDevice, 1, 1);
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
+			LightTexture = Krypton.LightTextureBuilder.CreatePointLight(game.GraphicsDevice, 512);
+
 			GenerateStarSky(game);
 
 			//TODO: Texture loading
@@ -58,7 +66,6 @@ namespace Mff.Totem
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
 			Fonts.Add("menu", game.Content.Load<SpriteFont>("fonts/menu"));
-
 
             // Load shaders
 			Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));

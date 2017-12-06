@@ -130,8 +130,8 @@ technique TextureToTarget_Multiply
 		
 		CullMode = CCW;
 
-		VertexShader = compile vs_2_0 VS_ScreenCopy();
-		PixelShader = compile ps_2_0 PS_ScreenCopy();
+		VertexShader = compile vs_3_0 VS_ScreenCopy();
+		PixelShader = compile ps_3_0 PS_ScreenCopy();
 	}
 };
 

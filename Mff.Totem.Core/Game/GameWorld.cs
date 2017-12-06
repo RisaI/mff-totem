@@ -39,6 +39,8 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public Krypton.KryptonEngine Lighting => Game.Krypton;
+
 		public DebugViewXNA DebugView
 		{
 			get;
@@ -225,7 +227,7 @@ namespace Mff.Totem.Core
 			if (Background != null)
 				Background.Update(gameTime);
 		}
-        
+
 		Effect GroundEffect;
 		RenderTarget2D ForegroundTexture, BackgroundTexture;
 
@@ -234,7 +236,7 @@ namespace Mff.Totem.Core
 			if (GroundEffect == null)
 				GroundEffect = ContentLoader.Shaders["ground"];
 			GroundEffect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(width, -height, 0, 1));
-            
+
 			if (ForegroundTexture != null)
 				ForegroundTexture.Dispose();
 			ForegroundTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
@@ -253,8 +255,7 @@ namespace Mff.Totem.Core
             }
 
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
-			//Game.Krypton.LightMapPrepare();
-            Game.GraphicsDevice.Clear(Color.Transparent);
+			Game.GraphicsDevice.Clear(Color.Transparent);
 
             // Ground rendering
             if (Terrain.TriangulatedActiveArea != null)
@@ -271,7 +272,7 @@ namespace Mff.Totem.Core
                     Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
                 GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
-                foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
                 {
                     pass.Apply();
                     Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
@@ -287,13 +288,11 @@ namespace Mff.Totem.Core
             Particles.ForEach(p => p.Draw(spriteBatch));
             spriteBatch.End();
 
-			//Game.Krypton.Draw(GTime);
-
-
             Game.GraphicsDevice.SetRenderTarget(null);
-			spriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-            spriteBatch.Draw(BackgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
-            spriteBatch.Draw(ForegroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+			Game.GraphicsDevice.Clear(Color.Black);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            spriteBatch.Draw(BackgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
+            spriteBatch.Draw(ForegroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);
             spriteBatch.End();
 
             // Render debug physics view

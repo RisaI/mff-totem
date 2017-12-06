@@ -101,18 +101,18 @@ namespace Mff.Totem.Core
 			Game = game;
 
 			// Test input handling
-			/*Game.Window.TextInput += (sender, args) =>
+			TextInputEXT.TextInput += (ch) =>
 			{
-				if (Enabled && args.Character != '`' && args.Character != '~' && Font.Characters.Contains(args.Character))
+				if (Enabled && ch != '`' && ch != '~' && Font.Characters.Contains(ch))
 				{
 					if (!string.IsNullOrEmpty(Input))
-						Input = Input.Substring(0, Input.Length - _cursorIndex) + args.Character + Input.Substring(Input.Length - _cursorIndex); // Insert character at cursor
+						Input = Input.Substring(0, Input.Length - _cursorIndex) + ch + Input.Substring(Input.Length - _cursorIndex); // Insert character at cursor
 					else
-						Input = string.Empty + args.Character;
+						Input = string.Empty + ch;
 
 					RefreshCursor();
 				}
-			};*/
+			};
 			Console.SetOut(new ConsoleWriter(this));
 
 			AddCommand("help", "Shows the help menu.", args => // Help command

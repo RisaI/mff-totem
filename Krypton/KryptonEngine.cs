@@ -416,7 +416,7 @@ namespace Krypton
         /// </summary>
         private void LightMapPresent()
         {
-            RenderHelper.DrawTextureToTarget(this.mMap, this.mLightMapSize, BlendTechnique.Multiply);
+			RenderHelper.DrawTextureToTarget(this.mMap, this.mLightMapSize, BlendTechnique.Multiply);
         }
     }
 }
