@@ -49,6 +49,12 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public HUD Hud
+		{
+			get;
+			private set;
+		}
+
 		public KryptonEngine Krypton
         {
             get;
@@ -87,6 +93,7 @@ namespace Mff.Totem.Core
 			Console = new DeveloperConsole(this);
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
+			Hud = new HUD(this);
 			/*Krypton = new KryptonEngine(this, "shaders/lighting");
 			Krypton.AmbientColor = Color.Red;*/
 			IsMouseVisible = true;
@@ -125,6 +132,7 @@ namespace Mff.Totem.Core
 			if (World != null)
 				World.Update(gameTime);
 
+			Hud.Update(gameTime);
 			GuiManager.Update(gameTime);
 
 			Console.Update(gameTime);
@@ -140,6 +148,7 @@ namespace Mff.Totem.Core
             else
                 GraphicsDevice.Clear(Color.Black);
 
+			Hud.Draw(spriteBatch);
 			GuiManager.Draw(spriteBatch);
 
 			if (Console.Enabled)

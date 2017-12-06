@@ -30,6 +30,7 @@ namespace Mff.Totem.Core
 		public void Update(GameTime gameTime)
 		{
 			World.Camera.MoveTo(body.Position, 0.3f);
+			World.Game.Hud.Observed = Parent;
 
 			Vector2 movement = Vector2.Zero;
 

@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Weather.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\GuiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\MessageBox.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gui\HUD.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

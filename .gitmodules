@@ -3,4 +3,4 @@
 	url = git://github.com/FNA-XNA/FNA.git
 [submodule "FarseerPhysicsFNA"]
 	path = FarseerPhysicsFNA
-	url = https://github.com/Pixelgamix/FarseerPhysicsFNA.git
+	url = https://github.com/RisaI/FarseerPhysicsFNA.git
