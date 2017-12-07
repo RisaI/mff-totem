@@ -33,16 +33,17 @@ namespace Mff.Totem.Core
 			World.Game.Hud.Observed = Parent;
 
 			Vector2 movement = Vector2.Zero;
+			var character = Parent.GetComponent<CharacterComponent>();
 
             if (World.Game.InputEnabled)
             {
 				if (World.Game.Input.GetInput(Inputs.Right, InputState.Down))
-                    movement.X += 120;
+					movement.X += character != null ? character.Speed : 120;
 
                 if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
-                    movement.X -= 120;
+					movement.X -= character != null ? character.Speed : 120;
 
-                if (World.Game.Input.GetInput(Inputs.Up, InputState.Down))
+				if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed))
                     movement.Y = -100;
             }
 
@@ -57,8 +58,6 @@ namespace Mff.Totem.Core
 			}
 
 			// Generate chunks in range (for testing purposes, should be reaplced with another system)
-			World.Terrain.GenerateChunk(((int)body.Position.X + 128) / Terrain.CHUNK_WIDTH); 
-			World.Terrain.GenerateChunk(Helper.NegDivision((int)body.Position.X - 128, Terrain.CHUNK_WIDTH));
 
 			body.Move(movement);
 		}

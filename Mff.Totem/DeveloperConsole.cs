@@ -216,6 +216,11 @@ namespace Mff.Totem.Core
 				if (args.Length > 0)
 					new Gui.MessageBox(args[0], Game.GuiManager);
 			}, "text");
+
+			AddCommand("hurt", "Be emo.", args =>
+			{
+				Game.Hud.Observed.GetComponent<CharacterComponent>().Stamina -= int.Parse(args[0]);
+			}, "amount");
 		}
 
 		/// <summary>

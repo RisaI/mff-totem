@@ -20,7 +20,18 @@ namespace Mff.Totem.Core
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
 		public const float STEP_WIDTH = 8f * CHUNK_WIDTH;
 
-		public uint Seed;
+		public OpenSimplexNoise NoiseMap
+		{
+			get;
+			private set;
+		}
+
+		long _seed;
+		public long Seed
+		{
+			get { return _seed; }
+			set { _seed = value; NoiseMap = new OpenSimplexNoise(value); }
+		}
 
 		public GameWorld World
 		{
@@ -30,27 +41,23 @@ namespace Mff.Totem.Core
 
 		public List<List<IntPoint>> Polygons, DamageMap;
 		public List<Vertices> TriangulatedActiveArea;
-		DualList<List<IntPoint>> Chunks;
 
 		public Terrain(GameWorld world)
 		{
 			World = world;
 			Polygons = new List<List<IntPoint>>();
 			DamageMap = new List<List<IntPoint>>();
-			Chunks = new DualList<List<IntPoint>>(512);
 			c = new Clipper();
 		}
 
 		Clipper c;
-		public void Generate(uint seed = 0)
+		public void Generate(long seed = 0)
 		{
 			Random = new Random();
-			Seed = seed != 0 ? seed : (uint)Random.Next();
+			Seed = seed != 0 ? seed : (long)Random.Next();
 			Polygons.Clear();
 			DamageMap.Clear();
 			TerrainBody = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
-			GenerateChunk(0);
-			GenerateChunk(-1);
 		}
 
 		Task generationTask;
@@ -102,9 +109,9 @@ namespace Mff.Totem.Core
 		private void GenerateActiveRegion(int a, int b)
 		{
 			c.Clear();
-			for (int i = Math.Max(a, Chunks.LowerBound); i < Math.Min(b, Chunks.UpperBound); ++i)
+			for (int i = a; i < b; ++i)
 			{
-				c.AddPolygon(Chunks[i], PolyType.ptSubject);
+				c.AddPolygons(CreateChunk(i), PolyType.ptSubject);
 			}
 			c.AddPolygons(DamageMap, PolyType.ptClip);
 			List<List<IntPoint>> result = new List<List<IntPoint>>();
@@ -120,38 +127,37 @@ namespace Mff.Totem.Core
 			TriangulatedActiveArea = verts;
 		}
 
-		private int lastLeft = 0, lastRight = -1;
-		public void GenerateChunk(int i)
-		{
-			for (int c = i >= 0 ? lastRight + 1 : lastLeft - 1; Math.Abs(c) <= Math.Abs(i); c += i >= 0 ? 1 : -1)
-			{
-				var chunk = CreateChunk(c * CHUNK_WIDTH, i >= 0);
-				Chunks.Add(chunk, i >= 0);
-				if (i >= 0)
-					lastRight = c;
-				else
-					lastLeft = c;
-			}
-		}
-
 		private Random Random;
-		private List<IntPoint> CreateChunk(int x, bool fromLeft = true)
+		private List<List<IntPoint>> CreateChunk(int x)
 		{
+			x *= CHUNK_WIDTH;
+			List<List<IntPoint>> solution = new List<List<IntPoint>>();
 			List<IntPoint> verts = new List<IntPoint>();
+			List<IntPoint> cave = new List<IntPoint>();
 
 			// Add end faces
-			verts.Add(fromLeft ? new IntPoint(x, MAX_DEPTH) : new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH));
-			verts.Add(fromLeft ? new IntPoint(x, (int)HeightMap(x)) : new IntPoint(x + CHUNK_WIDTH, (int)HeightMap(x+CHUNK_WIDTH)));
+			verts.Add(new IntPoint(x, MAX_DEPTH));
 
-			for (int i = 1; i <= CHUNK_WIDTH / SPACING; ++i)
+			for (int i = 0; i <= CHUNK_WIDTH / SPACING; ++i)
 			{
-				int x0 = fromLeft ? x + i * SPACING : x + CHUNK_WIDTH - (i) * SPACING;
-				verts.Add(new IntPoint(x0, (int)HeightMap(x0)));
+				int x0 = x + i * SPACING, height = (int)HeightMap(x0);
+				verts.Add(new IntPoint(x0, height));
+				cave.Add(new IntPoint(x0, (int)((MAX_DEPTH - height) * NoiseMap.Evaluate(x0 / (4096f * 16f), 4096))));
+			}
+
+			for (int i = cave.Count - 1; i >= 0; --i)
+			{
+				cave.Add(new IntPoint(cave[i].X, cave[i].Y - 200));
 			}
 
 			// Add second end face point
-			verts.Add(fromLeft ? new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH) : new IntPoint(x, MAX_DEPTH));
-			return verts;
+			verts.Add(new IntPoint(x + CHUNK_WIDTH, MAX_DEPTH));
+
+			var cl = new Clipper();
+			cl.AddPolygon(verts, PolyType.ptSubject);
+			cl.AddPolygon(cave, PolyType.ptClip);
+			cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
+			return solution;
 		}
 
 		public void ClearFromWorld()
@@ -212,65 +218,9 @@ namespace Mff.Totem.Core
 
 		public float HeightMap(float x)
 		{
-			x /= STEP_WIDTH;
-			int lower = (int)x - (x < 0 ? 1 : 0);
-			uint hash = Helper.Hash(lower);
-
-			double p0 = HashToDouble(Seed + Helper.Hash(lower -1)),
-				p1 = HashToDouble(Seed + hash),
-				p2 = HashToDouble(Seed + Helper.Hash(lower + 1)),
-			p3 = HashToDouble(Seed + Helper.Hash(lower + 2));
-			var r = MathHelper.CatmullRom((float)p0, (float)p1, (float)p2, (float)p3, x - lower) - 0.5f;
-			return BASE_HEIGHT + (float)(r * BASE_STEP + HashToDouble(hash + Helper.Hash((int)(CHUNK_WIDTH*x))) * 4);
+			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (CHUNK_WIDTH * 8), 0)- 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, CHUNK_WIDTH));
 		}
 
-		public double HashToDouble(uint hash)
-		{
-			return (hash / (double)uint.MaxValue) % 1;
-		}
 
-		class DualList<T>
-		{
-			private List<T> A, B;
-
-			public DualList(int initialCapacity)
-			{
-				A = new List<T>(initialCapacity / 2 + 1);
-				B = new List<T>(initialCapacity / 2);
-			}
-
-			public int UpperBound
-			{
-				get { return A.Count; }
-			}
-
-			public int LowerBound
-			{
-				get { return -B.Count; }
-			}
-
-			public void Add(T obj, bool positive)
-			{
-				if (positive)
-					A.Add(obj);
-				else
-					B.Add(obj);
-			}
-
-			public T this[int index]
-			{
-				get
-				{
-					return index >= 0 ? A[index] : B[-(index + 1)];
-				}
-				set
-				{
-					if (index >= 0)
-						A[index] = value;
-					else
-						B[-(index + 1)] = value;
-				}
-			}
-		}
 	}
 }

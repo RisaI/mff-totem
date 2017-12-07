@@ -9,6 +9,12 @@
 		},
 		{
 			"name": "player_input"
+		},
+		{
+			"name": "character_component",
+			"maxhp": "100",
+			"stamina": "15",
+			"speed": "280"
 		}
 	]
 }
