@@ -221,6 +221,14 @@ namespace Mff.Totem.Core
 			{
 				Game.Hud.Observed.GetComponent<CharacterComponent>().Stamina -= int.Parse(args[0]);
 			}, "amount");
+
+			AddCommand("additem", "Be emo.", args =>
+			{
+				var item = ContentLoader.Items[args[0]].Clone();
+				if (args.Length >= 2)
+					item.Count = int.Parse(args[1]);
+				Game.Hud.Observed.GetComponent<InventoryComponent>().AddItem(item);
+			}, "id", "[count]");
 		}
 
 		/// <summary>

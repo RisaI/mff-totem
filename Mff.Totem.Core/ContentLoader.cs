@@ -44,6 +44,7 @@ namespace Mff.Totem
         public static Dictionary<string, Effect> Shaders = new Dictionary<string, Effect>();
 
         public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
+		public static Dictionary<string, Core.Item> Items = new Dictionary<string, Core.Item>();
 		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
 
 		public static void Load(Core.TotemGame game)
@@ -79,6 +80,20 @@ namespace Mff.Totem
 				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
 				{
 					Sprites.Add(name, new Core.Sprite(JObject.Load(reader)));
+				}
+			}
+
+			foreach (string file in FindAllFiles("Content/assets/items", ".item"))
+			{
+				var name = Path.GetFileNameWithoutExtension(file);
+				Console.WriteLine("Loading item: {0}", name);
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
+				{
+					var jobj = JObject.Load(reader);
+					var item = Core.DeserializationRegister.ObjectFromJson<Core.Item>(jobj);
+					Items.Add(item.ID, item);
 				}
 			}
 

@@ -41,13 +41,52 @@ namespace Mff.Totem.Core
 			return item;
 		}
 
+		public bool EquipItem(int invSlot)
+		{
+			if (Equip.Length <= 0 || invSlot < 0 || invSlot >= Items.Count)
+				return false;
+
+			var item = Items[invSlot];
+
+			if (item.Slot == EquipSlot.None)
+				return false;
+			else
+			{
+				var eq = Equip[(int)item.Slot];
+				Equip[(int)item.Slot] = item;
+				Items.Remove(item);
+				if (eq != null)
+					Items.Add(eq);
+				return true;
+			}
+		}
+
+		public bool UnequipItem(int equipSlot)
+		{
+			if (equipSlot < 0 || equipSlot >= Equip.Length || Equip[equipSlot] == null || Items.Count >= Size)
+				return false;
+
+			Items.Add(Equip[equipSlot]);
+			Equip[equipSlot] = null;
+			return false;
+		}
+
+		public void DropItem(int invSlot)
+		{
+			if (invSlot < 0 || invSlot >= Items.Count)
+				return;
+
+			Items.RemoveAt(invSlot);
+			//TODO: drop physical item
+		}
+
 		public float HPMultiplier()
 		{
 			float total = 1;
 			for (int i = 0; i < Equip.Length; ++i)
 			{
 				if (Equip[i] != null)
-					total += Equip[i].HPMultiplier;
+					total *= Equip[i].HPMultiplier;
 			}
 			return total;
 		}
@@ -58,7 +97,7 @@ namespace Mff.Totem.Core
 			for (int i = 0; i < Equip.Length; ++i)
 			{
 				if (Equip[i] != null)
-					total += Equip[i].StaminaMultiplier;
+					total *= Equip[i].StaminaMultiplier;
 			}
 			return total;
 		}
@@ -69,7 +108,7 @@ namespace Mff.Totem.Core
 			for (int i = 0; i < Equip.Length; ++i)
 			{
 				if (Equip[i] != null)
-					total += Equip[i].SpeedMultiplier;
+					total *= Equip[i].SpeedMultiplier;
 			}
 			return total;
 		}

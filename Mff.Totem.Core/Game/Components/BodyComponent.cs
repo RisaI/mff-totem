@@ -30,7 +30,7 @@ namespace Mff.Totem.Core
 	[Serializable("humanoid_body")]
 	public class HumanoidBody : BodyComponent
 	{
-		const float IDLE_FRICTION = 8f;
+		const float IDLE_FRICTION = 16f;
 
 		public Body MainBody, ControllerBody;
 		public RevoluteJoint BodyJoint;

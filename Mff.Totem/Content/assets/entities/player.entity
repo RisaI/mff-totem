@@ -11,6 +11,10 @@
 			"class": "player_input"
 		},
 		{
+			"class": "inventory_component",
+			"equip": "true"
+		},
+		{
 			"class": "character_component",
 			"maxhp": "100",
 			"stamina": "15",

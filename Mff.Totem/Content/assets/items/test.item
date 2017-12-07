@@ -1,0 +1,7 @@
+﻿{
+	"class": "item",
+	"id": "testitem",
+	"maxstack": "1",
+	"slot": "1",
+	"spdmul": "0.5"
+}

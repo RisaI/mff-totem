@@ -36,6 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Inventory\IInventory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Inventory\Item.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\InventoryComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gui\Gui.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

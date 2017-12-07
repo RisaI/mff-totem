@@ -45,6 +45,9 @@ namespace Mff.Totem.Core
 
 				if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed))
                     movement.Y = -100;
+
+				if (World.Game.Input.GetInput(Inputs.Inventory, InputState.Pressed))
+					new Gui.InventoryScreen(Parent, World.Game.GuiManager);
             }
 
 			if (Math.Abs(movement.X) > Helper.EPSILON)
