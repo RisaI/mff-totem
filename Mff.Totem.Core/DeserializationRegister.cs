@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
@@ -52,6 +54,24 @@ namespace Mff.Totem.Core
 				return Register[identifier]();
 
 			return null;
+		}
+
+		public static T ObjectFromJson<T>(JObject obj) where T : IJsonSerializable
+		{
+			var instance = (IJsonSerializable)CreateInstance((string)obj["class"]);
+			instance.FromJson(obj);
+			return (T)instance;
+		}
+
+		public static void ObjectClassToJson<T>(JsonWriter writer, T obj) where T : IJsonSerializable
+		{
+			var attributes = obj.GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
+			if (attributes.Length == 0)
+				return;
+
+			writer.WritePropertyName("class");
+			writer.WriteValue(((SerializableAttribute)attributes[0]).ID);
+
 		}
 	}
 }

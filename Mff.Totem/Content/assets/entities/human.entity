@@ -1,7 +1,7 @@
 ﻿{
 	"components": [
 		{
-			"name": "humanoid_body"
+			"class": "humanoid_body"
 		}
 	]
 }

@@ -56,12 +56,10 @@ namespace Mff.Totem.Core
 		public virtual void FromJson(JObject obj) { }
 
 		public virtual void ToJson(JsonWriter writer) 
-		{ 
-			var attributes = GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
-			if (attributes.Length == 0)
-				return;
-			writer.WritePropertyName("name");
-			writer.WriteValue((attributes[0] as SerializableAttribute).ID);
+		{
+			writer.WriteStartObject();
+			DeserializationRegister.ObjectClassToJson(writer, this);
+			writer.WriteEndObject();
 		}
 
 		public abstract Particle Clone();
