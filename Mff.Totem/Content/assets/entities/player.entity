@@ -1,17 +1,17 @@
 ﻿{
 	"components": [
 		{
-			"name": "humanoid_body"
+			"class": "humanoid_body"
 		},
 		{
-			"name": "sprite_component",
+			"class": "sprite_component",
 			"sprite": "character"
 		},
 		{
-			"name": "player_input"
+			"class": "player_input"
 		},
 		{
-			"name": "character_component",
+			"class": "character_component",
 			"maxhp": "100",
 			"stamina": "15",
 			"speed": "280"

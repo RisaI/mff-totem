@@ -11,7 +11,9 @@ namespace Mff.Totem.Core
 
 		public int MaxHP
 		{
-			get { return _baseMaxHp; }
+			get { 
+				var inv = Parent.GetComponent<InventoryComponent>();
+				return (int)(_baseMaxHp * (inv != null ? inv.HPMultiplier() : 1)); }
 		}
 
 		int _hp;
@@ -26,7 +28,9 @@ namespace Mff.Totem.Core
 
 		public float MaxStamina
 		{
-			get { return _baseMaxStamina; }
+			get {
+				var inv = Parent.GetComponent<InventoryComponent>();
+				return _baseMaxStamina * (inv != null ? inv.StaminaMultiplier() : 1); }
 		}
 
 		float _stamina;
@@ -41,7 +45,9 @@ namespace Mff.Totem.Core
 
 		public float Speed
 		{
-			get { return _baseSpeed; }
+			get {
+				var inv = Parent.GetComponent<InventoryComponent>();
+				return _baseSpeed * (inv != null ? inv.SpeedMultiplier() : 1); }
 		}
 
 		public bool Alive

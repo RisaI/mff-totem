@@ -60,13 +60,8 @@ namespace Mff.Totem.Core
 		/// <param name="writer">Writer.</param>
 		public void ToJson(JsonWriter writer)
 		{
-			var attributes = GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
-			if (attributes.Length == 0)
-				return;
-
 			writer.WriteStartObject();
-			writer.WritePropertyName("name");
-			writer.WriteValue(((SerializableAttribute)attributes[0]).ID);
+			DeserializationRegister.ObjectClassToJson(writer, this);
 			WriteToJson(writer);
 			writer.WriteEndObject();
 		}
@@ -99,7 +94,7 @@ namespace Mff.Totem.Core
 		/// <param name="obj">JObject.</param>
 		public static EntityComponent CreateFromJSON(JObject obj)
 		{
-			EntityComponent component = (EntityComponent)DeserializationRegister.CreateInstance((string)obj["name"]);
+			EntityComponent component = DeserializationRegister.ObjectFromJson<EntityComponent>(obj);
 			component.FromJson(obj);
 			return component;
 		}
