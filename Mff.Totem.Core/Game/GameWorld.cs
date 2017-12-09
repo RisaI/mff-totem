@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -127,8 +128,8 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-			//CameraControls = true;
+			//CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+			CameraControls = true;
 		}
 
 		/// <summary>
@@ -221,8 +222,8 @@ namespace Mff.Totem.Core
 				}
 			}
 
-			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Terrain.CHUNK_WIDTH, 
-			                        (int)(Camera.BoundingBox.Right) + Terrain.CHUNK_WIDTH);
+			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
+			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -258,25 +259,29 @@ namespace Mff.Totem.Core
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
             // Ground rendering
-            if (Terrain.TriangulatedActiveArea != null)
+			if (Terrain.ActiveChunks.Count > 0)
             {
-                VertexPositionColor[] vertices = new VertexPositionColor[Terrain.TriangulatedActiveArea.Count * 3];
-                int index = 0;
-
-                Terrain.TriangulatedActiveArea.ForEach(t =>
-                {
-                    t.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White));
-                });
-
                 GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
-                    Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
-                GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
+					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
+				GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
-				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
-                {
-                    pass.Apply();
-                    Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
-                }
+				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				{
+					var chunk = Terrain.ActiveChunks[i];
+					if (!chunk.Generated)
+						continue;
+					
+					VertexPositionColor[] vertices = new VertexPositionColor[chunk.TriangulatedVertices.Count * 3];
+
+					int index = 0;
+					chunk.TriangulatedVertices.ForEach(triangle => triangle.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White)));
+
+					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+					{
+						pass.Apply();
+						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+					}
+				}
             }
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
