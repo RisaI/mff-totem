@@ -29,6 +29,21 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		private bool _remove;
+		public bool Remove
+		{
+			get { return _remove; }
+			set
+			{
+				if (_remove != value)
+				{
+					if (value)
+						Destroy();
+					_remove = value;
+				}
+			}
+		}
+
 		/// <summary>
 		/// A list of entity components that belong to this entity.
 		/// </summary>

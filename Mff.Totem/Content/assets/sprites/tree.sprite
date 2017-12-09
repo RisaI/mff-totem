@@ -1,0 +1,17 @@
+{
+  "asset": "tree0",
+  "fwidth": 117,
+  "fheight": 256,
+  "scale": "1;1",
+  "anchor": "0.5;1",
+  "color": "255;255;255;255",
+  "effect": "None",
+  "animregistry": {
+    "idle": {
+      "startframe": 0,
+      "endframe": 0,
+      "interval": 0,
+      "data": 0
+    }
+  }
+}

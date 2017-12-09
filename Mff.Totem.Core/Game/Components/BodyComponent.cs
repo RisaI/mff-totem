@@ -24,6 +24,12 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		public abstract float Rotation
+		{
+			get;
+			set;
+		}
+
 		public abstract void Move(Vector2 direction);
 	}
 
@@ -77,6 +83,19 @@ namespace Mff.Totem.Core
 				return Position + new Vector2(0, 32f * (Height + Width));
 			}
 			set { Position = value - new Vector2(0, 32f * (Height + Height)); }
+		}
+
+		public override float Rotation
+		{
+			get
+			{
+				return MainBody != null ? MainBody.Rotation : 0;
+			}
+			set
+			{
+				if (MainBody != null)
+					MainBody.Rotation = value;
+			}
 		}
 
 		void CreateBody()
@@ -183,7 +202,7 @@ namespace Mff.Totem.Core
 
 		public override EntityComponent Clone()
 		{
-			return new HumanoidBody(Width, Height);
+			return new HumanoidBody(Width, Height) { Rotation = Rotation, Position = Position };
 		}
 
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
@@ -237,6 +256,52 @@ namespace Mff.Totem.Core
 				CAngVelocity = cang;
 				CRot = crot;
 			}
+		}
+	}
+
+	[Serializable("static_body")]
+	public class StaticBody : BodyComponent
+	{
+		public override Vector2 LegPosition
+		{
+			get { return Position; }
+			set { Position = value; }
+		}
+
+		public override Vector2 Position
+		{
+			get;
+			set;
+		}
+
+		public override float Rotation
+		{
+			get;
+			set;
+		}
+
+		public override EntityComponent Clone()
+		{
+			return new StaticBody() { Position = Position, Rotation = Rotation };
+		}
+
+		public override void Move(Vector2 direction)
+		{
+			Position += direction;
+		}
+
+		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		{
+			base.OnSerialize(writer);
+			writer.Write(Position);
+			writer.Write(Rotation);
+		}
+
+		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		{
+			base.OnDeserialize(reader);
+			Position = reader.ReadVector2();
+			Rotation = reader.ReadSingle();
 		}
 	}
 }

@@ -1,0 +1,12 @@
+﻿{
+	"components": [
+		{
+			"class": "static_body"
+		},
+		{
+			"class": "sprite_component",
+			"sprite": "tree",
+			"depth": 0
+		}
+	]
+}

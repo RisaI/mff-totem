@@ -157,8 +157,11 @@ namespace Mff.Totem.Core
 		/// <param name="ent">The entity to add.</param>
 		public Entity SpawnEntity(Entity ent)
 		{
-			if (!Entities.Contains(ent) && !EntityQueue.Contains(ent))
-				EntityQueue.Add(ent);
+			lock(EntityQueue)
+			{
+				if (!Entities.Contains(ent) && !EntityQueue.Contains(ent))
+					EntityQueue.Add(ent);
+			}
 			return ent;
 		}
 
@@ -169,18 +172,23 @@ namespace Mff.Totem.Core
 			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
 			Terrain.Update();
-			EntityQueue.ForEach(e =>
+
+			lock (EntityQueue)
 			{
-				Entities.Add(e);
-				e.Initialize(this);
-			});
-			EntityQueue.Clear();
+				EntityQueue.ForEach(e =>
+				{
+					Entities.Add(e);
+					e.Initialize(this);
+				});
+				EntityQueue.Clear();
+			}
 
 			lock (Physics)
 			{
 				Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 			}
 			Entities.ForEach(e => e.Update(gameTime));
+			Entities.RemoveAll(e => e.Remove);
 
 			/// Clear and update particles
 			Particles.ForEach(p => p.Update(gameTime));

@@ -316,10 +316,15 @@ namespace Mff.Totem.Core
 			Effect = (SpriteEffects)Enum.Parse(typeof(SpriteEffects), (string)obj["effect"]);
 			var registry = (JObject)obj["animregistry"];
 			_animRegistry = new Dictionary<string, Animation>();
-			foreach (JToken t in registry.Children())
+			if (registry != null)
 			{
-				if (t.Type == JTokenType.Property)
-					_animRegistry.Add((t as JProperty).Name, Animation.LoadFromJson((JObject)(t as JProperty).Value));
+				foreach (JToken t in registry.Children())
+				{
+					if (t.Type == JTokenType.Property)
+						_animRegistry.Add((t as JProperty).Name, Animation.LoadFromJson((JObject)(t as JProperty).Value));
+				}
+				if (_animRegistry.ContainsKey("idle"))
+					PlayAnimationFromRegistry("idle", false);
 			}
 		}
 

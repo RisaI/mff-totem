@@ -124,6 +124,14 @@ namespace Mff.Totem.Core
 			if (ch.Generated)
 				return;
 			ch.Polygons = CreateChunkPoints(ch.Left);
+			for (int i = 0; i < 3; ++i)
+			{
+				var tree = ContentLoader.Entities["tree"].Clone();
+				var pos = new Vector2(ch.Left + (i + 1) * (Chunk.WIDTH / 3f), 0);
+				pos.Y = HeightMap(pos.X);
+				tree.GetComponent<BodyComponent>().Position = pos;
+				ch.Trees.Add(tree);
+			}
 			ch.Generated = true;
 		}
 
@@ -156,6 +164,12 @@ namespace Mff.Totem.Core
 					var f = FixtureFactory.AttachLoopShape(ConvertToVertices(polygon), TerrainBody, this);
 					ch.Fixtures.Add(f);
 				});
+
+				ch.Trees.ForEach(tree =>
+				{
+					tree.Remove = false;
+					World.SpawnEntity(tree);
+				});
 			}
 		}
 
@@ -168,6 +182,7 @@ namespace Mff.Totem.Core
 					ch.Fixtures.ForEach(f => TerrainBody.DestroyFixture(f));
 					ch.Fixtures.Clear();
 				}
+				ch.Trees.ForEach(t => t.Remove = true);
 			}
 		}
 
@@ -253,6 +268,8 @@ namespace Mff.Totem.Core
 		public long ID;
 
 		public Task GenerationTask;
+
+		public List<Entity> Trees = new List<Entity>();
 
 		List<List<IntPoint>> _polygons;
 		public List<List<IntPoint>> Polygons

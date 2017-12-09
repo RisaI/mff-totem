@@ -13,6 +13,8 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public float Depth = 1f;
+
 		private string _spriteAsset;
 		public string SpriteAsset
 		{
@@ -32,7 +34,7 @@ namespace Mff.Totem.Core
 		public void Draw(SpriteBatch spriteBatch)
 		{
 			if (Sprite != null)
-				Sprite.Draw(spriteBatch, body != null ? body.LegPosition : Vector2.Zero, 1f);
+				Sprite.Draw(spriteBatch, body != null ? body.LegPosition : Vector2.Zero, Depth);
 		}
 
 		private BodyComponent body;
@@ -46,29 +48,35 @@ namespace Mff.Totem.Core
 		{
 			if (obj["sprite"] != null)
 				SpriteAsset = (string)obj["sprite"];
+			if (obj["depth"] != null)
+				Depth = (float)obj["depth"];
 		}
 
 		protected override void WriteToJson(Newtonsoft.Json.JsonWriter writer)
 		{
 			writer.WritePropertyName("sprite");
 			writer.WriteValue(_spriteAsset);
+			writer.WritePropertyName("depth");
+			writer.WriteValue(Depth);
 		}
 
 		protected override void OnSerialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(_spriteAsset);
 			Sprite.SerializeState(writer);
+			writer.Write(Depth);
 		}
 
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
 		{
 			SpriteAsset = reader.ReadString();
 			Sprite.DeserializeState(reader);
+			Depth = reader.ReadSingle();
 		}
 
 		public override EntityComponent Clone()
 		{
-			var sprite = new SpriteComponent() { _spriteAsset = _spriteAsset };
+			var sprite = new SpriteComponent() { _spriteAsset = _spriteAsset, Depth = Depth };
 			sprite.Sprite = Sprite.Clone();
 			return sprite;
 		}
