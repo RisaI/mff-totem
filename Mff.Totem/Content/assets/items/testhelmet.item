@@ -1,0 +1,8 @@
+﻿{
+	"class": "item",
+	"id": "test_helmet",
+	"maxstack": "1",
+	"slot": "Head",
+	"spdmul": "0.5",
+	"hpmul": "1.25"
+}

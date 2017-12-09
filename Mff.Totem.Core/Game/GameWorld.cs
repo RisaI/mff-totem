@@ -82,7 +82,7 @@ namespace Mff.Totem.Core
 		}
 
 		public float TimeScale = 1f;
-		public bool CameraControls = false;
+		public bool CameraControls;
 
 		private Camera _camera;
 		public Camera Camera
@@ -128,6 +128,7 @@ namespace Mff.Totem.Core
 
 			// Make the world less empty
 			CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+			//CameraControls = true;
 		}
 
 		/// <summary>
@@ -220,7 +221,8 @@ namespace Mff.Totem.Core
 				}
 			}
 
-			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Terrain.CHUNK_WIDTH / 2, (int)(Camera.BoundingBox.Right) + Terrain.CHUNK_WIDTH / 2);
+			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Terrain.CHUNK_WIDTH, 
+			                        (int)(Camera.BoundingBox.Right) + Terrain.CHUNK_WIDTH);
 
 			if (Background != null)
 				Background.Update(gameTime);

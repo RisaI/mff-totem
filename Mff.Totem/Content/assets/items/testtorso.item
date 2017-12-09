@@ -1,0 +1,8 @@
+﻿{
+	"class": "item",
+	"id": "test_torso",
+	"maxstack": "1",
+	"slot": "Torso",
+	"spdmul": "0.5",
+	"hpmul": "1.25"
+}

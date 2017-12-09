@@ -62,7 +62,7 @@ namespace Mff.Totem.Core
 			ID = obj["id"] != null ? (string)obj["id"] : "";
 			MaxStack = obj["maxstack"] != null ? (int)obj["maxstack"] : 1;
 			Usable = obj["usable"] != null ? (bool)obj["usable"] : false;
-			Slot = obj["slot"] != null ? (EquipSlot)((int)obj["slot"]) : EquipSlot.None;
+			Slot = obj["slot"] != null ? (EquipSlot)Enum.Parse(typeof(EquipSlot),(string)obj["slot"]) : EquipSlot.None;
 
 			HPMultiplier = obj["hpmul"] != null ? (float)obj["hpmul"] : 1;
 			StaminaMultiplier = obj["stamul"] != null ? (float)obj["stamul"] : 1;

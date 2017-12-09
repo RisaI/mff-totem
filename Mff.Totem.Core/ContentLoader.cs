@@ -54,15 +54,36 @@ namespace Mff.Totem
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
 			LightTexture = Krypton.LightTextureBuilder.CreatePointLight(game.GraphicsDevice, 512);
-
 			GenerateStarSky(game);
 
-			//TODO: Texture loading
-			Textures.Add("character", game.Content.Load<Texture2D>("textures/character"));
-			Textures.Add("dirt", game.Content.Load<Texture2D>("textures/dirt"));
-			Textures.Add("sun", game.Content.Load<Texture2D>("textures/sun"));
-			Textures.Add("moon", game.Content.Load<Texture2D>("textures/moon"));
-			LoadParallax(game, "basic", "parallax0", "parallax1", "parallax2", "parallax3", "parallax4");
+			// Load Textures
+			var textureFolder = "Content/textures/";
+			foreach (string file in FindAllFiles(textureFolder, ".xnb"))
+			{
+				var dir = Path.GetDirectoryName(file);
+				var name = Path.Combine(dir.Remove(0, Math.Min(textureFolder.Length, dir.Length)), Path.GetFileNameWithoutExtension(file));
+				Console.WriteLine("Loading texture: {0}", name);
+				Textures.Add(name, game.Content.Load<Texture2D>("textures/" + name));
+			}
+
+			// Load Parallaxes
+			foreach (string file in FindAllFiles("Content/assets/parallaxes", ".parallax"))
+			{
+				var name = Path.GetFileNameWithoutExtension(file);
+				Console.WriteLine("Loading a parallax: {0}", name);
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
+				{
+					var obj = JObject.Load(reader);
+					var array = JArray.FromObject(obj["textures"]);
+					var textures = new string[array.Count];
+					for (int i = 0; i < textures.Length; ++i)
+						textures[i] = (string)array[i];
+					LoadParallax(game, name, textures);
+				}
+			}
+
 
 			// Load SpriteFonts
 			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
@@ -117,7 +138,7 @@ namespace Mff.Totem
 			Texture2D[] textures = new Texture2D[layers.Length];
 			for (int i = 0; i < layers.Length; ++i)
 			{
-				textures[i] = game.Content.Load<Texture2D>("textures/parallax/" + layers[i]);
+				textures[i] = Textures[layers[i]];
 			}
 			Parallaxes.Add(asset, textures);
 		}

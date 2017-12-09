@@ -44,7 +44,7 @@ namespace Mff.Totem.Core
 
 			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
 			{
-				Parallax = ContentLoader.Parallaxes["basic"];
+				Parallax = ContentLoader.Parallaxes["default"];
 			}
 
 			Vector2 Resolution
