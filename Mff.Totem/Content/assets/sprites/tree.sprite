@@ -3,7 +3,7 @@
   "fwidth": 117,
   "fheight": 256,
   "scale": "1;1",
-  "anchor": "0.5;1",
+  "anchor": "0.5;0.95",
   "color": "255;255;255;255",
   "effect": "None",
   "animregistry": {

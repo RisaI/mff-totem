@@ -11,6 +11,7 @@ using FarseerPhysics.Common.Decomposition;
 using ClipperLib;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
@@ -88,7 +89,7 @@ namespace Mff.Totem.Core
 		Body TerrainBody;
 
 		private Random Random;
-		private List<List<IntPoint>> CreateChunkPoints(long x)
+		private Tuple<List<IntPoint>,List<List<IntPoint>>> CreateChunkPoints(long x)
 		{
 			List<List<IntPoint>> solution = new List<List<IntPoint>>();
 			List<IntPoint> verts = new List<IntPoint>();
@@ -116,14 +117,17 @@ namespace Mff.Totem.Core
 			cl.AddPolygon(verts, PolyType.ptSubject);
 			cl.AddPolygon(cave, PolyType.ptClip);
 			cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
-			return solution;
+			return Tuple.Create(verts, solution);
 		}
 
 		void GenerateChunk(Chunk ch)
 		{
 			if (ch.Generated)
 				return;
-			ch.Polygons = CreateChunkPoints(ch.Left);
+			var body = CreateChunkPoints(ch.Left);
+			ch.Polygons = body.Item2;
+			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item2), Color.White);
+			ch.TriangulatedWholeVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item1), Color.Gray);
 			for (int i = 0; i < 3; ++i)
 			{
 				var tree = ContentLoader.Entities["tree"].Clone();
@@ -151,17 +155,11 @@ namespace Mff.Totem.Core
 				List<List<IntPoint>> result = new List<List<IntPoint>>();
 				cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
-				ch.TriangulatedVertices.Clear();
-				result.ForEach(polygon =>
-				{
-					Vertices toVerts = Terrain.ConvertToVertices(polygon, false);
-					var triangulation = Triangulate.ConvexPartition(toVerts, TriangulationAlgorithm.Earclip);
-					ch.TriangulatedVertices.AddRange(triangulation);
-				});
+				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(result), Color.White);
 
 				result.ForEach(polygon =>
 				{
-					var f = FixtureFactory.AttachLoopShape(ConvertToVertices(polygon), TerrainBody, this);
+					var f = FixtureFactory.AttachLoopShape(Helper.PolygonToVertices(polygon), TerrainBody, this);
 					ch.Fixtures.Add(f);
 				});
 
@@ -193,17 +191,6 @@ namespace Mff.Totem.Core
 				World.Physics.RemoveBody(TerrainBody);
 				TerrainBody = null;
 			}
-		}
-
-		public static Vertices ConvertToVertices(List<IntPoint> points, bool divide = true)
-		{
-			Vector2[] v = new Vector2[points.Count];
-			int i = 0;
-			if (divide)
-				points.ForEach(p => v[i++] = new Vector2(p.X, p.Y) / 64f);
-			else 
-				points.ForEach(p => v[i++] = new Vector2(p.X, p.Y));
-			return new Vertices(v);
 		}
 
 		public List<Chunk> ActiveChunks = new List<Chunk>();
@@ -281,10 +268,16 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public List<Vertices> TriangulatedVertices
+		public VertexPositionColor[] TriangulatedVertices
 		{
 			get;
-			private set;
+			set;
+		}
+
+		public VertexPositionColor[] TriangulatedWholeVertices
+		{
+			get;
+			set;
 		}
 
 		public List<Fixture> Fixtures = new List<Fixture>();
@@ -302,7 +295,15 @@ namespace Mff.Totem.Core
 		public Chunk(long id)
 		{
 			ID = id;
-			TriangulatedVertices = new List<Vertices>();
+		}
+
+		public static VertexPositionColor[] TriangulatedRenderData(List<Vertices> triangulated, Color c)
+		{
+			var output = new VertexPositionColor[triangulated.Count * 3];
+			int index = 0;
+			triangulated.ForEach(triangle => triangle.ForEach(vert =>
+			                                                  output[index++] = new VertexPositionColor(new Vector3(vert.X, vert.Y, 0), c)));
+			return output;
 		}
 	}
 }

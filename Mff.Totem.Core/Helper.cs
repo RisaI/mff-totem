@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Mff.Totem.Core;
+using System.Collections.Generic;
+using FarseerPhysics.Common;
+using ClipperLib;
 
 namespace Mff.Totem
 {
@@ -178,6 +181,26 @@ namespace Mff.Totem
 		public static float Min(params float[] values)
 		{
 			return values.Min();
+		}
+
+		public static List<Vertices> Triangulate(List<IntPoint> polygon)
+		{
+			return FarseerPhysics.Common.Decomposition.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), FarseerPhysics.Common.Decomposition.TriangulationAlgorithm.Earclip);
+		}
+
+		public static List<Vertices> Triangulate(List<List<IntPoint>> polygons)
+		{
+			List<Vertices> result = new List<Vertices>();
+			polygons.ForEach(p => { result.AddRange(Triangulate(p)); });
+			return result;
+		}
+
+		public static Vertices PolygonToVertices(List<IntPoint> polygon, float scale = 1 / 64f)
+		{
+			Vector2[] v = new Vector2[polygon.Count];
+			int i = 0;
+			polygon.ForEach(p => v[i++] = new Vector2(p.X, p.Y) * scale);
+			return new Vertices(v);
 		}
 	}
 

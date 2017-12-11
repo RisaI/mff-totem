@@ -8,11 +8,13 @@ sampler TextureSampler = sampler_state {
 struct VertexShaderInput
 {
 	float4 Position : POSITION0;
+	float4 Color : COLOR0;
 };
 
 struct VertexShaderOutput
 {
 	float4 Position : POSITION0;
+	float4 Color : COLOR0;
 	float3 TextureCoordinate : TEXCOORD0;
 };
 
@@ -20,6 +22,7 @@ VertexShaderOutput MainVS(VertexShaderInput input)
 {
 	VertexShaderOutput output;
 	output.Position = mul(mul(input.Position, View), Projection);
+	output.Color = input.Color;
 	output.TextureCoordinate = input.Position;
 	return output;
 }
@@ -36,7 +39,7 @@ float2 NegModulo(float2 f, float m)
 
 float4 MainPS(VertexShaderOutput input) : COLOR0
 {
-	return tex2D(TextureSampler, NegModulo(input.TextureCoordinate, 256) / (256, 256));
+	return tex2D(TextureSampler, NegModulo(input.TextureCoordinate, 256) / (256, 256)) * input.Color;
 }
 
 technique BasicColorDrawing

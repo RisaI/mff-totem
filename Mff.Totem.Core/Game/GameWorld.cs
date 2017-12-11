@@ -128,8 +128,8 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			//CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-			CameraControls = true;
+			CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+			//CameraControls = true;
 		}
 
 		/// <summary>
@@ -229,6 +229,13 @@ namespace Mff.Totem.Core
 					});
 				}
 			}
+			else
+			{
+				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
+					Camera.Zoom += 0.01f;
+				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
+					Camera.Zoom -= 0.01f;
+			}
 
 			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
 			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);
@@ -266,10 +273,10 @@ namespace Mff.Totem.Core
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
-            // Ground rendering
+			// Ground rendering
 			if (Terrain.ActiveChunks.Count > 0)
-            {
-                GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
+			{
+				GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
 					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
 				GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
@@ -278,19 +285,16 @@ namespace Mff.Totem.Core
 					var chunk = Terrain.ActiveChunks[i];
 					if (!chunk.Generated)
 						continue;
-					
-					VertexPositionColor[] vertices = new VertexPositionColor[chunk.TriangulatedVertices.Count * 3];
-
-					int index = 0;
-					chunk.TriangulatedVertices.ForEach(triangle => triangle.ForEach(point => vertices[index++] = new VertexPositionColor(new Vector3(point.X, point.Y, 0), Color.White)));
 
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 					{
 						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length / 3);
+						if (chunk.TriangulatedWholeVertices != null)
+							Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedWholeVertices,
+																   0, chunk.TriangulatedWholeVertices.Length / 3);
 					}
 				}
-            }
+			}
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
             Weather.DrawWeatherEffects(this, spriteBatch);
@@ -300,6 +304,23 @@ namespace Mff.Totem.Core
             Entities.ForEach(e => e.Draw(spriteBatch));
             Particles.ForEach(p => p.Draw(spriteBatch));
             spriteBatch.End();
+
+			// Ground rendering
+			if (Terrain.ActiveChunks.Count > 0)
+			{
+				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				{
+					var chunk = Terrain.ActiveChunks[i];
+					if (!chunk.Generated)
+						continue;
+					
+					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+					{
+						pass.Apply();
+						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedVertices, 0, chunk.TriangulatedVertices.Length / 3);
+					}
+				}
+			}
 
             Game.GraphicsDevice.SetRenderTarget(null);
 			Game.GraphicsDevice.Clear(Color.Black);
