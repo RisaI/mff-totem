@@ -17,9 +17,11 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		public const int MAX_DEPTH = 10000, SPACING = 32;
+		const int CHUNK_CACHE = 64;
+
+		public const int MAX_DEPTH = 10000 * 8, SPACING = 32;
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
-		public const float STEP_WIDTH = 8f * Chunk.WIDTH;
+		public const int CAVE_SPACING = Chunk.WIDTH / 16;
 
 		public OpenSimplexNoise NoiseMap
 		{
@@ -56,6 +58,7 @@ namespace Mff.Totem.Core
 			Seed = seed != 0 ? seed : (long)Random.Next();
 			DamageMap.Clear();
 			TerrainBody = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
+			SetActiveRegion(-1, 0, false);
 		}
 
 		public void Update()
@@ -93,7 +96,6 @@ namespace Mff.Totem.Core
 		{
 			List<List<IntPoint>> solution = new List<List<IntPoint>>();
 			List<IntPoint> verts = new List<IntPoint>();
-			List<IntPoint> cave = new List<IntPoint>();
 
 			// Add end faces
 			verts.Add(new IntPoint(x, MAX_DEPTH));
@@ -102,20 +104,25 @@ namespace Mff.Totem.Core
 			{
 				long x0 = x + i * SPACING, height = (long)HeightMap(x0);
 				verts.Add(new IntPoint(x0, height));
-				cave.Add(new IntPoint(x0, (int)((MAX_DEPTH - height) * NoiseMap.Evaluate(x0 / (4096f * 16f), 4096))));
 			}
 
-			for (int i = cave.Count - 1; i >= 0; --i)
+			var cl = new Clipper();
+
+			for (int tX = 0; tX < Chunk.WIDTH / CAVE_SPACING; ++tX)
 			{
-				cave.Add(new IntPoint(cave[i].X, cave[i].Y - 200));
+				for (int tY = 0; tY < (MAX_DEPTH - BASE_HEIGHT - BASE_STEP / 2) / CAVE_SPACING; ++tY)
+				{
+					var val = NoiseMap.Evaluate((x + tX * CAVE_SPACING) / (1024.0), (tY*CAVE_SPACING) / 1024.0);
+					if (val > 0.3)
+						cl.AddPolygon(Helper.CreateRectangle((int)x + tX*CAVE_SPACING, BASE_HEIGHT + BASE_STEP / 2 + tY*CAVE_SPACING,CAVE_SPACING, CAVE_SPACING), PolyType.ptClip);
+				}
 			}
 
 			// Add second end face point
 			verts.Add(new IntPoint(x + Chunk.WIDTH, MAX_DEPTH));
 
-			var cl = new Clipper();
 			cl.AddPolygon(verts, PolyType.ptSubject);
-			cl.AddPolygon(cave, PolyType.ptClip);
+			//cl.AddPolygon(cave, PolyType.ptClip);
 			cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
 			return Tuple.Create(verts, solution);
 		}
@@ -128,10 +135,10 @@ namespace Mff.Totem.Core
 			ch.Polygons = body.Item2;
 			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item2), Color.White);
 			ch.TriangulatedWholeVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item1), Color.Gray);
-			for (int i = 0; i < 3; ++i)
+			for (int i = 0; i < 16; ++i)
 			{
 				var tree = ContentLoader.Entities["tree"].Clone();
-				var pos = new Vector2(ch.Left + (i + 1) * (Chunk.WIDTH / 3f), 0);
+				var pos = new Vector2(ch.Left + (i + 1) * (Chunk.WIDTH / 16f), 0);
 				pos.Y = HeightMap(pos.X);
 				tree.GetComponent<BodyComponent>().Position = pos;
 				ch.Trees.Add(tree);
@@ -155,7 +162,7 @@ namespace Mff.Totem.Core
 				List<List<IntPoint>> result = new List<List<IntPoint>>();
 				cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
-				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(result), Color.White);
+				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(result, TriangulationAlgorithm.Delauny), Color.White);
 
 				result.ForEach(polygon =>
 				{
@@ -193,13 +200,14 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		List<Chunk> ChunkCache = new List<Chunk>(CHUNK_CACHE);
 		public List<Chunk> ActiveChunks = new List<Chunk>();
 		/// <summary>
 		/// Sets the active region of terrain. Only chunks in this region will be displayed in world.
 		/// </summary>
 		/// <param name="a">Left bound.</param>
 		/// <param name="b">Right bound.</param>
-		public void SetActiveRegion(long a, long b)
+		public void SetActiveRegion(long a, long b, bool asynch = true)
 		{
 			if (a > b)
 			{
@@ -215,8 +223,18 @@ namespace Mff.Totem.Core
 				Chunk ch = ActiveChunks.Find(c => c.ID == i);
 				if (ch == null)
 				{
-					ActiveChunks.Add(ch = new Chunk(i));
-					CreateGenerationTask(ch);
+					ch = ChunkCache.Find(c => c.ID == i);
+					if (ch == null)
+					{
+						ActiveChunks.Add(ch = new Chunk(i));
+						CacheChunk(ch);
+						CreateGenerationTask(ch, asynch);
+					}
+					else
+					{
+						ActiveChunks.Add(ch);
+						PlaceChunk(ch);
+					}
 				}
 			}
 			ActiveChunks.ForEach(ch => {
@@ -226,14 +244,43 @@ namespace Mff.Totem.Core
 			ActiveChunks.RemoveAll(ch => ch.ID < a || ch.ID >= b);
 		}
 
-		void CreateGenerationTask(Chunk ch)
+		void CacheChunk(Chunk ch)
 		{
-			if (ch.GenerationTask != null)
+			if (ChunkCache.Count >= CHUNK_CACHE)
 			{
-				ch.GenerationTask.Wait();
-				ch.GenerationTask.Dispose();
+				var center = (ActiveChunks.Min(c => c.ID) + ActiveChunks.Max(c => c.ID)) / 2;
+				Chunk furthest = null;
+				long dist = 0;
+				ChunkCache.ForEach(c =>
+				{
+					var d = Math.Abs(c.ID - center);
+					if (furthest == null || d > dist)
+					{
+						furthest = c;
+						dist = d;
+					}
+				});
+				ChunkCache.Remove(furthest);
 			}
-			ch.GenerationTask = Task.Run(() => { GenerateChunk(ch); PlaceChunk(ch); });
+			ChunkCache.Add(ch);
+		}
+
+		void CreateGenerationTask(Chunk ch, bool asynch = true)
+		{
+			if (asynch)
+			{
+				if (ch.GenerationTask != null)
+				{
+					ch.GenerationTask.Wait();
+					ch.GenerationTask.Dispose();
+				}
+				ch.GenerationTask = Task.Run(() => { GenerateChunk(ch); PlaceChunk(ch); });
+			}
+			else
+			{
+				GenerateChunk(ch);
+				PlaceChunk(ch);
+			}
 		}
 
 		public float HeightMap(float x)

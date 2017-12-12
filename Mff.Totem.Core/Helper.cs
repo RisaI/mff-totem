@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using FarseerPhysics.Common;
 using ClipperLib;
 
+using Dec = FarseerPhysics.Common.Decomposition;
+
 namespace Mff.Totem
 {
 	public static class Helper
@@ -183,12 +185,12 @@ namespace Mff.Totem
 			return values.Min();
 		}
 
-		public static List<Vertices> Triangulate(List<IntPoint> polygon)
+		public static List<Vertices> Triangulate(List<IntPoint> polygon, Dec.TriangulationAlgorithm algo = Dec.TriangulationAlgorithm.Earclip)
 		{
-			return FarseerPhysics.Common.Decomposition.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), FarseerPhysics.Common.Decomposition.TriangulationAlgorithm.Earclip);
+			return Dec.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), algo);
 		}
 
-		public static List<Vertices> Triangulate(List<List<IntPoint>> polygons)
+		public static List<Vertices> Triangulate(List<List<IntPoint>> polygons, Dec.TriangulationAlgorithm algo = Dec.TriangulationAlgorithm.Earclip)
 		{
 			List<Vertices> result = new List<Vertices>();
 			polygons.ForEach(p => { result.AddRange(Triangulate(p)); });
@@ -201,6 +203,24 @@ namespace Mff.Totem
 			int i = 0;
 			polygon.ForEach(p => v[i++] = new Vector2(p.X, p.Y) * scale);
 			return new Vertices(v);
+		}
+
+		public static List<IntPoint> VerticesToPolygon(Vertices verts, float scale = 1 / 64f)
+		{
+			List<IntPoint> result = new List<IntPoint>();
+			verts.ForEach(v => result.Add(new IntPoint((int)(v.X * scale), (int)(v.Y * scale))));
+			return result;
+		}
+
+		public static List<IntPoint> CreateRectangle(int x, int y, int width, int height)
+		{
+			List<IntPoint> result = new List<IntPoint>(4) { 
+				new IntPoint(x, y),
+				new IntPoint(x + width, y),
+				new IntPoint(x + width, y + width),
+				new IntPoint(x, y + width)
+			};
+			return result;
 		}
 	}
 

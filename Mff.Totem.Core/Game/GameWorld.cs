@@ -234,7 +234,7 @@ namespace Mff.Totem.Core
 				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
 					Camera.Zoom += 0.01f;
 				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
-					Camera.Zoom -= 0.01f;
+					Camera.Zoom = Math.Max(0.01f, Camera.Zoom - 0.01f);
 			}
 
 			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
