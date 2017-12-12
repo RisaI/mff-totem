@@ -117,6 +117,10 @@
       <Project>{5FB6646A-D491-4F6B-AEB8-215AD3CE0DB7}</Project>
       <Name>Krypton</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Triangle\Triangle.csproj">
+      <Project>{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}</Project>
+      <Name>Triangle</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

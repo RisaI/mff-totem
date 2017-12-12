@@ -92,9 +92,10 @@ namespace Mff.Totem.Core
 		Body TerrainBody;
 
 		private Random Random;
-		private Tuple<List<IntPoint>,List<List<IntPoint>>> CreateChunkPoints(long x)
+		private void CreateChunkTerrain(Chunk ch)
 		{
-			List<List<IntPoint>> solution = new List<List<IntPoint>>();
+			long x = ch.Left;
+			List<List<IntPoint>> solution = new List<List<IntPoint>>(), cavities = new List<List<IntPoint>>();
 			List<IntPoint> verts = new List<IntPoint>();
 
 			// Add end faces
@@ -122,19 +123,32 @@ namespace Mff.Totem.Core
 			verts.Add(new IntPoint(x + Chunk.WIDTH, MAX_DEPTH));
 
 			cl.AddPolygon(verts, PolyType.ptSubject);
-			//cl.AddPolygon(cave, PolyType.ptClip);
-			cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
-			return Tuple.Create(verts, solution);
+			//cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
+			cl.Execute(ClipType.ctIntersection, cavities, PolyFillType.pftPositive, PolyFillType.pftNonZero);
+
+			cavities.ForEach(c =>
+			{
+				for (int i = 0; i < c.Count; ++i)
+				{
+					var p = c[i];
+					if (p.X == ch.Left)
+						c[i] = new IntPoint(p.X - 1, p.Y);
+					if (p.X == ch.Right)
+						c[i] = new IntPoint(p.X + 1, p.Y);
+				}
+			});
+
+			ch.Polygon = verts;
+			ch.Cavities = cavities;
+			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(solution), Color.White);
+			ch.TriangulatedWholeVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(verts), Color.Gray);
 		}
 
 		void GenerateChunk(Chunk ch)
 		{
 			if (ch.Generated)
 				return;
-			var body = CreateChunkPoints(ch.Left);
-			ch.Polygons = body.Item2;
-			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item2), Color.White);
-			ch.TriangulatedWholeVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(body.Item1), Color.Gray);
+			CreateChunkTerrain(ch);
 			for (int i = 0; i < 16; ++i)
 			{
 				var tree = ContentLoader.Entities["tree"].Clone();
@@ -157,12 +171,15 @@ namespace Mff.Totem.Core
 
 				var cl = new Clipper();
 				cl.Clear();
-				cl.AddPolygons(ch.Polygons, PolyType.ptSubject);
+				cl.AddPolygon(ch.Polygon, PolyType.ptSubject);
+				cl.AddPolygons(ch.Cavities, PolyType.ptClip);
 				cl.AddPolygons(DamageMap, PolyType.ptClip);
 				List<List<IntPoint>> result = new List<List<IntPoint>>();
 				cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
-				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(result, TriangulationAlgorithm.Delauny), Color.White);
+				var holes = new List<List<IntPoint>>();
+				cl.Execute(ClipType.ctIntersection, holes, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.TriangulateWithHoles(new List<List<IntPoint>>() { ch.Polygon }, holes), Color.White);
 
 				result.ForEach(polygon =>
 				{
@@ -305,7 +322,7 @@ namespace Mff.Totem.Core
 
 		public List<Entity> Trees = new List<Entity>();
 
-		List<List<IntPoint>> _polygons;
+		/*List<List<IntPoint>> _polygons;
 		public List<List<IntPoint>> Polygons
 		{
 			get { return _polygons; }
@@ -313,6 +330,18 @@ namespace Mff.Totem.Core
 			{
 				_polygons = value;
 			}
+		}*/
+
+		public List<IntPoint> Polygon
+		{
+			get;
+			set;
+		}
+
+		public List<List<IntPoint>> Cavities
+		{
+			get;
+			set;
 		}
 
 		public VertexPositionColor[] TriangulatedVertices

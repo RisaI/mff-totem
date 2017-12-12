@@ -12,6 +12,7 @@ using FarseerPhysics.Common;
 using ClipperLib;
 
 using Dec = FarseerPhysics.Common.Decomposition;
+using TriangleNet.Geometry;
 
 namespace Mff.Totem
 {
@@ -83,7 +84,7 @@ namespace Mff.Totem
 		/// <param name="area">Area.</param>
 		/// <param name="color">Color.</param>
 		/// <param name="depth">SpriteBatch depth.</param>
-		public static void DrawRectangle(this SpriteBatch spriteBatch, Rectangle area, Color color, float depth)
+		public static void DrawRectangle(this SpriteBatch spriteBatch, Microsoft.Xna.Framework.Rectangle area, Color color, float depth)
 		{
 			spriteBatch.Draw(ContentLoader.Pixel, area, null, color, 0, Vector2.Zero, SpriteEffects.None, depth);
 		}
@@ -159,12 +160,12 @@ namespace Mff.Totem
 		}
 		#endregion
 
-		public static Point ToPoint(this Vector2 vec)
+		public static Microsoft.Xna.Framework.Point ToPoint(this Vector2 vec)
 		{
-			return new Point((int)vec.X, (int)vec.Y);
+			return new Microsoft.Xna.Framework.Point((int)vec.X, (int)vec.Y);
 		}
 
-		public static Vector2 ToVector2(this Point p)
+		public static Vector2 ToVector2(this Microsoft.Xna.Framework.Point p)
 		{
 			return new Vector2(p.X, p.Y);
 		}
@@ -195,6 +196,42 @@ namespace Mff.Totem
 			List<Vertices> result = new List<Vertices>();
 			polygons.ForEach(p => { result.AddRange(Triangulate(p)); });
 			return result;
+		}
+
+		public static List<Vertices> TriangulateWithHoles(List<List<IntPoint>> polygons, List<List<IntPoint>> holes)
+		{
+			var p = new Polygon();
+			polygons.ForEach(polygon =>
+			{
+				p.Add(PolygonToContour(polygon), false);
+			});
+			holes.ForEach(hole =>
+			{
+				p.Add(PolygonToContour(hole), true);
+			});
+			var t = p.Triangulate(new TriangleNet.Meshing.ConstraintOptions() {  }).Triangles;
+			List<Vertices> result = new List<Vertices>();
+			for (int i = 0; i < t.Count; ++i)
+			{
+				var triangle = t.ElementAt(i);
+				result.Add(new Vertices(new Vector2[] { 
+					new Vector2((float)triangle.GetVertex(0).X, (float)triangle.GetVertex(0).Y),
+					new Vector2((float)triangle.GetVertex(1).X, (float)triangle.GetVertex(1).Y),
+					new Vector2((float)triangle.GetVertex(2).X, (float)triangle.GetVertex(2).Y)
+				}));
+			}
+
+			return result;
+		}
+
+		public static Contour PolygonToContour(List<IntPoint> polygon)
+		{
+			Vertex[] verts = new Vertex[polygon.Count];
+			for (int i = 0; i < polygon.Count; ++i)
+			{
+				verts[i] = new Vertex(polygon[i].X, polygon[i].Y);
+			}
+			return new Contour(verts);
 		}
 
 		public static Vertices PolygonToVertices(List<IntPoint> polygon, float scale = 1 / 64f)
