@@ -33,8 +33,10 @@ namespace Mff.Totem.Core
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			if (Sprite != null)
-				Sprite.Draw(spriteBatch, body != null ? body.LegPosition : Vector2.Zero, Depth);
+            if (Sprite != null)
+            {
+                Sprite.Draw(spriteBatch, body != null ? body.LegPosition : Vector2.Zero, body != null ? body.Rotation : 0, Depth);
+            }
 		}
 
 		private BodyComponent body;

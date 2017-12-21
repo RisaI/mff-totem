@@ -34,6 +34,7 @@ namespace Mff.Totem.Core
 
 			Vector2 movement = Vector2.Zero;
 			var character = Parent.GetComponent<CharacterComponent>();
+            var inventory = Parent.GetComponent<InventoryComponent>();
 
             if (World.Game.InputEnabled)
             {
@@ -54,6 +55,13 @@ namespace Mff.Totem.Core
 					else
 						g.Remove = true;
 				}
+
+                character.Target = World.Camera.ToWorldSpace(World.Game.Input.GetPointerInput(0).Position) - body.Position;
+
+                if (World.Game.Input.GetInput(Inputs.A, InputState.Pressed) && inventory != null)
+                {
+                    inventory.Use(EquipSlot.Left);
+                }
             }
 
 			if (Math.Abs(movement.X) > Helper.EPSILON)
@@ -65,8 +73,6 @@ namespace Mff.Totem.Core
 			{
 				sprite.PlayAnim("idle");
 			}
-
-			// Generate chunks in range (for testing purposes, should be reaplced with another system)
 
 			body.Move(movement);
 		}

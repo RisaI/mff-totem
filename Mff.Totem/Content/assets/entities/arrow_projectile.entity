@@ -1,0 +1,13 @@
+﻿{
+	"components": [
+		{
+			"class": "projectile_body",
+            "radius": "0.05"
+		},
+        {
+            "class": "sprite_component",
+            "sprite": "arrow",
+            "depth": 0.7
+        }
+	]
+}

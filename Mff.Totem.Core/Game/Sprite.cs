@@ -334,9 +334,9 @@ namespace Mff.Totem.Core
 		/// <param name="spriteBatch">Sprite batch.</param>
 		/// <param name="position">Position.</param>
 		/// <param name="depth">Sprite depth.</param>
-		public void Draw(SpriteBatch spriteBatch, Vector2 position, float depth)
+		public void Draw(SpriteBatch spriteBatch, Vector2 position, float rotation, float depth)
 		{
-			spriteBatch.Draw(Texture, position, SourceRectangle, Color, 0f, new Vector2(_frameWidth * Anchor.X, _frameHeight * Anchor.Y), Scale, Effect, depth);
+            spriteBatch.Draw(Texture, position, SourceRectangle, Color, rotation, new Vector2(_frameWidth * Anchor.X, _frameHeight * Anchor.Y), Scale, Effect, depth);
 		}
 
 		/// <summary>

@@ -1,0 +1,6 @@
+﻿{
+	"class": "item_bow",
+	"id": "test_bow",
+	"maxstack": "1",
+	"slot": "Left"
+}

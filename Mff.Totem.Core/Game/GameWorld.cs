@@ -213,10 +213,10 @@ namespace Mff.Totem.Core
 					Camera.Position.Y -= CAMERA_SPEED * multiplier;
 				if (Game.Input.GetInput(Inputs.Down, InputState.Down))
 					Camera.Position.Y += CAMERA_SPEED * multiplier;
-				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
+				/*if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
 					Camera.Rotation += 0.1f;
 				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
-					Camera.Rotation -= 0.1f;
+					Camera.Rotation -= 0.1f;*/
 
 				if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
 				{
@@ -229,13 +229,10 @@ namespace Mff.Totem.Core
 					});
 				}
 			}
-			else
-			{
-				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
-					Camera.Zoom += 0.01f;
-				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
-					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
-			}
+			if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
+				Camera.Zoom += 0.01f;
+			if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
+				Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 
 			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
 			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);

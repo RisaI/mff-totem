@@ -55,6 +55,8 @@ namespace Mff.Totem.Core
 			get { return _hp > 0; }
 		}
 
+        public Vector2 Target = Vector2.Zero;
+
 		public CharacterComponent()
 		{
 			

@@ -41,6 +41,16 @@ namespace Mff.Totem.Core
 			return item;
 		}
 
+        public bool Use(EquipSlot slot)
+        {
+            if (Equip?.Length != 0 && Equip[(int)slot] != null)
+            {
+                Equip[(int)slot].Use(Parent);
+                return true;
+            }
+            return false;
+        }
+
 		public bool EquipItem(int invSlot)
 		{
 			if (Equip.Length <= 0 || invSlot < 0 || invSlot >= Items.Count)

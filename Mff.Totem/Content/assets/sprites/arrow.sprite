@@ -1,0 +1,17 @@
+{
+  "asset": "arrow",
+  "fwidth": 64,
+  "fheight": 16,
+  "scale": "0.8;1",
+  "anchor": "1;0.5",
+  "color": "255;255;255;255",
+  "effect": "None",
+  "animregistry": {
+    "idle": {
+      "startframe": 0,
+      "endframe": 0,
+      "interval": 0,
+      "data": 0
+    }
+  }
+}

@@ -19,7 +19,7 @@ namespace Mff.Totem.Core
 	{
 		const int CHUNK_CACHE = 64;
 
-		public const int MAX_DEPTH = 10000 * 8, SPACING = 32;
+		public const int MAX_DEPTH = 10000 * 6, SPACING = 32;
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
 		public const int CAVE_SPACING = Chunk.WIDTH / 16;
 
@@ -109,7 +109,7 @@ namespace Mff.Totem.Core
 
 			var cl = new Clipper();
 
-			for (int tX = 0; tX < Chunk.WIDTH / CAVE_SPACING; ++tX)
+			/*for (int tX = 0; tX < Chunk.WIDTH / CAVE_SPACING; ++tX)
 			{
 				for (int tY = 0; tY < (MAX_DEPTH - BASE_HEIGHT - BASE_STEP / 2) / CAVE_SPACING; ++tY)
 				{
@@ -117,7 +117,7 @@ namespace Mff.Totem.Core
 					if (val > 0.3)
 						cl.AddPolygon(Helper.CreateRectangle((int)x + tX*CAVE_SPACING, BASE_HEIGHT + BASE_STEP / 2 + tY*CAVE_SPACING,CAVE_SPACING, CAVE_SPACING), PolyType.ptClip);
 				}
-			}
+			}*/
 
 			// Add second end face point
 			verts.Add(new IntPoint(x + Chunk.WIDTH, MAX_DEPTH));
@@ -165,21 +165,22 @@ namespace Mff.Totem.Core
 			if (!ch.Generated)
 				return;
 
+			var cl = new Clipper();
+			cl.Clear();
+			cl.AddPolygon(ch.Polygon, PolyType.ptSubject);
+			cl.AddPolygons(ch.Cavities, PolyType.ptClip);
+			cl.AddPolygons(DamageMap, PolyType.ptClip);
+			List<List<IntPoint>> result = new List<List<IntPoint>>();
+			cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+			var holes = new List<List<IntPoint>>();
+			cl.Execute(ClipType.ctIntersection, holes, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.TriangulateWithHoles(new List<List<IntPoint>>() { ch.Polygon }, holes), Color.White);
+
+
 			lock (TerrainBody)
 			{
 				UnplaceChunk(ch);
-
-				var cl = new Clipper();
-				cl.Clear();
-				cl.AddPolygon(ch.Polygon, PolyType.ptSubject);
-				cl.AddPolygons(ch.Cavities, PolyType.ptClip);
-				cl.AddPolygons(DamageMap, PolyType.ptClip);
-				List<List<IntPoint>> result = new List<List<IntPoint>>();
-				cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-
-				var holes = new List<List<IntPoint>>();
-				cl.Execute(ClipType.ctIntersection, holes, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-				ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.TriangulateWithHoles(new List<List<IntPoint>>() { ch.Polygon }, holes), Color.White);
 
 				result.ForEach(polygon =>
 				{
@@ -204,8 +205,8 @@ namespace Mff.Totem.Core
 					ch.Fixtures.ForEach(f => TerrainBody.DestroyFixture(f));
 					ch.Fixtures.Clear();
 				}
-				ch.Trees.ForEach(t => t.Remove = true);
 			}
+			ch.Trees.ForEach(t => t.Remove = true);
 		}
 
 		public void ClearFromWorld()
@@ -313,7 +314,7 @@ namespace Mff.Totem.Core
 
 	public class Chunk
 	{
-		public const int WIDTH = Terrain.SPACING * 32;
+		public const int WIDTH = Terrain.SPACING * 64;
 
 		public bool Generated;
 		public long ID;

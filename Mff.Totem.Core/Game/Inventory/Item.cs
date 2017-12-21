@@ -27,8 +27,22 @@ namespace Mff.Totem.Core
 
 		public virtual Item Clone()
 		{
-			return new Item() { ID = ID, MaxStack = MaxStack, Usable = Usable, _count = _count, Slot = Slot, SpeedMultiplier = SpeedMultiplier, HPMultiplier = HPMultiplier, StaminaMultiplier = StaminaMultiplier };
+            return new Item().CopyData(this);
 		}
+
+        public Item CopyData(Item i)
+        {
+            ID = i.ID;
+            MaxStack = i.MaxStack;
+            Usable = i.Usable;
+            _count = i._count;
+            Slot = i.Slot;
+            SpeedMultiplier = i.SpeedMultiplier;
+            HPMultiplier = i.HPMultiplier;
+            StaminaMultiplier = i.StaminaMultiplier;
+
+            return this;
+        }
 
 		public void ToJson(JsonWriter writer)
 		{
@@ -99,4 +113,25 @@ namespace Mff.Totem.Core
 			SpeedMultiplier = reader.ReadSingle();
 		}
 	}
+
+    [Serializable("item_bow")]
+    public class Bow : Item
+    {
+        public override void Use(Entity ent)
+        {
+            var character = ent.GetComponent<CharacterComponent>();
+            if (character != null)
+            {
+                var direction = character.Target;
+                direction.Normalize();
+                direction *= 3000f;
+                ent.World.CreateEntity("arrow_projectile").GetComponent<ProjectileBody>().SetProjectileData(ent, direction);
+            }
+        }
+
+        public override Item Clone()
+        {
+            return new Bow().CopyData(this);
+        }
+    }
 }
