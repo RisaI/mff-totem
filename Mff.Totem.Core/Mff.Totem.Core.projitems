@@ -37,11 +37,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Inventory\Item.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\InventoryComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\Gui.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Menu\Menu.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gui\UiControl.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\" />
     <Folder Include="$(MSBuildThisFileDirectory)Gui\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Inventory\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Menu\" />
   </ItemGroup>
 </Project>

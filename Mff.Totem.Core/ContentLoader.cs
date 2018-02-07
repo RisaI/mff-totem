@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
 using Newtonsoft.Json.Linq;
+using Mff.Totem.Core;
 
 namespace Mff.Totem
 {
@@ -91,6 +92,7 @@ namespace Mff.Totem
 
             // Load shaders
 			Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));
+			Shaders.Add("menu", game.Content.Load<Effect>("shaders/MenuShader"));
 		
 			foreach (string file in FindAllFiles("Content/assets/sprites", ".sprite"))
 			{
@@ -193,6 +195,12 @@ namespace Mff.Totem
 				list.AddRange(FindAllFiles(subdir, extension));
 			}
 			return list;
+		}
+
+		public static void RefreshShaders(TotemGame game)
+		{
+			if (Shaders.ContainsKey("menu"))
+				Shaders["menu"].Parameters["Resolution"].SetValue(game.Resolution);
 		}
 	}
 }
