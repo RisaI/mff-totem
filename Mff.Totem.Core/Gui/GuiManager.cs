@@ -265,6 +265,9 @@ namespace Mff.Totem.Gui
 
 		public void Input(PointerInput input)
 		{
+			if (input.State == InputState.Pressed)
+				BringToFront();
+
 			// Translate into inner coordinates
 			if (BarVisible)
 			{
@@ -277,8 +280,7 @@ namespace Mff.Totem.Gui
 							Closing = true;
 							return;
 						}
-						BringToFront();
-						if (input.Position.Y - Position.Y < BarHeight)
+						if (input.Position.Y < 0)
 						{
 							draggingId = input.ID;
 							dragDelta = input.Position + new Vector2(0, BarHeight);
