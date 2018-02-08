@@ -44,6 +44,13 @@ namespace Mff.Totem
 			return new Vector2(texture.Width, texture.Height);
 		}
 
+		/// <summary>
+		/// Returns the size of a texture as Vector2.
+		/// </summary>
+		public static Vector2 Size(this Microsoft.Xna.Framework.Rectangle rect)
+		{
+			return new Vector2(rect.Width, rect.Height);
+		}
 
 		/// <summary>
 		/// Negative division with a reverse behavior on negative numbers

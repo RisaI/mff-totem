@@ -214,7 +214,7 @@ namespace Mff.Totem.Core
 			AddCommand("guitest", "Show GUI test.", args =>
 			{
 				if (args.Length > 0)
-					new Gui.MessageBox(args[0], Game.GuiManager);
+					Game.GuiManager.Add(new Gui.MessageBox(args[0]));
 			}, "text");
 
 			AddCommand("hurt", "Be emo.", args =>

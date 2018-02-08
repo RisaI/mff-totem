@@ -51,9 +51,9 @@ namespace Mff.Totem.Core
 				{
 					var g = World.Game.GuiManager.GetGuiOfType<Gui.InventoryScreen>();
 					if (g == null)
-						new Gui.InventoryScreen(Parent, World.Game.GuiManager);
+						World.Game.GuiManager.Add(new Gui.InventoryScreen(Parent));
 					else
-						g.Remove = true;
+						g.Closing = true;
 				}
 
                 character.Target = World.Camera.ToWorldSpace(World.Game.Input.GetPointerInput(0).Position) - body.Position;

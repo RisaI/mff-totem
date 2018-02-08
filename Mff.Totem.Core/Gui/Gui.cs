@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Mff.Totem.Gui
 {
-    class InventoryScreen : GuiManager.Gui
+    class InventoryScreen : Gui
     {
         const int ITEM_HEIGHT_CLOSED = 24,
             ITEM_HEIGHT_OPENED = 64;
@@ -30,15 +30,14 @@ namespace Mff.Totem.Gui
 		}
 
         private int selectedItem = -1, selectedEquip = -1;
-        public InventoryScreen(Entity player, GuiManager manager) : base(manager, _lastPos, new Vector2(840, 640))
+        public InventoryScreen(Entity player) : base(new Vector2(840, 640))
         {
             WindowName = "Inventory";
             Player = player;
 			equipArea = new Rectangle[Inventory.Equip.Length];
-			RecalculateArea();
         }
 
-        public override void OnInput(PointerInput input)
+        protected override void OnInput(PointerInput input)
         {
             base.OnInput(input);
 
@@ -127,7 +126,7 @@ namespace Mff.Totem.Gui
             }
         }
 
-        public override void RecalculateArea()
+        /*public override void RecalculateArea()
         {
             base.RecalculateArea();
             itemArea = new Rectangle(Area.Center.X + 3, Area.Y + ScaledBarHeight + 3, Area.Width / 2 - 6, Area.Height - ScaledBarHeight - 6);
@@ -141,7 +140,7 @@ namespace Mff.Totem.Gui
             {
                 equipButtons[i] = new Rectangle(Area.Left + 4 + i * (Area.Width / 6 - 12), Area.Bottom - 4 - ITEM_HEIGHT_CLOSED, Area.Width / 6 - 16, ITEM_HEIGHT_CLOSED);
             }
-        }
+        }*/
 
         protected override void OnUpdate(GameTime gameTime)
         {
@@ -157,14 +156,14 @@ namespace Mff.Totem.Gui
 		}
 		const int IconSize = 32, SheetWidth = 10;
 
-        public override void Draw(SpriteBatch spriteBatch)
+        /*public override void Draw(SpriteBatch spriteBatch)
         {
             var font = ContentLoader.Fonts["menu"];
 
             //Draw body
             spriteBatch.GraphicsDevice.ScissorRectangle = Area;
             spriteBatch.Begin(SpriteSortMode.FrontToBack, null, SamplerState.PointClamp, null, scissorRasterizer);
-            DrawBody(spriteBatch);
+            //DrawBody(spriteBatch);
             for (int i = 0; i < equipArea.Length; ++i)
             {
                 spriteBatch.DrawRectangle(equipArea[i], selectedEquip == i ? Color.DarkGray : Color.Gray, 0.5f);
@@ -185,7 +184,7 @@ namespace Mff.Totem.Gui
                 {
                     DrawButton(spriteBatch, font, equipButtons[0], "Unequip", 0.5f);
                     /*if (item.Usable)
-                        DrawButton(spriteBatch, font, equipButtons[1], "Use", 0.5f);*/
+                        DrawButton(spriteBatch, font, equipButtons[1], "Use", 0.5f);
                     DrawButton(spriteBatch, font, equipButtons[2], "Drop", 0.5f);
                 }
             }
@@ -237,7 +236,7 @@ namespace Mff.Totem.Gui
                 }
             }
             spriteBatch.End();
-        }
+        }*/
 
         private void DrawButton(SpriteBatch spriteBatch, SpriteFont font, Rectangle area, string text, float depth)
         {

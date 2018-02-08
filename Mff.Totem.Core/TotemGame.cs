@@ -169,6 +169,17 @@ namespace Mff.Totem.Core
 						World.Update(gameTime);
 
 					Hud.Update(gameTime);
+
+
+					if (World.Game.Input.GetInput(Inputs.Pause, InputState.Pressed))
+					{
+						var g = World.Game.GuiManager.GetGuiOfType<Gui.MiniMenu>();
+						if (g == null)
+							GuiManager.Add(new Gui.MiniMenu());
+						else
+							g.Closing = true;
+					}
+
 					GuiManager.Update(gameTime);
 					break;
 				case GameStateEnum.Menu:

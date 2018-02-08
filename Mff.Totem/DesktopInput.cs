@@ -32,13 +32,13 @@ namespace Mff.Totem
 			RMB = new PointerInput() { ID = 1, Position = MousePosition, State = RMBState };
 			MMB = new PointerInput() { ID = 2, Position = MousePosition, State = MMBState };
 
-			Gui.GuiManager.Gui g;
-			if ((g = Game.GuiManager.IsPointInGui(MousePosition)) != null)
+			Gui.Gui g;
+			if ((g = Game.GuiManager.GuiAt(MousePosition)) != null)
 			{
 				inGui = true;
-				g.OnInput(LMB);
-				g.OnInput(RMB);
-				g.OnInput(MMB);
+				g.Input(LMB);
+				g.Input(RMB);
+				g.Input(MMB);
 			}
 		}
 

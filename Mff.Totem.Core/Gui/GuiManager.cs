@@ -14,10 +14,15 @@ namespace Mff.Totem.Gui
 {
 	public class GuiManager
 	{
-		private List<Gui> Guis
+		private List<Gui> Guis = new List<Gui>();
+		public Gui this[int index]
 		{
-			get;
-			set;
+			get { return Guis[index]; }
+		}
+
+		public int Count
+		{
+			get { return Guis.Count; }
 		}
 
 		public TotemGame Game
@@ -26,34 +31,15 @@ namespace Mff.Totem.Gui
 			private set;
 		}
 
-		private float _scale;
-		public float GuiScale
-		{
-			get { return _scale; }
-		}
-
 		public GuiManager(TotemGame game)
 		{
 			Game = game;
-			CalculateScale();
-			Guis = new List<Gui>();
-			Game.OnResolutionChange += (x,y) => { CalculateScale(); Guis.ForEach(g => g.RecalculateArea()); };
-		}
-
-		private void CalculateScale()
-		{
-			_scale = 1; //Game.GuiScale > 1 ? (float)Math.Sqrt(Game.GuiScale) : Game.GuiScale * Game.GuiScale;
 		}
 
 		public void Update(GameTime gameTime)
 		{
 			Guis.ForEach(g => g.Update(gameTime));
-			Guis.RemoveAll(g => g.Remove);
-		}
-
-		public void SortGuis()
-		{
-			Guis.Sort((x, y) => x.Layer.CompareTo(y.Layer));
+			Guis.RemoveAll(g => g.Closing);
 		}
 
 		public void Draw(SpriteBatch spriteBatch)
@@ -64,198 +50,250 @@ namespace Mff.Totem.Gui
 			});
 		}
 
+		public void Add(Gui gui)
+		{
+			if (!Guis.Contains(gui))
+				Guis.Add(gui);
+			gui.Attach(this);
+			BringToFront(gui);
+		}
+
 		public T GetGuiOfType<T>() where T : Gui
 		{
 			return (T)Guis.Find(g => g is T);
 		}
 
-		public Gui IsPointInGui(Vector2 point)
+		public Gui GetGuiById(string id)
+		{
+			return Guis.Find(g => g.WindowID == id);
+		}
+
+		public Gui GuiAt(Vector2 point)
 		{
 			Gui f = null;
 			Guis.ForEach(g => { if (g.Area.Contains(point.ToPoint()) && (f == null || f.Layer < g.Layer)) { f = g; } });
 			return f;
 		}
 
-		public abstract class Gui
+		/// <summary>
+		/// Sort the gui list according to layers.
+		/// </summary>
+		public void SortGuis()
 		{
-			protected static RasterizerState scissorRasterizer = new RasterizerState() { ScissorTestEnable = true };
-			public const int BarHeight = 24;
+			Guis.Sort((x, y) => x.Layer.CompareTo(y.Layer));
+		}
 
-			protected string WindowName = string.Empty;
-			public int Layer
+		public void BringToFront(Gui gui)
+		{
+			if (!Guis.Contains(gui))
+				return;
+			Guis.ForEach(g =>
 			{
-				get;
-				private set;
+				if (g.Layer > gui.Layer)
+					--g.Layer;
+			});
+			gui.Layer = Guis.Count - 1;
+			SortGuis();	
+		}
+
+		public void BringToBack(Gui gui)
+		{
+			if (!Guis.Contains(gui))
+				return;
+			Guis.ForEach(g =>
+			{
+				if (g.Layer < gui.Layer)
+					++g.Layer;
+			});
+			gui.Layer = 0;
+			SortGuis();
+		}
+	}
+
+	public class Gui
+	{
+		protected static RasterizerState scissorRasterizer = new RasterizerState() { ScissorTestEnable = true };
+		public const int BarHeight = 24;
+
+		public GuiManager Manager
+		{
+			get;
+			private set;
+		}
+
+		public string WindowID = string.Empty;
+		protected string WindowName = string.Empty;
+		public int Layer
+		{
+			get;
+			set;
+		}
+
+		private Vector2 _position, _size;
+		public Vector2 Position
+		{
+			get { return _position; }
+			set
+			{
+				_position = value;
 			}
-
-			private Vector2 _position, _size;
-			public Vector2 Position
+		}
+		public Vector2 Size
+		{
+			get { return _size; }
+			set
 			{
-				get { return _position; }
-				set
+				_size = value;
+			}
+		}
+
+		public Rectangle Area
+		{
+			get { return new Rectangle((int)Position.X, (int)Position.Y, (int)Size.X, (int)Size.Y + (BarVisible ? BarHeight : 0)); }
+		}
+
+		public Rectangle CloseButton
+		{
+			get
+			{
+				Rectangle rect = new Rectangle();
+				rect.Width = rect.Height = BarHeight - 4;
+				rect.X = (int)Size.X - BarHeight + 2;
+				rect.Y = -rect.Width - 2;
+				return rect;
+			}
+		}
+
+		private bool _closing = false;
+		public bool Closing
+		{
+			get { return _closing; }
+			set
+			{
+				if (value)
 				{
-					_position = value;
-					RecalculateArea();
+					_closing = true;
+					BringToFront();
 				}
 			}
-			public Vector2 Size
+		}
+
+		public bool BarVisible
+		{
+			get;
+			protected set;
+		}
+
+		public Gui(Vector2 size)
+		{
+			Size = size;
+			BarVisible = true;
+		}
+
+		public void Attach(GuiManager manager)
+		{
+			Manager = manager;
+			BringToFront();
+		}
+
+		public void BringToFront()
+		{
+			Manager.BringToFront(this);
+		}
+
+		public void BringToBack()
+		{
+			Manager.BringToBack(this);
+		}
+
+		private Vector2 dragDelta;
+		private int draggingId = -1;
+		public virtual void Update(GameTime gameTime)
+		{
+			if (draggingId >= 0)
 			{
-				get { return _size; }
-				set
+				PointerInput input = Manager.Game.Input.GetPointerInput((byte)draggingId);
+				switch (input.State)
 				{
-					_size = value;
-					RecalculateArea();
+					case InputState.Up:
+					case InputState.Released:
+						draggingId = -1;
+						break;
+					case InputState.Down:
+						Position = input.Position - dragDelta;
+						break;
 				}
 			}
 
-			private Rectangle _area;
-			public Rectangle Area
+			OnUpdate(gameTime);
+		}
+
+		public void Draw(SpriteBatch spriteBatch)
+		{
+			Matrix view = Matrix.CreateTranslation(Position.X, Position.Y, 0);
+			spriteBatch.GraphicsDevice.ScissorRectangle = Area;
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, scissorRasterizer, null, view);
+
+			var font = ContentLoader.Fonts["menu"];
+			spriteBatch.Draw(ContentLoader.Pixel, new Rectangle(0, BarVisible ? BarHeight : 0, (int)Size.X, (int)Size.Y), null, Color.Black, 0, Vector2.Zero, SpriteEffects.None, 0f);
+
+			// Draw bar
+			if (BarVisible)
 			{
-				get { return _area; }
-			}
-			public Rectangle CloseButton
-			{
-				get
+				spriteBatch.Draw(ContentLoader.Pixel, new Rectangle(0, 0, (int)Size.X, BarHeight), null, Color.Gray, 0, Vector2.Zero, SpriteEffects.None, 0.5f);
+				var closeSize = font.MeasureString("X");
+				spriteBatch.DrawString(font, "X", CloseButton.Center.ToVector2() + new Vector2(0, BarHeight), Color.LightGray, 0f, closeSize / 2,
+									   new Vector2(CloseButton.Width, CloseButton.Height) / closeSize, SpriteEffects.None, 1f);
+				if (!string.IsNullOrWhiteSpace(WindowName))
 				{
-					Rectangle rect = Area;
-					rect.X += rect.Width - ScaledBarHeight + 2;
-					rect.Y += 2;
-					rect.Width = rect.Height = ScaledBarHeight - 4;
-					return rect;
+					var size = font.MeasureString(WindowName);
+					spriteBatch.DrawString(font, WindowName, new Vector2(2, BarHeight / 2),
+										   Color.White, 0, new Vector2(0, size.Y / 2), BarHeight / size.Y, SpriteEffects.None, 1f);
 				}
 			}
+			spriteBatch.End();
 
-			public int ScaledBarHeight
-			{
-				get { return (int)(BarHeight * Manager.GuiScale); }
-			}
+			// Draw custom content
+			if (BarVisible)
+				view = Matrix.CreateTranslation(Position.X, Position.Y + BarHeight, 0);
+			if (BarVisible)
+				spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle((int)Position.X, (int)Position.Y + BarHeight, (int)Size.X, (int)Size.Y);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, scissorRasterizer, null, view);
+			CustomDraw(spriteBatch);
+			spriteBatch.End();
+		}
 
-			private bool _remove = false;
-			public bool Remove
+		public void Input(PointerInput input)
+		{
+			// Translate into inner coordinates
+			if (BarVisible)
 			{
-				get { return _remove; }
-				set
-				{
-					if (value)
-					{
-						_remove = true;
-						BringToFront();
-					}
-				}
-			}
-
-			public GuiManager Manager
-			{
-				get;
-				private set;
-			}
-
-			public Gui(GuiManager manager, Vector2 position, Vector2 size)
-			{
-				Layer = manager.Guis.Count;
-				manager.Guis.Add(this);
-				_position = position;
-				_size = size;
-				Manager = manager;
-				RecalculateArea();
-			}
-
-			private Vector2 dragDelta;
-			private int draggingId = -1;
-			public void Update(GameTime gameTime)
-			{
-				if (draggingId >= 0)
-				{
-					PointerInput input = Manager.Game.Input.GetPointerInput((byte)draggingId);
-					switch (input.State)
-					{
-						case InputState.Up:
-						case InputState.Released:
-							draggingId = -1;
-							break;
-						case InputState.Down:
-							Position = input.Position - dragDelta;
-							break;
-					}
-				}
-				OnUpdate(gameTime);
-			}
-			protected abstract void OnUpdate(GameTime gameTime);
-			public abstract void Draw(SpriteBatch spriteBatch);
-
-			public virtual void OnInput(PointerInput input)
-			{
+				input.Position -= Position + new Vector2(0, BarHeight);
 				switch (input.State)
 				{
 					case InputState.Pressed:
 						if (CloseButton.Contains(input.Position.ToPoint()))
 						{
-							Remove = true;
+							Closing = true;
 							return;
 						}
 						BringToFront();
-						if (input.Position.Y - Position.Y < ScaledBarHeight)
+						if (input.Position.Y - Position.Y < BarHeight)
 						{
 							draggingId = input.ID;
-							dragDelta = input.Position - Position;
+							dragDelta = input.Position + new Vector2(0, BarHeight);
 						}
 						break;
-						/*case InputState.Released:
-							if (draggingId == input.ID)
-								draggingId = -1;
-							break;
-						case InputState.Down:
-							if (draggingId == input.ID)
-								Position = input.Position - dragDelta;
-							break;*/
 				}
 			}
+			else
+				input.Position -= Position;
 
-			public void BringToFront()
-			{
-				Manager.Guis.ForEach(g =>
-				{
-					if (g.Layer > Layer)
-						--g.Layer;
-				});
-				Layer = Manager.Guis.Count - 1;
-				Manager.SortGuis();
-			}
-
-			public void BringToBack()
-			{
-				Manager.Guis.ForEach(g =>
-				{
-					if (g.Layer < Layer)
-						++g.Layer;
-				});
-				Layer = 0;
-				Manager.SortGuis();
-			}
-
-			public virtual void RecalculateArea()
-			{
-				var pos = Position.ToPoint();
-				var size = (Size * Manager.GuiScale).ToPoint();
-				_area = new Rectangle(pos.X, pos.Y, size.X, size.Y);
-			}
-
-			protected void DrawBody(SpriteBatch spriteBatch, bool drawBar = true)
-			{
-				var font = ContentLoader.Fonts["menu"];
-				spriteBatch.Draw(ContentLoader.Pixel, Area, null, Color.Black, 0, Vector2.Zero, SpriteEffects.None, 0f);
-				if (drawBar)
-				{
-					spriteBatch.Draw(ContentLoader.Pixel, new Rectangle(Area.X, Area.Y, Area.Width, ScaledBarHeight), null, Color.Gray, 0, Vector2.Zero, SpriteEffects.None, 0.99f);
-					var closeSize = font.MeasureString("X");
-					spriteBatch.DrawString(font, "X", CloseButton.Center.ToVector2(), Color.LightGray, 0f, closeSize / 2, new Vector2(CloseButton.Width, CloseButton.Height) / closeSize, SpriteEffects.None, 1f);
-					if (!string.IsNullOrWhiteSpace(WindowName))
-					{
-						var size = font.MeasureString(WindowName);
-						spriteBatch.DrawString(font, WindowName, Position + new Vector2(2, ScaledBarHeight / 2), Color.White, 0, new Vector2(0, size.Y / 2), ScaledBarHeight / size.Y, SpriteEffects.None, 1f);
-					}
-				}
-			}
+			OnInput(input);
 		}
+
+		protected virtual void OnUpdate(GameTime gameTime) { }
+		protected virtual void OnInput(PointerInput input) { }
+		protected virtual void CustomDraw(SpriteBatch spriteBatch) { }
 	}
 }
