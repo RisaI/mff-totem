@@ -1,6 +1,7 @@
 ﻿{
 	"class": "item",
 	"id": "test_helmet",
+	"texid": "11",
 	"maxstack": "1",
 	"slot": "Head",
 	"spdmul": "0.5",

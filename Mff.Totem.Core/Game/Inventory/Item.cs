@@ -10,7 +10,7 @@ namespace Mff.Totem.Core
 	public class Item : ICloneable<Item>, IJsonSerializable, ISerializable
 	{
 		public string ID;
-		public int MaxStack = 1;
+		public int MaxStack = 1, TextureID = 0;
 		public bool Usable;
 		public EquipSlot Slot = EquipSlot.None;
 
@@ -34,6 +34,7 @@ namespace Mff.Totem.Core
         {
             ID = i.ID;
             MaxStack = i.MaxStack;
+			TextureID = i.TextureID;
             Usable = i.Usable;
             _count = i._count;
             Slot = i.Slot;
@@ -51,6 +52,8 @@ namespace Mff.Totem.Core
 
 			writer.WritePropertyName("id");
 			writer.WriteValue(ID);
+			writer.WritePropertyName("texid");
+			writer.WriteValue(TextureID);
 			writer.WritePropertyName("maxstack");
 			writer.WriteValue(MaxStack);
 			writer.WritePropertyName("usable");
@@ -74,6 +77,7 @@ namespace Mff.Totem.Core
 		public void FromJson(JObject obj)
 		{
 			ID = obj["id"] != null ? (string)obj["id"] : "";
+			TextureID = obj["texid"] != null ? (int)obj["texid"] : 0;
 			MaxStack = obj["maxstack"] != null ? (int)obj["maxstack"] : 1;
 			Usable = obj["usable"] != null ? (bool)obj["usable"] : false;
 			Slot = obj["slot"] != null ? (EquipSlot)Enum.Parse(typeof(EquipSlot),(string)obj["slot"]) : EquipSlot.None;
@@ -91,6 +95,7 @@ namespace Mff.Totem.Core
 		{
 			writer.Write(ID);
 			writer.Write(MaxStack);
+			writer.Write(TextureID);
 			writer.Write(Usable);
 			writer.Write(Count);
 			writer.Write((int)Slot);
@@ -104,6 +109,7 @@ namespace Mff.Totem.Core
 		{
 			ID = reader.ReadString();
 			MaxStack = reader.ReadInt32();
+			TextureID = reader.ReadInt32();
 			Usable = reader.ReadBoolean();
 			Count = reader.ReadInt32();
 			Slot = (EquipSlot)reader.ReadInt32();

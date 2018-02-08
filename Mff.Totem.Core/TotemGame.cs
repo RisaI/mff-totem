@@ -65,7 +65,7 @@ namespace Mff.Totem.Core
         protected SpriteBatch spriteBatch;
         protected DeveloperConsole Console;
 
-		private GameStateEnum _gameState = GameStateEnum.Menu;
+		private GameStateEnum _gameState = GameStateEnum.Game;
 		public GameStateEnum GameState
 		{
 			get { return _gameState; }

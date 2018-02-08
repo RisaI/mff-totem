@@ -1,6 +1,7 @@
 ﻿{
 	"class": "item",
 	"id": "test_legs",
+	"texid": "21",
 	"maxstack": "1",
 	"slot": "Legs",
 	"spdmul": "0.5",

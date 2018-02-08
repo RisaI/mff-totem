@@ -3,5 +3,7 @@
 <ul>
 	<li>MonoGame 3.6+</li>
 </ul>
-<h2>Content</h2>
-To build content, you need to have <i>ttf-ubuntu-font-family</i> installed. Currently, content only uses the <i>Ubuntu Mono</i> font.
+<h2>Used Fonts</h2>
+<ul>
+	<li><a href="https://www.dafont.com/sansation.font">Sansation Regular</a></li>
+</ul>

@@ -265,10 +265,13 @@ namespace Mff.Totem
 	{
 		public static float Fit(this SpriteFont font, string text, Vector2 box)
 		{
-			var size = font.MeasureString(text);
-			return Math.Min(box.X / size.X, box.Y / size.Y);
+			return Fit(font.MeasureString(text), box);
 		}
 
+		public static float Fit(Vector2 size, Vector2 box)
+		{
+			return Math.Min(box.X / size.X, box.Y / size.Y);
+		}
 	}
 
 	public class RectangleF : ICloneable<RectangleF>

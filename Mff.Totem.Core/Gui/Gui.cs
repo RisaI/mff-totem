@@ -150,6 +150,13 @@ namespace Mff.Totem.Gui
 
 		Rectangle[] equipArea = new Rectangle[0], equipButtons = new Rectangle[3];
         Rectangle itemArea;
+
+		public Texture2D ItemSheet
+		{
+			get { return ContentLoader.Textures["items0"]; }
+		}
+		const int IconSize = 32, SheetWidth = 10;
+
         public override void Draw(SpriteBatch spriteBatch)
         {
             var font = ContentLoader.Fonts["menu"];
@@ -166,7 +173,12 @@ namespace Mff.Totem.Gui
                 {
                     var text = Inventory.Equip[i].Count.ToString();
                     var size = font.MeasureString(text);
-					spriteBatch.DrawString(font, text, equipArea[i].Location.ToVector2() + new Vector2(equipArea[i].Width, equipArea[i].Height), Color.White, 0, size, Vector2.One, SpriteEffects.None, 0.6f);
+					spriteBatch.Draw(ItemSheet, equipArea[i].Location.ToVector2(), new Rectangle(IconSize * (item.TextureID % SheetWidth),
+					                                                                             IconSize * (item.TextureID / SheetWidth),
+					                                                                             IconSize, IconSize),
+					                 Color.White, 0, Vector2.Zero, (float)equipArea[i].Width / IconSize, SpriteEffects.None, 0.6f);
+					spriteBatch.DrawString(font, text, equipArea[i].Location.ToVector2() + new Vector2(equipArea[i].Width, equipArea[i].Height),
+					                       Color.White, 0, size, Vector2.One / 2, SpriteEffects.None, 0.6f);
                 }
 
                 if (i == selectedEquip)
@@ -193,8 +205,18 @@ namespace Mff.Totem.Gui
                     var iArea = new Rectangle(itemArea.X + 2, itemArea.Y + 2 + offset, itemArea.Width - 4, selectedItem == i ? ITEM_HEIGHT_OPENED : ITEM_HEIGHT_CLOSED);
                     spriteBatch.DrawRectangle(new Rectangle(itemArea.X + 2, itemArea.Y + 2 + offset, itemArea.Width - 4, selectedItem == i ? ITEM_HEIGHT_OPENED : ITEM_HEIGHT_CLOSED),
                         selectedItem == i ? Color.DarkGray : Color.Gray, 0.2f);
+
+					// Draw Item Icon
+					spriteBatch.Draw(ItemSheet, new Vector2(itemArea.X + 6, itemArea.Y + 4 + offset), new Rectangle(IconSize * (item.TextureID % SheetWidth),
+																								 IconSize * (item.TextureID / SheetWidth),
+																								 IconSize, IconSize),
+					                 Color.White, 0, Vector2.Zero, (float)(ITEM_HEIGHT_CLOSED - 4) / IconSize, SpriteEffects.None, 0.3f);
+
+					// Draw Item Text
 					spriteBatch.DrawString(font, item.ID + " (x" + item.Count + ")",
-                        new Vector2(itemArea.X + 4, itemArea.Y + 4 + offset), Color.White, 0f, Vector2.Zero, Math.Min(1f, ITEM_HEIGHT_CLOSED / lineh), SpriteEffects.None, 0.5f);
+					                       new Vector2(itemArea.X + 8 + ITEM_HEIGHT_CLOSED, itemArea.Y + 4 + offset),
+					                       Color.White, 0f, Vector2.Zero, Math.Min(1f, ITEM_HEIGHT_CLOSED / lineh), SpriteEffects.None, 0.5f);
+					
                     if (selectedItem == i)
                     {
                         var buttonSize = new Point((iArea.Width / 3 - 12), (int)(ITEM_HEIGHT_OPENED - ITEM_HEIGHT_CLOSED - 8));

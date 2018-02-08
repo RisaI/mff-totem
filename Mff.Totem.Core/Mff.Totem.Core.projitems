@@ -39,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Gui\Gui.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\Menu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\UiControl.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\PlanetInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
