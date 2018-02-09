@@ -30,6 +30,12 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		public abstract Rectangle BoundingBox
+		{
+			get;
+			set;
+		}
+
 		public abstract void Move(Vector2 direction);
 	}
 
@@ -80,9 +86,9 @@ namespace Mff.Totem.Core
 		{
 			get
 			{
-				return Position + new Vector2(0, 32f * (Height + Width));
+				return Position + new Vector2(0, 32f * (Height + Width / 2));
 			}
-			set { Position = value - new Vector2(0, 32f * (Height + Height)); }
+			set { Position = value - new Vector2(0, 32f * (Height + Width)); }
 		}
 
 		public override float Rotation
@@ -98,13 +104,28 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public override Rectangle BoundingBox
+		{
+			get
+			{
+				int x = (int)((MainBody.Position.X - Width / 2) * 64f);
+				int y = (int)(LegPosition.Y - Height * 64f);
+				return new Rectangle(x, y, (int)(Width * 64f), (int)(Height * 64f));
+			}
+
+			set
+			{
+				return;
+			}
+		}
+
 		void CreateBody()
 		{
-			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height, 1f, Vector2.Zero, 0, BodyType.Dynamic, Parent);
+			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height - Width / 2, 1f, Vector2.Zero, 0, BodyType.Dynamic, Parent);
 			MainBody.FixedRotation = true;
 			MainBody.BodyType = BodyType.Dynamic;
 
-			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, new Vector2(0, Height / 2), BodyType.Dynamic, Parent);
+			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, new Vector2(0, Height / 2 - Width / 4), BodyType.Dynamic, Parent);
 			ControllerBody.BodyType = BodyType.Dynamic;
 			ControllerBody.Friction = IDLE_FRICTION;
 
@@ -280,9 +301,24 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		public override Rectangle BoundingBox
+		{
+			get
+			{
+				return new Rectangle((int)(Position.X - Size.X /2), (int)(Position.Y - Size.Y), (int)Size.X, (int)Size.Y);
+			}
+			set
+			{
+				Position = value.Center.ToVector2() + new Vector2(0, value.Height / 2);
+				Size = new Vector2(value.Width, value.Height);
+			}
+		}
+
+		public Vector2 Size;
+
 		public override EntityComponent Clone()
 		{
-			return new StaticBody() { Position = Position, Rotation = Rotation };
+			return new StaticBody() { Position = Position, Rotation = Rotation, Size = Size };
 		}
 
 		public override void Move(Vector2 direction)
@@ -290,11 +326,27 @@ namespace Mff.Totem.Core
 			Position += direction;
 		}
 
+		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
+		{
+			base.ReadFromJson(obj);
+			if (obj["size"] != null)
+				Size = Helper.JTokenToVector2(obj["size"]);
+		}
+
+		protected override void WriteToJson(Newtonsoft.Json.JsonWriter writer)
+		{
+			base.WriteToJson(writer);
+			writer.WritePropertyName("size");
+			writer.WriteValue(Size);
+			writer.WriteEnd();
+		}
+
 		protected override void OnSerialize(System.IO.BinaryWriter writer)
 		{
 			base.OnSerialize(writer);
 			writer.Write(Position);
 			writer.Write(Rotation);
+			writer.Write(Size);
 		}
 
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
@@ -302,6 +354,7 @@ namespace Mff.Totem.Core
 			base.OnDeserialize(reader);
 			Position = reader.ReadVector2();
 			Rotation = reader.ReadSingle();
+			Size = reader.ReadVector2();
 		}
 	}
 
@@ -363,6 +416,19 @@ namespace Mff.Totem.Core
                     MainBody.Rotation = value;
                 else
                     spawnInfo.FRotation = value;
+			}
+		}
+
+		public override Rectangle BoundingBox
+		{
+			get
+			{
+				return new Rectangle((int)Position.X, (int)Position.Y, 1, 1);
+			}
+
+			set
+			{
+				Position = new Vector2(value.X, value.Y);
 			}
 		}
 

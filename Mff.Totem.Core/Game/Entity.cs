@@ -56,6 +56,18 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public Vector2? Targeting
+		{
+			get
+			{
+				var character = GetComponent<CharacterComponent>();
+				if (character != null)
+					return character.Target;
+				else
+					return null;
+			}
+		}
+
 		/// <summary>
 		/// A list of entity components that belong to this entity.
 		/// </summary>

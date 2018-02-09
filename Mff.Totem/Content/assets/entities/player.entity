@@ -4,7 +4,9 @@
 	],
 	"components": [
 		{
-			"class": "humanoid_body"
+			"class": "humanoid_body",
+			"width": "0.5",
+			"height": "1.5"
 		},
 		{
 			"class": "sprite_component",

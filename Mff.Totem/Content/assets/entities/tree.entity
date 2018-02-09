@@ -1,12 +1,20 @@
 ﻿{
+	"tags": [
+		"tree"
+	],
 	"components": [
 		{
-			"class": "static_body"
+			"class": "static_body",
+			"size": "32; 189"
 		},
 		{
 			"class": "sprite_component",
 			"sprite": "tree",
 			"depth": 0
+		},
+		{
+			"class": "tree_component",
+			"maxhp": "30"
 		}
 	]
 }

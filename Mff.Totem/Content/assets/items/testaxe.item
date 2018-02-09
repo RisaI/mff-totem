@@ -1,0 +1,6 @@
+﻿{
+	"class": "item_axe",
+	"id": "test_axe",
+	"maxstack": "1",
+	"slot": "Left"
+}

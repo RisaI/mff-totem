@@ -182,6 +182,16 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public IEnumerable<Entity> FindEntitiesAt(Vector2 position)
+		{
+			for (int i = 0; i < Entities.Count; ++i)
+			{
+				var body = Entities[i].GetComponent<BodyComponent>();
+				if (body.BoundingBox.Contains(position.ToPoint()))
+					yield return Entities[i];
+			}
+		}
+
 		public Entity FirstEntity(Func<Entity, bool> f)
 		{
 			return Entities.Find(e => f.Invoke(e));
@@ -351,6 +361,16 @@ namespace Mff.Totem.Core
             // Render debug physics view
             if (DebugView.Enabled)
             {
+				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+				foreach (Entity ent in Entities)
+				{
+					var body = ent.GetComponent<BodyComponent>();
+					if (body != null)
+					{
+						spriteBatch.DrawRectangle(body.BoundingBox, new Color(255,0,0,80), 0);
+					}
+				}
+				spriteBatch.End();
                 Matrix proj = Matrix.CreateOrthographic(Game.Resolution.X / 64f, -Game.Resolution.Y / 64f, 0, 1);
                 Matrix view = (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity) *
                                     Matrix.CreateRotationZ(Camera.Rotation) *

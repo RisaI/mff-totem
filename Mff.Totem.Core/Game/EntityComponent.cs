@@ -115,7 +115,7 @@ namespace Mff.Totem.Core
 		/// Deserialize component from a binary format.
 		/// </summary>
 		/// <param name="reader">Reader.</param>
-		public virtual void Deserialize(BinaryReader reader)
+		public void Deserialize(BinaryReader reader)
 		{
 			OnDeserialize(reader);
 		}

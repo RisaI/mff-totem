@@ -128,9 +128,10 @@ namespace Mff.Totem.Core
                     var texture = Parallax[i];
                     float scale = World.Game.Resolution.Y / texture.Height;
                     float width = scale * texture.Width;
-					int count = Math.Max(2, (int)(Math.Sqrt(2) * World.Game.Resolution.X / width) + 1);
-                    float offsetX = Helper.NegModulo((int)(World.Camera.Position.X / (float)Math.Pow(2, 2 + i)), (int)width),
-                        offsetY = -((World.Camera.Position.Y) / (float)Math.Pow(2, 8 + i));
+					int count = Math.Max(3, (int)(Math.Sqrt(2) * World.Game.Resolution.X / width) + 1);
+
+					float offsetX = Helper.NegModulo((int)(World.Camera.Position.X / (float)Math.Pow(2, 2 + i)), (int)width),
+                        offsetY = -((World.Camera.Position.Y) / (float)Math.Pow(2, 9 + i));
 
                     for (int c = 0; c < count; ++c)
                     {

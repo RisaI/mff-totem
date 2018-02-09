@@ -24,6 +24,7 @@ namespace Mff.Totem.Core
 		}
 
 		public virtual void Use(Entity ent) { }
+		public virtual void Update(Entity ent, GameTime gameTime) { }
 
 		public virtual Item Clone()
 		{
@@ -136,4 +137,37 @@ namespace Mff.Totem.Core
             return new Bow().CopyData(this);
         }
     }
+
+	[Serializable("item_axe")]
+	public class Axe : Item
+	{
+		protected float _cooldown;
+		public override void Use(Entity ent)
+		{
+			if (_cooldown <= 0 && ent.Targeting.HasValue)
+			{
+				foreach (Entity candidate in ent.World.FindEntitiesAt(ent.Targeting.Value + ent.Position.Value))
+				{
+					if (!candidate.Tags.Contains("tree") || candidate.GetComponent<TreeComponent>() == null)
+						continue;
+
+					_cooldown = 1f;
+					candidate.GetComponent<TreeComponent>().Damage(ent, 10);
+					break;
+				}
+			}
+		}
+
+		public override void Update(Entity ent, GameTime gameTime)
+		{
+			if (_cooldown > 0)
+				_cooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+		}
+
+
+		public override Item Clone()
+		{
+			return new Axe().CopyData(this);
+		}
+	}
 }

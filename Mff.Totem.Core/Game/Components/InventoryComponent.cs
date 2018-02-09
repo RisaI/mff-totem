@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
 	[Serializable("inventory_component")]
-	public class InventoryComponent : EntityComponent
+	public class InventoryComponent : EntityComponent, IUpdatable
 	{
 		public const int EquipSlots = 5;
 
@@ -198,6 +199,15 @@ namespace Mff.Totem.Core
 			}
 
 			return new InventoryComponent() { Size = Size, Items = items, Equip = equip };
+		}
+
+		public void Update(GameTime gameTime)
+		{
+			for (int i = 0; i < Equip.Length; ++i)
+			{
+				if (Equip[i] != null)
+					Equip[i].Update(Parent, gameTime);
+			}
 		}
 	}
 }
