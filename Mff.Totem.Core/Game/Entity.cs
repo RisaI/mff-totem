@@ -180,8 +180,7 @@ namespace Mff.Totem.Core
 			var components = (JArray)obj.GetValue("components");
 			for (int i = 0; i < components.Count; ++i)
 			{
-				var component = EntityComponent.CreateFromJSON((JObject)components[i]);
-				AddComponent(component);
+				AddComponent(DeserializationRegister.ObjectFromJson<EntityComponent>((JObject)components[i]));
 			}
 		}
 

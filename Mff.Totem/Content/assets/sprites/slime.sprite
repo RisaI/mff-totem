@@ -1,0 +1,29 @@
+{
+  "asset": "blue_slime",
+  "fwidth": 35,
+  "fheight": 33,
+  "scale": "2;2",
+  "anchor": "0.5;1",
+  "color": "255;255;255;255",
+  "effect": "None",
+  "animregistry": {
+    "idle": {
+      "startframe": 0,
+      "endframe": 0,
+      "interval": 0,
+      "data": 0
+    },
+    "move_fast": {
+      "startframe": 1,
+      "endframe": 4,
+      "interval": 0.1,
+      "data": 0
+    },
+    "move": {
+      "startframe": 1,
+      "endframe": 4,
+      "interval": 0.2,
+      "data": 0
+    }
+  }
+}

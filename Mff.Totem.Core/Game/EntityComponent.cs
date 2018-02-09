@@ -92,18 +92,6 @@ namespace Mff.Totem.Core
 		/// </summary>
 		/// <returns>A deserialized component.</returns>
 		/// <param name="obj">JObject.</param>
-		public static EntityComponent CreateFromJSON(JObject obj)
-		{
-			EntityComponent component = DeserializationRegister.ObjectFromJson<EntityComponent>(obj);
-			component.FromJson(obj);
-			return component;
-		}
-
-		/// <summary>
-		/// Creates a component from a JObject.
-		/// </summary>
-		/// <returns>A deserialized component.</returns>
-		/// <param name="obj">JObject.</param>
 		public static EntityComponent CreateFromBinary(BinaryReader reader)
 		{
 			EntityComponent component = (EntityComponent)DeserializationRegister.CreateInstance(reader.ReadString());

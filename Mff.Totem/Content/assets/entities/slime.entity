@@ -1,11 +1,13 @@
 ﻿{
 	"components": [
 		{
-			"class": "humanoid_body"
+			"class": "humanoid_body",
+			"width": "1.09375",
+			"height": "0.546875"
 		},
 		{
 			"class": "sprite_component",
-			"sprite": "character"
+			"sprite": "slime"
 		},
 		{
 			"class": "inventory_component",
@@ -13,9 +15,9 @@
 		},
 		{
 			"class": "character_component",
-			"maxhp": "100",
+			"maxhp": "10",
 			"stamina": "15",
-			"speed": "280"
+			"speed": "100"
 		}
 	]
 }
