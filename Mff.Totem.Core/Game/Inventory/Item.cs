@@ -47,9 +47,6 @@ namespace Mff.Totem.Core
 
 		public void ToJson(JsonWriter writer)
 		{
-			writer.WriteStartObject();
-			DeserializationRegister.ObjectClassToJson(writer, this);
-
 			writer.WritePropertyName("id");
 			writer.WriteValue(ID);
 			writer.WritePropertyName("texid");
@@ -69,7 +66,6 @@ namespace Mff.Totem.Core
 			writer.WriteValue(SpeedMultiplier);
 
 			OnToJson(writer);
-			writer.WriteEndObject();
 		}
 
 		public virtual void OnToJson(JsonWriter writer) { }

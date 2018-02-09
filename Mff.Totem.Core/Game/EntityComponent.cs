@@ -60,10 +60,7 @@ namespace Mff.Totem.Core
 		/// <param name="writer">Writer.</param>
 		public void ToJson(JsonWriter writer)
 		{
-			writer.WriteStartObject();
-			DeserializationRegister.ObjectClassToJson(writer, this);
 			WriteToJson(writer);
-			writer.WriteEndObject();
 		}
 
 		/// <summary>

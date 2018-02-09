@@ -44,15 +44,33 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public Vector2? Position
+		{
+			get
+			{
+				var body = GetComponent<BodyComponent>();
+				if (body != null)
+					return body.Position;
+				else
+					return null;
+			}
+		}
+
 		/// <summary>
 		/// A list of entity components that belong to this entity.
 		/// </summary>
 		private List<EntityComponent> Components;
 
+		/// <summary>
+		/// Entity tags.
+		/// </summary>
+		public List<string> Tags;
+
 		public Entity()
 		{
 			UID = Guid.NewGuid();
 			Components = new List<EntityComponent>();
+			Tags = new List<string>();
 		}
 
 		/// <summary>
@@ -154,6 +172,7 @@ namespace Mff.Totem.Core
 		{
 			var entity = new Entity();
 			Components.ForEach(c => entity.AddComponent(c.Clone()));
+			Tags.ForEach(t => entity.Tags.Add(t));
 			return entity;
 		}
 
@@ -164,9 +183,13 @@ namespace Mff.Totem.Core
 		public void ToJson(JsonWriter writer)
 		{
 			writer.WriteStartObject();
+			writer.WritePropertyName("tags");
+			writer.WriteStartArray(); // Array of components
+			Tags.ForEach(t => writer.WriteValue(t));
+			writer.WriteEndArray();
 			writer.WritePropertyName("components");
 			writer.WriteStartArray(); // Array of components
-			Components.ForEach(c => c.ToJson(writer));
+			Components.ForEach(c => DeserializationRegister.ObjectToJson(writer, c));
 			writer.WriteEndArray();
 			writer.WriteEndObject();
 		}
@@ -177,6 +200,14 @@ namespace Mff.Totem.Core
 		/// <param name="obj">Object.</param>
 		public void FromJson(JObject obj)
 		{
+			if (obj["tags"] != null)
+			{
+				var tags = (JArray)obj.GetValue("tags");
+				for (int i = 0; i < tags.Count; ++i)
+				{
+					Tags.Add((string)tags[i]);
+				}
+			}
 			var components = (JArray)obj.GetValue("components");
 			for (int i = 0; i < components.Count; ++i)
 			{
@@ -187,6 +218,8 @@ namespace Mff.Totem.Core
 		public void Serialize(BinaryWriter writer)
 		{
 			writer.Write(UID);
+			writer.Write(Components.Count);
+			Tags.ForEach(t => writer.Write(t));
 			writer.Write((byte)Components.Count);
 			Components.ForEach(c => c.Serialize(writer));
 		}
@@ -194,6 +227,11 @@ namespace Mff.Totem.Core
 		public void Deserialize(BinaryReader reader)
 		{
 			UID = reader.ReadGuid();
+			var tCount = reader.ReadInt32();
+			for (int i = 0; i < tCount; ++i)
+			{
+				Tags.Add(reader.ReadString());
+			}
 			var count = reader.ReadByte();
 			for (int i = 0; i < count; ++i)
 			{

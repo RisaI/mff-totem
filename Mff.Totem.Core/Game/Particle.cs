@@ -57,9 +57,7 @@ namespace Mff.Totem.Core
 
 		public virtual void ToJson(JsonWriter writer) 
 		{
-			writer.WriteStartObject();
-			DeserializationRegister.ObjectClassToJson(writer, this);
-			writer.WriteEndObject();
+			
 		}
 
 		public abstract Particle Clone();

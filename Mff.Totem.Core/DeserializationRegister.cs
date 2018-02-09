@@ -63,15 +63,17 @@ namespace Mff.Totem.Core
 			return (T)instance;
 		}
 
-		public static void ObjectClassToJson<T>(JsonWriter writer, T obj) where T : IJsonSerializable
+		public static void ObjectToJson<T>(JsonWriter writer, T obj) where T : IJsonSerializable
 		{
 			var attributes = obj.GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
 			if (attributes.Length == 0)
 				return;
 
+			writer.WriteStartObject();
 			writer.WritePropertyName("class");
 			writer.WriteValue(((SerializableAttribute)attributes[0]).ID);
-
+			obj.ToJson(writer);
+			writer.WriteEndObject();
 		}
 	}
 }

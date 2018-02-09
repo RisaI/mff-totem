@@ -18,6 +18,12 @@
 			"maxhp": "10",
 			"stamina": "15",
 			"speed": "100"
+		},
+		{
+			"class": "ai_component",
+			"elements": [
+				{ "class": "ai_attack", "range": "500", "targeted": [ "player" ] }
+			]
 		}
 	]
 }

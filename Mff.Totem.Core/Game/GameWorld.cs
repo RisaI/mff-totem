@@ -165,6 +165,28 @@ namespace Mff.Totem.Core
 			return ent;
 		}
 
+		public IEnumerable<Entity> FindEntities(Func<Entity, bool> f)
+		{
+			for (int i = 0; i < Entities.Count; ++i)
+				if (f.Invoke(Entities[i]))
+					yield return Entities[i];
+		}
+
+		public IEnumerable<Entity> FindEntitiesInRange(Vector2 position, float range)
+		{
+			for (int i = 0; i < Entities.Count; ++i)
+			{
+				var p = Entities[i].Position;
+				if (p.HasValue && Math.Abs(p.Value.X - position.X) < range && Math.Abs(p.Value.Y - position.Y) < range)
+					yield return Entities[i];
+			}
+		}
+
+		public Entity FirstEntity(Func<Entity, bool> f)
+		{
+			return Entities.Find(e => f.Invoke(e));
+		}
+
         private GameTime GTime;
 		public void Update(GameTime gameTime)
 		{

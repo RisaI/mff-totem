@@ -1,4 +1,7 @@
 ﻿{
+	"tags": [
+		"player"
+	],
 	"components": [
 		{
 			"class": "humanoid_body"
