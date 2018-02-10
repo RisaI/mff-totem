@@ -47,6 +47,7 @@ namespace Mff.Totem
         public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
 		public static Dictionary<string, Core.Item> Items = new Dictionary<string, Core.Item>();
 		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
+		public static Dictionary<string, Core.Particle> Particles = new Dictionary<string, Core.Particle>();
 
 		public static void Load(Core.TotemGame game)
 		{
@@ -131,6 +132,20 @@ namespace Mff.Totem
 					var ent = new Core.Entity();
 					ent.FromJson(JObject.Load(reader));
 					Entities.Add(name, ent);
+				}
+			}
+
+			foreach (string file in FindAllFiles("Content/assets/particles", ".particle"))
+			{
+				var name = Path.GetFileNameWithoutExtension(file);
+				Console.WriteLine("Loading particle: {0}", name);
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
+				{
+					var par = new Core.Particle();
+					par.FromJson(JObject.Load(reader));
+					Particles.Add(name, par);
 				}
 			}
 		}

@@ -1,6 +1,7 @@
 ﻿{
 	"class": "item_axe",
 	"id": "test_axe",
+	"texid": "51",
 	"maxstack": "1",
 	"slot": "Left"
 }

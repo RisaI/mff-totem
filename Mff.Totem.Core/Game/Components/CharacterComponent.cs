@@ -22,9 +22,9 @@ namespace Mff.Totem.Core
 			get { return _hp; }
 			set
 			{
-				_hp = (int)MathHelper.Clamp(value, 0, MaxHP);
-				if (_hp == 0)
+				if (_hp > 0 && value <= 0)
 					Death();
+				_hp = (int)MathHelper.Clamp(value, 0, MaxHP);
 			}
 		}
 
@@ -137,16 +137,24 @@ namespace Mff.Totem.Core
 	[Serializable("tree_component")]
 	public class TreeComponent : DamagableComponent, IUpdatable
 	{
+		float _shake;
 		bool _falling;
 		public void Update(GameTime gameTime)
 		{
 			var body = Parent.GetComponent<BodyComponent>();
-			if (_falling && body != null)
+			if (body != null)
 			{
-				body.Rotation += (float)gameTime.ElapsedGameTime.TotalSeconds * MathHelper.PiOver4;
-				if (body.Rotation > MathHelper.PiOver2)
+				if (_falling)
 				{
-					Parent.Remove = true;
+					body.Rotation += (float)gameTime.ElapsedGameTime.TotalSeconds * Parent.World.TimeScale * MathHelper.PiOver4;
+					if (body.Rotation > MathHelper.PiOver2)
+					{
+						Parent.Remove = true;
+					}
+				}
+				else if (_shake >= 0)
+				{
+					_shake -= (float)gameTime.ElapsedGameTime.TotalSeconds
 				}
 			}
 		}
@@ -160,6 +168,12 @@ namespace Mff.Totem.Core
 		public override EntityComponent Clone()
 		{
 			return new TreeComponent() { _baseMaxHp = _baseMaxHp, _hp = _hp };
+		}
+
+		public override void Damage(object source, int damage)
+		{
+			_shake = 0.25f;
+			base.Damage(source, damage);
 		}
 	}
 }

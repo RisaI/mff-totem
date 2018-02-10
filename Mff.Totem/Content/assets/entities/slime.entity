@@ -3,7 +3,7 @@
 		{
 			"class": "humanoid_body",
 			"width": "1.09375",
-			"height": "0.546875"
+			"height": "1.09375"
 		},
 		{
 			"class": "sprite_component",

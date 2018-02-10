@@ -217,18 +217,26 @@ namespace Mff.Totem.Core
 					Game.GuiManager.Add(new Gui.MessageBox(args[0]));
 			}, "text");
 
-			AddCommand("hurt", "Be emo.", args =>
+			AddCommand("hurt", "Hurt yourself.", args =>
 			{
 				Game.Hud.Observed.GetComponent<CharacterComponent>().Stamina -= int.Parse(args[0]);
 			}, "amount");
 
-			AddCommand("additem", "Be emo.", args =>
+			AddCommand("additem", "Add an item to your inventory.", args =>
 			{
 				var item = ContentLoader.Items[args[0]].Clone();
 				if (args.Length >= 2)
 					item.Count = int.Parse(args[1]);
 				Game.Hud.Observed.GetComponent<InventoryComponent>().AddItem(item);
 			}, "id", "[count]");
+
+			AddCommand("debugview", "Toggle debugview.", args =>
+			{
+				if (args.Length > 0)
+					Game.World.DebugView.Enabled = bool.Parse(args[0]);
+				else
+					Game.World.DebugView.Enabled = !Game.World.DebugView.Enabled;
+			}, "[on]");
 		}
 
 		/// <summary>

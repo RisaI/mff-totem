@@ -120,17 +120,29 @@ namespace Mff.Totem.Core
     [Serializable("item_bow")]
     public class Bow : Item
     {
+		protected float _cooldown;
         public override void Use(Entity ent)
         {
-            var character = ent.GetComponent<CharacterComponent>();
-            if (character != null)
-            {
-                var direction = character.Target;
-                direction.Normalize();
-                direction *= 3000f;
-                ent.World.CreateEntity("arrow_projectile").GetComponent<ProjectileBody>().SetProjectileData(ent, direction);
-            }
+			if (_cooldown <= 0)
+			{
+				var character = ent.GetComponent<CharacterComponent>();
+				if (character != null)
+				{
+					var direction = character.Target;
+					direction.Normalize();
+					direction *= 3000f;
+					ent.World.CreateEntity("arrow_projectile").GetComponent<ProjectileBody>().SetProjectileData(ent, direction);
+					_cooldown = 1f;
+				}
+			}
         }
+
+		public override void Update(Entity ent, GameTime gameTime)
+		{
+			if (_cooldown > 0)
+				_cooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+		}
+
 
         public override Item Clone()
         {
