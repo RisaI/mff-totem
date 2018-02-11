@@ -1,0 +1,7 @@
+﻿{
+	"class": "particle_falling",
+	"lifetime": "5",
+	"fallspeed": "100",
+	"sprite": "leaf",
+	"anim": "idle"
+}

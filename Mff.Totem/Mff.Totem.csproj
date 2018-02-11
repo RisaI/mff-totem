@@ -117,6 +117,12 @@
     <None Include="Content\assets\items\testaxe.item">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\assets\sprites\leaf.sprite">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\assets\particles\leaf.particle">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.csproj">
@@ -144,6 +150,7 @@
   <ItemGroup>
     <Folder Include="Content\assets\items\" />
     <Folder Include="Content\assets\parallaxes\" />
+    <Folder Include="Content\assets\particles\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

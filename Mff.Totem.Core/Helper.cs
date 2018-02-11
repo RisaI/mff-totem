@@ -108,6 +108,20 @@ namespace Mff.Totem
 		}
 
 		/// <summary>
+		/// Read a Rectangle from JObject
+		/// </summary>
+		/// <returns>A rectangle.</returns>
+		/// <param name="obj">JObject.</param>
+		public static Microsoft.Xna.Framework.Rectangle JTokenToRectangle(Newtonsoft.Json.Linq.JToken obj)
+		{
+			var clrs = ((string)obj).Split(';');
+			return new Microsoft.Xna.Framework.Rectangle(int.Parse(clrs[0], NumberStyles.Any, CultureInfo.InvariantCulture), 
+			                   int.Parse(clrs[1], NumberStyles.Any, CultureInfo.InvariantCulture),
+							   int.Parse(clrs[2], NumberStyles.Any, CultureInfo.InvariantCulture),
+			                   int.Parse(clrs[3], NumberStyles.Any, CultureInfo.InvariantCulture));
+		}
+
+		/// <summary>
 		/// Read a color from JObject.
 		/// </summary>
 		/// <returns>A color.</returns>
@@ -265,6 +279,17 @@ namespace Mff.Totem
 				new IntPoint(x, y + width)
 			};
 			return result;
+		}
+
+		/// <summary>
+		/// Returns a random point inside this rectangle
+		/// </summary>
+		/// <returns>The point.</returns>
+		/// <param name="rect">Rect.</param>
+		public static Vector2 RandomPoint(this Microsoft.Xna.Framework.Rectangle rect)
+		{
+			return new Vector2(rect.X + (float)(TotemGame.Random.NextDouble() * rect.Width), 
+			                   rect.Y + (float)(TotemGame.Random.NextDouble() * rect.Height));
 		}
 	}
 

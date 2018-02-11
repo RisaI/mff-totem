@@ -143,8 +143,7 @@ namespace Mff.Totem
 				using (StreamReader sReader = new StreamReader(stream))
 				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
 				{
-					var par = new Core.Particle();
-					par.FromJson(JObject.Load(reader));
+					var par = DeserializationRegister.ObjectFromJson<Particle>(JObject.Load(reader));
 					Particles.Add(name, par);
 				}
 			}

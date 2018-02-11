@@ -8,6 +8,7 @@ using FarseerPhysics.DebugView;
 using FarseerPhysics.Dynamics;
 using System.IO;
 using Microsoft.Xna.Framework.Input;
+using System.Text;
 
 namespace Mff.Totem.Core
 {
@@ -165,6 +166,15 @@ namespace Mff.Totem.Core
 			return ent;
 		}
 
+		public Particle SpawnParticle(string asset, Vector2 position)
+		{
+			var p = ContentLoader.Particles[asset].Clone();
+			p.Position = position;
+			Particles.Add(p);
+			p.Spawn(this);
+			return p;
+		}
+
 		public IEnumerable<Entity> FindEntities(Func<Entity, bool> f)
 		{
 			for (int i = 0; i < Entities.Count; ++i)
@@ -253,12 +263,13 @@ namespace Mff.Totem.Core
 				if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
 				{
 					var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
-					Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
+					SpawnParticle("leaf", worldMPos);
+					/*Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
 						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
 						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
 						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
 						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
-					});
+					});*/
 				}
 			}
 			if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
@@ -377,6 +388,14 @@ namespace Mff.Totem.Core
                                     Matrix.CreateScale(Camera.Zoom);
                 lock (Physics)
                     DebugView.RenderDebugData(proj, view);
+
+				StringBuilder text = new StringBuilder();
+				var mpos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
+				text.AppendFormat("Mouse position: {0}, {1}", (int)mpos.X, (int)mpos.Y);
+				var font = ContentLoader.Fonts["menu"];
+				spriteBatch.Begin();
+				spriteBatch.DrawString(font, text, new Vector2(Game.Resolution.X, 0), Color.White, 0, new Vector2(font.MeasureString(text).X, 0), 0.3f, SpriteEffects.None, 1f);
+				spriteBatch.End();
             }
         }
 
