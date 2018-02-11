@@ -12,6 +12,7 @@ using ClipperLib;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections;
 
 namespace Mff.Totem.Core
 {
@@ -21,7 +22,6 @@ namespace Mff.Totem.Core
 
 		public const int MAX_DEPTH = 10000 * 6, SPACING = 32;
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
-		public const int CAVE_SPACING = Chunk.WIDTH / 16;
 
 		public OpenSimplexNoise NoiseMap
 		{
@@ -42,345 +42,498 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public List<List<IntPoint>> DamageMap;
+		public Dictionary<ulong, Chunk> SavedChunks = new Dictionary<ulong, Chunk>();
+		public List<Chunk> ActiveChunks = new List<Chunk>();
+		private List<Vertices> TriangulatedArea = new List<Vertices>();
 
 		public Terrain(GameWorld world)
 		{
 			World = world;
-			DamageMap = new List<List<IntPoint>>();
-			c = new Clipper();
 		}
 
-		Clipper c;
 		public void Generate(long seed = 0)
 		{
-			Random = new Random();
-			Seed = seed != 0 ? seed : (long)Random.Next();
-			DamageMap.Clear();
-			TerrainBody = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
-			SetActiveRegion(-1, 0, false);
+			if (seed == 0)
+				seed = TotemGame.Random.Next();
+			Seed = seed;
+
+			SavedChunks.Clear();
+			ActiveChunks.Clear();
+			//SetActiveArea(Vector2.Zero, 1500);
 		}
 
 		public void Update()
 		{
-			
+
 		}
 
-		public void CreateDamage(List<IntPoint> polygon)
+		public void CreateDamage(Vector2 point)
 		{
-			DamageMap.Add(polygon);
-			c.Clear();
-			c.AddPolygons(DamageMap, PolyType.ptClip);
-			DamageMap.Clear();
-			c.Execute(ClipType.ctXor, DamageMap, PolyFillType.pftPositive, PolyFillType.pftNonZero);
-			var left = Helper.NegDivision(DamageMap.Min(po => po.Min(p => p.X)), Chunk.WIDTH);
-			var right = Helper.NegDivision(DamageMap.Max(po => po.Max(p => p.X)), Chunk.WIDTH);
-
-			for (long i = left; i <= right; ++i)
+			int x = Helper.NegDivision((int)point.X, Chunk.CHUNK_SIZE_PX),
+				y = Helper.NegDivision((int)point.Y, Chunk.CHUNK_SIZE_PX),
+				tX = Helper.NegDivision(Helper.NegModulo((int)point.X, Chunk.CHUNK_SIZE_PX), Chunk.TILE_SIZE_PX),
+				tY = Helper.NegDivision(Helper.NegModulo((int)point.Y, Chunk.CHUNK_SIZE_PX), Chunk.TILE_SIZE_PX);
+			var chunk = GetChunk(x, y);
+			chunk.SetDamage(tX, tY, true);
+			var update = chunk.NeedsUpdate;
+			Task.Run(() => PlaceChunk(chunk, x, y));
+			if (update)
 			{
-				Chunk ch = ActiveChunks.Find(c => c.ID == i);
-				if (ch != null)
-					PlaceChunk(ch);
+				if (tX == 0)
+					UpdateIfActive(x-1,y);
+				if (tY == 0)
+					UpdateIfActive(x, y - 1);
 			}
 		}
 
-		public void CreateDamage(params IntPoint[] points)
+		private void UpdateIfActive(int x, int y)
 		{
-			CreateDamage(points.ToList());
+			var ch = GetChunk(x, y);
+			if (ActiveChunks.Contains(ch))
+			{
+				ch.NeedsUpdate = true;
+				Task.Run(() => { PlaceChunk(ch, x, y); });
+			}
 		}
 
-		Body TerrainBody;
-
-		private Random Random;
-		private void CreateChunkTerrain(Chunk ch)
+		private int activeAreaX, activeAreaY, activeAreaRange;
+		public void SetActiveArea(Vector2 position, float range)
 		{
-			long x = ch.Left;
-			List<List<IntPoint>> solution = new List<List<IntPoint>>(), cavities = new List<List<IntPoint>>();
-			List<IntPoint> verts = new List<IntPoint>();
-
-			// Add end faces
-			verts.Add(new IntPoint(x, MAX_DEPTH));
-
-			for (int i = 0; i <= Chunk.WIDTH / SPACING; ++i)
+			bool changed = false;
+			int half = (int)(range / Chunk.CHUNK_SIZE_PX) + 1;
+			if (activeAreaRange != half * 2 + 1)
 			{
-				long x0 = x + i * SPACING, height = (long)HeightMap(x0);
-				verts.Add(new IntPoint(x0, height));
+				activeAreaRange = half * 2 + 1;
+				changed = true;
+			}
+			if (activeAreaX != Helper.NegDivision((int)position.X, Chunk.CHUNK_SIZE_PX) - half)
+			{
+				activeAreaX = Helper.NegDivision((int)position.X, Chunk.CHUNK_SIZE_PX) - half;
+				changed = true;
+			}
+			if (activeAreaY != Helper.NegDivision((int)position.Y, Chunk.CHUNK_SIZE_PX) - half)
+			{
+				activeAreaY = Helper.NegDivision((int)position.Y, Chunk.CHUNK_SIZE_PX) - half;
+				changed = true;
 			}
 
-			var cl = new Clipper();
-
-			/*for (int tX = 0; tX < Chunk.WIDTH / CAVE_SPACING; ++tX)
-			{
-				for (int tY = 0; tY < (MAX_DEPTH - BASE_HEIGHT - BASE_STEP / 2) / CAVE_SPACING; ++tY)
-				{
-					var val = NoiseMap.Evaluate((x + tX * CAVE_SPACING) / (1024.0), (tY*CAVE_SPACING) / 1024.0);
-					if (val > 0.3)
-						cl.AddPolygon(Helper.CreateRectangle((int)x + tX*CAVE_SPACING, BASE_HEIGHT + BASE_STEP / 2 + tY*CAVE_SPACING,CAVE_SPACING, CAVE_SPACING), PolyType.ptClip);
-				}
-			}*/
-
-			// Add second end face point
-			verts.Add(new IntPoint(x + Chunk.WIDTH, MAX_DEPTH));
-
-			cl.AddPolygon(verts, PolyType.ptSubject);
-			//cl.Execute(ClipType.ctDifference, solution, PolyFillType.pftPositive, PolyFillType.pftNonZero);
-			cl.Execute(ClipType.ctIntersection, cavities, PolyFillType.pftPositive, PolyFillType.pftNonZero);
-
-			cavities.ForEach(c =>
-			{
-				for (int i = 0; i < c.Count; ++i)
-				{
-					var p = c[i];
-					if (p.X == ch.Left)
-						c[i] = new IntPoint(p.X - 1, p.Y);
-					if (p.X == ch.Right)
-						c[i] = new IntPoint(p.X + 1, p.Y);
-				}
-			});
-
-			ch.Polygon = verts;
-			ch.Cavities = cavities;
-			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(solution), Color.White);
-			ch.TriangulatedWholeVertices = Chunk.TriangulatedRenderData(Helper.Triangulate(verts), Color.Gray);
-		}
-
-		void GenerateChunk(Chunk ch)
-		{
-			if (ch.Generated)
-				return;
-			CreateChunkTerrain(ch);
-			for (int i = 0; i < 16; ++i)
-			{
-				var tree = ContentLoader.Entities["tree"].Clone();
-				var pos = new Vector2(ch.Left + (i + 1) * (Chunk.WIDTH / 16f), 0);
-				pos.Y = HeightMap(pos.X);
-				tree.GetComponent<BodyComponent>().Position = pos;
-				ch.Trees.Add(tree);
-			}
-			ch.Generated = true;
-		}
-
-		void PlaceChunk(Chunk ch)
-		{
-			if (!ch.Generated)
+			if (!changed)
 				return;
 
-			var cl = new Clipper();
-			cl.Clear();
-			cl.AddPolygon(ch.Polygon, PolyType.ptSubject);
-			cl.AddPolygons(ch.Cavities, PolyType.ptClip);
-			cl.AddPolygons(DamageMap, PolyType.ptClip);
-			List<List<IntPoint>> result = new List<List<IntPoint>>();
-			cl.Execute(ClipType.ctDifference, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-
-			var holes = new List<List<IntPoint>>();
-			cl.Execute(ClipType.ctIntersection, holes, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
-			ch.TriangulatedVertices = Chunk.TriangulatedRenderData(Helper.TriangulateWithHoles(new List<List<IntPoint>>() { ch.Polygon }, holes), Color.White);
-
-
-			lock (TerrainBody)
+			TriangulatedArea.Clear();
+			ActiveChunks.ForEach(ac => // Unload unchanged unactive chunks
 			{
-				UnplaceChunk(ch);
-
-				result.ForEach(polygon =>
+				var unpacked = TerrainHelper.UnpackCoordinates(ac.ID);
+				if (unpacked.Item1 < activeAreaX || unpacked.Item1 >= activeAreaX + activeAreaRange ||
+									  unpacked.Item2 < activeAreaY || unpacked.Item2 >= activeAreaY + activeAreaRange)
 				{
-					var f = FixtureFactory.AttachLoopShape(Helper.PolygonToVertices(polygon), TerrainBody, this);
-					ch.Fixtures.Add(f);
-				});
-
-				ch.Trees.ForEach(tree =>
-				{
-					tree.Remove = false;
-					World.SpawnEntity(tree);
-				});
-			}
-		}
-
-		void UnplaceChunk(Chunk ch)
-		{
-			lock (TerrainBody)
-			{
-				if (ch.Fixtures.Count > 0)
-				{
-					ch.Fixtures.ForEach(f => TerrainBody.DestroyFixture(f));
-					ch.Fixtures.Clear();
-				}
-			}
-			ch.Trees.ForEach(t => t.Remove = true);
-		}
-
-		public void ClearFromWorld()
-		{
-			if (TerrainBody != null)
-			{
-				World.Physics.RemoveBody(TerrainBody);
-				TerrainBody = null;
-			}
-		}
-
-		List<Chunk> ChunkCache = new List<Chunk>(CHUNK_CACHE);
-		public List<Chunk> ActiveChunks = new List<Chunk>();
-		/// <summary>
-		/// Sets the active region of terrain. Only chunks in this region will be displayed in world.
-		/// </summary>
-		/// <param name="a">Left bound.</param>
-		/// <param name="b">Right bound.</param>
-		public void SetActiveRegion(long a, long b, bool asynch = true)
-		{
-			if (a > b)
-			{
-				a = a ^ b;
-				b = a ^ b;
-				a = a ^ b;
-			}
-
-			a = Helper.NegDivision(a, Chunk.WIDTH);
-			b = Helper.NegDivision(b, Chunk.WIDTH) + 1;
-			for (long i = a; i < b; ++i)
-			{
-				Chunk ch = ActiveChunks.Find(c => c.ID == i);
-				if (ch == null)
-				{
-					ch = ChunkCache.Find(c => c.ID == i);
-					if (ch == null)
+					if (ac.Body != null)
 					{
-						ActiveChunks.Add(ch = new Chunk(i));
-						CacheChunk(ch);
-						CreateGenerationTask(ch, asynch);
+						lock (ac.Body)
+						{
+							World.Physics.RemoveBody(ac.Body);
+						}
 					}
-					else
-					{
-						ActiveChunks.Add(ch);
-						PlaceChunk(ch);
-					}
+					if (!ac.ShouldSave)
+						SavedChunks.Remove(ac.ID);
 				}
-			}
-			ActiveChunks.ForEach(ch => {
-				if (ch.ID < a || ch.ID >= b)
-					UnplaceChunk(ch);
 			});
-			ActiveChunks.RemoveAll(ch => ch.ID < a || ch.ID >= b);
-		}
+			ActiveChunks.Clear();
 
-		void CacheChunk(Chunk ch)
-		{
-			if (ChunkCache.Count >= CHUNK_CACHE)
+			for (int x = 0; x < activeAreaRange; ++x)
 			{
-				var center = (ActiveChunks.Min(c => c.ID) + ActiveChunks.Max(c => c.ID)) / 2;
-				Chunk furthest = null;
-				long dist = 0;
-				ChunkCache.ForEach(c =>
+				for (int y = 0; y < activeAreaRange; ++y)
 				{
-					var d = Math.Abs(c.ID - center);
-					if (furthest == null || d > dist)
+					Chunk c = GetChunk(activeAreaX + x, activeAreaY + y);
+					int aX = activeAreaX + x, aY = activeAreaY + y;
+					ActiveChunks.Add(c);
+					Task.Run(() =>
 					{
-						furthest = c;
-						dist = d;
-					}
-				});
-				ChunkCache.Remove(furthest);
+						PlaceChunk(c, aX, aY);
+					});
+				}
 			}
-			ChunkCache.Add(ch);
 		}
 
-		void CreateGenerationTask(Chunk ch, bool asynch = true)
+		private void PlaceChunk(Chunk c, int x, int y)
 		{
-			if (asynch)
+			if (c.NeedsUpdate)
 			{
-				if (ch.GenerationTask != null)
+				Clipper clip = new Clipper();
+				if (!c.Complete())
 				{
-					ch.GenerationTask.Wait();
-					ch.GenerationTask.Dispose();
+					for (int tX = 0; tX < Chunk.CHUNK_SIZE - 1; ++tX)
+					{
+						for (int tY = 0; tY < Chunk.CHUNK_SIZE - 1; ++tY)
+						{
+							byte marchValue = 0;
+							if (c.GetTile(tX, tY))
+								marchValue += 1;
+							if (c.GetTile(tX + 1, tY))
+								marchValue += 2;
+							if (c.GetTile(tX, tY + 1))
+								marchValue += 4;
+							if (c.GetTile(tX + 1, tY + 1))
+								marchValue += 8;
+							TerrainHelper.MarchingSquare(marchValue, new IntPoint(x * Chunk.CHUNK_SIZE_PX + tX * Chunk.TILE_SIZE_PX + Chunk.TILE_SIZE_PX / 2,
+																				 y * Chunk.CHUNK_SIZE_PX + tY * Chunk.TILE_SIZE_PX + Chunk.TILE_SIZE_PX / 2), clip);
+						}
+					}
 				}
-				ch.GenerationTask = Task.Run(() => { GenerateChunk(ch); PlaceChunk(ch); });
+				else
+				{
+					clip.AddPolygon(new List<IntPoint>() { 
+						new IntPoint(x * Chunk.CHUNK_SIZE_PX + Chunk.TILE_SIZE_PX / 2,y * Chunk.CHUNK_SIZE_PX + Chunk.TILE_SIZE_PX / 2),
+						new IntPoint((x + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2,y * Chunk.CHUNK_SIZE_PX + Chunk.TILE_SIZE_PX / 2),
+						new IntPoint((x + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2, (y + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2),
+						new IntPoint(x * Chunk.CHUNK_SIZE_PX + Chunk.TILE_SIZE_PX / 2, (y + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2) }, PolyType.ptSubject);
+				}
+				Chunk xNeighbour = null, yNeighbour = null;
+				{
+					xNeighbour = GetChunk(x + 1, y);
+					for (int tY = 0; tY < Chunk.CHUNK_SIZE - 1; ++tY)
+					{
+						byte marchValue = 0;
+						if (c.GetTile(Chunk.CHUNK_SIZE - 1, tY))
+							marchValue += 1;
+						if (xNeighbour.GetTile(0, tY))
+							marchValue += 2;
+						if (c.GetTile(Chunk.CHUNK_SIZE - 1, tY + 1))
+							marchValue += 4;
+						if (xNeighbour.GetTile(0, tY + 1))
+							marchValue += 8;
+						TerrainHelper.MarchingSquare(marchValue, new IntPoint((x + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2,
+																			  y * Chunk.CHUNK_SIZE_PX + tY * Chunk.TILE_SIZE_PX + Chunk.TILE_SIZE_PX / 2), clip);
+					}
+				}
+				{
+					yNeighbour = GetChunk(x, y + 1);
+					for (int tX = 0; tX < Chunk.CHUNK_SIZE - 1; ++tX)
+					{
+						byte marchValue = 0;
+						if (c.GetTile(tX, Chunk.CHUNK_SIZE - 1))
+							marchValue += 1;
+						if (c.GetTile(tX + 1, Chunk.CHUNK_SIZE - 1))
+							marchValue += 2;
+						if (yNeighbour.GetTile(tX, 0))
+							marchValue += 4;
+						if (yNeighbour.GetTile(tX + 1, 0))
+							marchValue += 8;
+						TerrainHelper.MarchingSquare(marchValue, new IntPoint(x * Chunk.CHUNK_SIZE_PX + tX * Chunk.TILE_SIZE_PX + Chunk.TILE_SIZE_PX / 2,
+						                                                     (y + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2), clip);
+					}
+				}
+				{
+					Chunk xyNeighbour = GetChunk(x + 1, y + 1);
+
+					byte marchValue = 0;
+					if (c.GetTile(Chunk.CHUNK_SIZE - 1, Chunk.CHUNK_SIZE - 1))
+						marchValue += 1;
+					if (xNeighbour.GetTile(0, Chunk.CHUNK_SIZE - 1))
+						marchValue += 2;
+					if (yNeighbour.GetTile(Chunk.CHUNK_SIZE - 1, 0))
+						marchValue += 4;
+					if (xyNeighbour.GetTile(0, 0))
+						marchValue += 8;
+					TerrainHelper.MarchingSquare(marchValue, new IntPoint((x + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2,
+																		 (y + 1) * Chunk.CHUNK_SIZE_PX - Chunk.TILE_SIZE_PX / 2), clip);
+				}
+				List<Vertices> triangulation = new List<Vertices>();
+				List<List<IntPoint>> result = new List<List<IntPoint>>();
+				clip.Execute(ClipType.ctUnion, result, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+				result.ForEach(res => triangulation.AddRange(Helper.Triangulate(res)));
+
+				c.RenderData = new VertexPositionColor[triangulation.Count * 3];
+				int index = 0;
+				triangulation.ForEach(v =>
+				{
+					c.RenderData[index++] = new VertexPositionColor(new Vector3(v[0].X, v[0].Y, 0), Color.White);
+					c.RenderData[index++] = new VertexPositionColor(new Vector3(v[1].X, v[1].Y, 0), Color.White);
+					c.RenderData[index++] = new VertexPositionColor(new Vector3(v[2].X, v[2].Y, 0), Color.White);
+				});
+
+				c.Polygons = new List<Vertices>();
+				result.ForEach(res => c.Polygons.Add(Helper.PolygonToVertices(res)));
 			}
-			else
+
+			if (c.Body == null)
 			{
-				GenerateChunk(ch);
-				PlaceChunk(ch);
+				lock (World.Physics)
+				{
+					c.Body = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
+				}
 			}
+
+			if (c.NeedsUpdate)
+			{
+				lock (World.Physics)
+				{
+					c.Body.FixtureList.ForEach(f => c.Body.DestroyFixture(f));
+					c.Polygons.ForEach(p => FixtureFactory.AttachLoopShape(p, c.Body, this));
+				}
+			}
+			c.NeedsUpdate = false;
 		}
+
+		public Chunk GetChunk(int Cx, int Cy)
+		{
+			ulong id = TerrainHelper.PackCoordinates(Cx, Cy);
+			Chunk c = null;
+			lock (SavedChunks)
+			{
+				if (SavedChunks.ContainsKey(id))
+				{
+					c = SavedChunks[id];
+				}
+				else
+				{
+					c = new Chunk(id);
+					SavedChunks.Add(id, c);
+
+					for (int tX = 0; tX < Chunk.CHUNK_SIZE; ++tX)
+					{
+						for (int tY = 0; tY < Chunk.CHUNK_SIZE; ++tY)
+						{
+							//c.TileMap.Set(tX + tY * Chunk.CHUNK_SIZE, TileMap(Cx * Chunk.CHUNK_SIZE + tX, Cy * Chunk.CHUNK_SIZE + tY));
+							c.TileMap[tX + tY * Chunk.CHUNK_SIZE] = TileMap(Cx * Chunk.CHUNK_SIZE + tX, Cy * Chunk.CHUNK_SIZE + tY);
+						}
+					}
+				}
+			}
+			return c;
+		}
+
 
 		public float HeightMap(float x)
 		{
-			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.WIDTH * 8), 0)- 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.WIDTH));
+			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.TILE_SIZE_PX * 32), 0)- 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.CHUNK_SIZE_PX));
 		}
 
-		public long ChunkID(float x)
+		public bool TileMap(int xT, int yT)
 		{
-			return Helper.NegDivision((int)x, Chunk.WIDTH);
+			//return NoiseMap.Evaluate(xT, yT) < .1;
+			return yT * Chunk.TILE_SIZE_PX > HeightMap(xT);
+		}
+
+		public ulong ChunkID(float x, float y)
+		{
+			return TerrainHelper.PackCoordinates(Helper.NegDivision((int)x, Chunk.CHUNK_SIZE_PX),
+			                                             Helper.NegDivision((int)y, Chunk.CHUNK_SIZE_PX));
+		}
+
+		public static class TerrainHelper
+		{
+			public static ulong PackCoordinates(int x, int y)
+			{
+				return ((ulong)((uint)x) << 32) | (uint)y;
+			}
+
+			public static Tuple<int, int> UnpackCoordinates(ulong packed)
+			{
+				return Tuple.Create((int)(packed >> 32), (int)packed);
+			}
+
+			public static void MarchingSquare(byte v, IntPoint topleft, Clipper output)
+			{
+				switch (v)
+				{
+					case 1:
+						Triangle(topleft, 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+					case 2:
+						Triangle(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+					case 4:
+						Triangle(topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), output);
+						break;
+					case 8:
+						Triangle(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+
+					case 3:
+						Quad(topleft, topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)),
+						     topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)),
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+					case 12:
+						Quad(topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)),
+						     topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), output);
+						break;
+					case 5:
+						Quad(topleft, 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)),
+						     topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), output);
+						break;
+					case 10:
+						Quad(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)),
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), output);
+						break;
+
+					case 7:
+						Pentagon(topleft, 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)),
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), output);
+						break;
+					case 11:
+						Pentagon(topleft, 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)),
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)),
+								 topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+					case 13:
+						Pentagon(topleft, 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)),
+								 topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), output);
+						break;
+					case 14:
+						Pentagon(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)),
+								 topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+
+					case 9:
+						Triangle(topleft,
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)), output);
+						Triangle(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)), output);
+						break;
+					case 6:
+						Triangle(topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						         topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX / 2)),
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, Chunk.TILE_SIZE_PX)), output);
+						Triangle(topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)), 
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX / 2)),
+						         topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX / 2, 0)), output);
+						break;
+
+					case 15:
+						Quad(topleft, 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, 0)),
+							 topleft.Add(new IntPoint(0, Chunk.TILE_SIZE_PX)), 
+						     topleft.Add(new IntPoint(Chunk.TILE_SIZE_PX, Chunk.TILE_SIZE_PX)), output);
+						break;
+				}
+			}
+
+			public static void Triangle(IntPoint a, IntPoint b, IntPoint c, Clipper output)
+			{
+				output.AddPolygon(new List<IntPoint>() { a, b, c }, PolyType.ptSubject);
+			}
+
+			public static void Quad(IntPoint a, IntPoint b, IntPoint c, IntPoint d, Clipper output)
+			{
+				Triangle(a, b, c, output);
+				Triangle(b, d, c, output);
+			}
+
+			public static void Pentagon(IntPoint a, IntPoint b, IntPoint c, IntPoint d, IntPoint e, Clipper output)
+			{
+				Triangle(a, b, c, output);
+				Triangle(a, c, d, output);
+				Triangle(a, d, e, output);
+			}
 		}
 	}
 
 	public class Chunk
 	{
-		public const int WIDTH = Terrain.SPACING * 64;
+		public const int TILE_SIZE_PX = 16;
+		public const int CHUNK_SIZE = 32,
+			CHUNK_SIZE_PX = CHUNK_SIZE * TILE_SIZE_PX;
 
-		public bool Generated;
-		public long ID;
-
+		public bool[] TileMap, DamageMap;
+		public ulong ID;
 		public Task GenerationTask;
+		public Body Body;
+		public VertexPositionColor[] RenderData;
+		public List<Vertices> Polygons;
 
-		public List<Entity> Trees = new List<Entity>();
-
-		/*List<List<IntPoint>> _polygons;
-		public List<List<IntPoint>> Polygons
-		{
-			get { return _polygons; }
-			set
-			{
-				_polygons = value;
-			}
-		}*/
-
-		public List<IntPoint> Polygon
+		public bool ShouldSave
 		{
 			get;
-			set;
+			private set;
 		}
 
-		public List<List<IntPoint>> Cavities
+		public bool NeedsUpdate;
+
+		public Chunk(int x, int y) :
+			this(Terrain.TerrainHelper.PackCoordinates(x, y))
 		{
-			get;
-			set;
+
 		}
 
-		public VertexPositionColor[] TriangulatedVertices
-		{
-			get;
-			set;
-		}
-
-		public VertexPositionColor[] TriangulatedWholeVertices
-		{
-			get;
-			set;
-		}
-
-		public List<Fixture> Fixtures = new List<Fixture>();
-
-		public long Left
-		{
-			get { return ID * WIDTH; }
-		}
-
-		public long Right
-		{
-			get { return Left + WIDTH; }
-		}
-
-		public Chunk(long id)
+		public Chunk(ulong id)
 		{
 			ID = id;
+			NeedsUpdate = true;
+			TileMap = new bool[CHUNK_SIZE * CHUNK_SIZE];
+			DamageMap = new bool[CHUNK_SIZE * CHUNK_SIZE];
 		}
 
-		public static VertexPositionColor[] TriangulatedRenderData(List<Vertices> triangulated, Color c)
+		public bool GetDamage(int tX, int tY)
 		{
-			var output = new VertexPositionColor[triangulated.Count * 3];
-			int index = 0;
-			triangulated.ForEach(triangle => triangle.ForEach(vert =>
-			                                                  output[index++] = new VertexPositionColor(new Vector3(vert.X, vert.Y, 0), c)));
-			return output;
+			return DamageMap[tX + tY * CHUNK_SIZE];
+		}
+
+		public bool GetTile(int tX, int tY)
+		{
+			return GetTile(tX + tY * CHUNK_SIZE);
+		}
+
+		public bool GetTile(int i)
+		{
+			return TileMap[i] && !DamageMap[i];
+		}
+
+		public bool Complete()
+		{
+			for (int i = 0; i < CHUNK_SIZE * CHUNK_SIZE; ++i)
+				if (!GetTile(i))
+					return false;
+			return true;
+		}
+
+		public void SetDamage(int tX, int tY, bool val)
+		{
+			if (tX >= CHUNK_SIZE || tY >= CHUNK_SIZE)
+				return;
+			
+			if (DamageMap[tX + tY * CHUNK_SIZE] != val)
+				NeedsUpdate = true;
+			DamageMap[tX + tY * CHUNK_SIZE] = val;
+			if (val)
+				ShouldSave = true;
+		}
+
+		public Rectangle BoundingBox
+		{
+			get {
+				var unpacked = Terrain.TerrainHelper.UnpackCoordinates(ID);
+				return new Rectangle(unpacked.Item1 * CHUNK_SIZE_PX, 
+				                     unpacked.Item2 * CHUNK_SIZE_PX, 
+				                     CHUNK_SIZE_PX, CHUNK_SIZE_PX); }
 		}
 	}
 }

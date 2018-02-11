@@ -128,8 +128,8 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-			//CameraControls = true;
+			//CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+			CameraControls = true;
 		}
 
 		/// <summary>
@@ -250,15 +250,16 @@ namespace Mff.Totem.Core
 				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
 					Camera.Rotation -= 0.1f;*/
 
-				if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
+				if (Game.Input.GetInput(Inputs.A, InputState.Down))
 				{
 					var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
-					Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
+					Terrain.CreateDamage(worldMPos);
+					/*Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
 						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
 						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
 						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
 						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
-					});
+					});*/
 				}
 			}
 			if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
@@ -266,8 +267,7 @@ namespace Mff.Totem.Core
 			if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
 				Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 
-			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
-			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);
+			Terrain.SetActiveArea(Camera.Position, 1500);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -309,20 +309,12 @@ namespace Mff.Totem.Core
 					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
 				GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
-				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				/*foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 				{
-					var chunk = Terrain.ActiveChunks[i];
-					if (!chunk.Generated)
-						continue;
-
-					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
-					{
-						pass.Apply();
-						if (chunk.TriangulatedWholeVertices != null)
-							Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedWholeVertices,
-																   0, chunk.TriangulatedWholeVertices.Length / 3);
-					}
-				}
+					pass.Apply();
+					Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedWholeVertices,
+														0, chunk.TriangulatedWholeVertices.Length / 3);
+				}*/
 			}
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
@@ -337,17 +329,15 @@ namespace Mff.Totem.Core
 			// Ground rendering
 			if (Terrain.ActiveChunks.Count > 0)
 			{
-				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 				{
-					var chunk = Terrain.ActiveChunks[i];
-					if (!chunk.Generated)
-						continue;
-					
-					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+					pass.Apply();
+					Terrain.ActiveChunks.ForEach(ac =>
 					{
-						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedVertices, 0, chunk.TriangulatedVertices.Length / 3);
-					}
+						if (ac.RenderData != null && ac.RenderData.Length > 0)
+							Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, ac.RenderData,
+																   0, ac.RenderData.Length / 3);
+					});
 				}
 			}
 
@@ -375,8 +365,10 @@ namespace Mff.Totem.Core
                 Matrix view = (Camera != null ? Matrix.CreateTranslation(-Camera.Position.X / 64f, -Camera.Position.Y / 64f, 0) : Matrix.Identity) *
                                     Matrix.CreateRotationZ(Camera.Rotation) *
                                     Matrix.CreateScale(Camera.Zoom);
-                lock (Physics)
-                    DebugView.RenderDebugData(proj, view);
+				lock (Physics)
+				{
+					DebugView.RenderDebugData(proj, view);
+				}
             }
         }
 

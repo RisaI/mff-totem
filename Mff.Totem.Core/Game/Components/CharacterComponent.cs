@@ -154,7 +154,7 @@ namespace Mff.Totem.Core
 				}
 				else if (_shake >= 0)
 				{
-					_shake -= (float)gameTime.ElapsedGameTime.TotalSeconds
+					_shake -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 				}
 			}
 		}
