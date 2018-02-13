@@ -104,7 +104,7 @@ namespace Mff.Totem.Core
 					float angle_moon = MathHelper.PiOver2 - (float)(hour - 12) / 16 * MathHelper.Pi;
 					Texture2D moonTexture = ContentLoader.Textures["moon"];
 					spriteBatch.Draw(moonTexture, new Vector2(1.3f, 1) * Helper.AngleToDirection(angle_moon) * World.Game.Resolution / 2, null,
-									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
+									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 1f, SpriteEffects.None, 0f);
 				}
 				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
 				DrawParallax(spriteBatch, nightTint);
