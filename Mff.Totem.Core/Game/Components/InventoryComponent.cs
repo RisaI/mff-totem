@@ -20,6 +20,7 @@ namespace Mff.Totem.Core
 
 		public Item AddItem(Item item)
 		{
+			int origCount = item.Count;
 			for (int i = 0; i < Items.Count; ++i)
 			{
 				var invItem = Items[i];
@@ -29,7 +30,13 @@ namespace Mff.Totem.Core
 					item.Count -= count;
 					invItem.Count += count;
 					if (item.Count <= 0)
+					{
+						if (Parent.Tags.Contains("player") && World?.Game?.Hud != null)
+						{
+							World.Game.Hud.Chat("Acquired " + (origCount - item.Count) + " of " + item.ID);
+						}
 						return item;
+					}
 				}
 			}
 
@@ -39,6 +46,12 @@ namespace Mff.Totem.Core
 				item = item.Clone();
 				item.Count = 0;
 			}
+
+			if (Parent.Tags.Contains("player") && World?.Game?.Hud != null)
+			{
+				World.Game.Hud.Chat("Acquired " + (origCount - item.Count) + " of " + item.ID);
+			}
+
 			return item;
 		}
 
@@ -87,8 +100,13 @@ namespace Mff.Totem.Core
 			if (invSlot < 0 || invSlot >= Items.Count)
 				return;
 
+			if (Parent.Position.HasValue)
+			{
+				var bag = World.CreateEntity("itembag");
+				bag.GetComponent<BodyComponent>().Position = Parent.Position.Value;
+				bag.GetComponent<ItemComponent>().AddItem(Items[invSlot]);
+			}
 			Items.RemoveAt(invSlot);
-			//TODO: drop physical item
 		}
 
 		public float HPMultiplier()

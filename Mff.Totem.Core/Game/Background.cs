@@ -94,7 +94,7 @@ namespace Mff.Totem.Core
 					float angle = MathHelper.PiOver2 - (float)(hour - 12) / 16 * MathHelper.Pi;
 					Texture2D sunTexture = ContentLoader.Textures["sun"];
 					spriteBatch.Draw(sunTexture, new Vector2(1.3f, 1) * Helper.AngleToDirection(angle) * World.Game.Resolution / 2, null,
-									 Color.Yellow, 0, sunTexture.Size() / 2, Vector2.One * 0.5f, SpriteEffects.None, 0f);
+									 Color.Yellow, 0, sunTexture.Size() / 2, Vector2.One, SpriteEffects.None, 0f);
 				}
 				if (hour > 16 || hour < 8)
 				{

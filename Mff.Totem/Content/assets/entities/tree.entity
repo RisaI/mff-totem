@@ -5,7 +5,7 @@
 	"components": [
 		{
 			"class": "component_static_body",
-			"size": "32; 189"
+			"size": "32; 128"
 		},
 		{
 			"class": "component_sprite",

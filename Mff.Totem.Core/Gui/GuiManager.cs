@@ -232,7 +232,7 @@ namespace Mff.Totem.Gui
 		{
 			Matrix view = Matrix.CreateTranslation(Position.X, Position.Y, 0);
 			spriteBatch.GraphicsDevice.ScissorRectangle = Area;
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, scissorRasterizer, null, view);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, scissorRasterizer, null, view);
 
 			var font = ContentLoader.Fonts["menu"];
 			spriteBatch.Draw(ContentLoader.Pixel, new Rectangle(0, BarVisible ? BarHeight : 0, (int)Size.X, (int)Size.Y), null, Color.Black, 0, Vector2.Zero, SpriteEffects.None, 0f);
@@ -258,7 +258,7 @@ namespace Mff.Totem.Gui
 				view = Matrix.CreateTranslation(Position.X, Position.Y + BarHeight, 0);
 			if (BarVisible)
 				spriteBatch.GraphicsDevice.ScissorRectangle = new Rectangle((int)Position.X, (int)Position.Y + BarHeight, (int)Size.X, (int)Size.Y);
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, scissorRasterizer, null, view);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.LinearClamp, null, scissorRasterizer, null, view);
 			CustomDraw(spriteBatch);
 			spriteBatch.End();
 		}

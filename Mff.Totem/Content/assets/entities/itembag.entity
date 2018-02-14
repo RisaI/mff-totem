@@ -3,7 +3,7 @@
 		{
 			"class": "component_prop_body",
 			"width": "26",
-			"height": "26",
+			"height": "23",
 			"friction": "20",
 			"fixedrotation": "false"
 		},
