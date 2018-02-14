@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
 {
-	[Serializable("sprite_component")]
+	[Serializable("component_sprite")]
 	public class SpriteComponent : EntityComponent, IUpdatable, IDrawable
 	{
 		public Sprite Sprite

@@ -17,6 +17,11 @@ namespace Mff.Totem.Core
 		void Draw(SpriteBatch spriteBatch);
 	}
 
+	public interface IInteractive
+	{
+		void Interact(Entity ent);
+	}
+
 	public interface ICloneable<T>
 	{
 		T Clone();

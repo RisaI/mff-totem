@@ -1,18 +1,18 @@
 ﻿{
 	"components": [
 		{
-			"class": "humanoid_body"
+			"class": "component_humanoid_body"
 		},
 		{
-			"class": "sprite_component",
+			"class": "component_sprite",
 			"sprite": "character"
 		},
 		{
-			"class": "inventory_component",
+			"class": "component_inventory",
 			"equip": "true"
 		},
 		{
-			"class": "character_component",
+			"class": "component_character",
 			"maxhp": "100",
 			"stamina": "15",
 			"speed": "280"

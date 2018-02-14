@@ -1,11 +1,11 @@
 ﻿{
 	"components": [
 		{
-			"class": "projectile_body",
+			"class": "component_projectile_body",
             "radius": "0.05"
 		},
         {
-            "class": "sprite_component",
+            "class": "component_sprite",
             "sprite": "arrow",
             "depth": 0.7
         }

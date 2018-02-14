@@ -123,6 +123,11 @@
     <None Include="Content\assets\particles\leaf.particle">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\assets\parallaxes\standard.parallax">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\assets\sprites\bag.sprite" />
+    <None Include="Content\assets\entities\itembag.entity" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.csproj">

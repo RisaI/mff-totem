@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
-	[Serializable("ai_component")]
+	[Serializable("component_ai")]
 	public class AiComponent : EntityComponent, IUpdatable
 	{
 		public List<AiElement> Elements;

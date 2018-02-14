@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
-	[Serializable("inventory_component")]
+	[Serializable("component_inventory")]
 	public class InventoryComponent : EntityComponent, IUpdatable
 	{
 		public const int EquipSlots = 5;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -118,6 +119,23 @@ namespace Mff.Totem.Core
 		}
 
 		/// <summary>
+		/// Get component by serialization string.
+		/// </summary>
+		/// <returns>The component.</returns>
+		/// <typeparam name="T">Type.</typeparam>
+		public EntityComponent GetComponent(string serializationId)
+		{
+			for (int i = 0; i < Components.Count; ++i)
+			{
+				if (Components[i].GetType().GetCustomAttributes(false)
+				    .Any(c => c is SerializableAttribute && 
+				         (c as SerializableAttribute).ID == serializationId)) 
+					return Components[i];
+			}
+			return null;
+		}
+
+		/// <summary>
 		/// Remove a specific component from this entity.
 		/// </summary>
 		/// <param name="component">Component.</param>
@@ -166,6 +184,21 @@ namespace Mff.Totem.Core
 				if (drawable != null)
 					drawable.Draw(spriteBatch);
 			}
+		}
+
+		public bool Interact(Entity ent)
+		{
+			bool interacted = false;
+			for (int i = 0; i < Components.Count; ++i)
+			{
+				var drawable = Components[i] as IInteractive;
+				if (drawable != null)
+				{
+					drawable.Interact(ent);
+					interacted = true;
+				}
+			}
+			return interacted;
 		}
 
 		/// <summary>

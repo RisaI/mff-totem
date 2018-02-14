@@ -1,0 +1,21 @@
+﻿{
+	"components": [
+		{
+			"class": "component_prop_body",
+			"width": "32",
+			"height": "32",
+			"fixedrotation": "true"
+		},
+		{
+			"class": "component_sprite",
+			"sprite": "bag"
+		},
+		{
+			"class": "component_inventory",
+			"equip": "false"
+		},
+		{
+			"class": "component_item"
+		}
+	]
+}

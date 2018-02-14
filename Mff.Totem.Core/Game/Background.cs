@@ -44,7 +44,7 @@ namespace Mff.Totem.Core
 
 			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
 			{
-				Parallax = ContentLoader.Parallaxes["default"];
+				Parallax = ContentLoader.Parallaxes["standard"];
 			}
 
 			Vector2 Resolution
@@ -65,7 +65,7 @@ namespace Mff.Totem.Core
 								   Matrix.CreateRotationZ(World.Camera.Rotation) *
 				                   Matrix.CreateTranslation(World.Game.Resolution.X / 2, World.Game.Resolution.Y / 2, 0);
 
-				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, matrix);
+				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
 				double hour = World.WorldTime.TimeOfDay.TotalHours;
 				float nightTint = World.NightTint(World.WorldTime.TimeOfDay.TotalHours);
 

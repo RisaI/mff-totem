@@ -17,7 +17,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Entity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\EntityComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\BodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeserializationRegister.cs" />
@@ -42,6 +41,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\PlanetInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\MiniMenu.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\AiComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\ItemComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\BodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\ProjectileBodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\StaticBodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\PropBodyComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
@@ -49,5 +54,6 @@
     <Folder Include="$(MSBuildThisFileDirectory)Gui\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Inventory\" />
     <Folder Include="$(MSBuildThisFileDirectory)Menu\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Physics\" />
   </ItemGroup>
 </Project>

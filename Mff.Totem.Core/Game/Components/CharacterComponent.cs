@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
-	[Serializable("damagable_component")]
+	[Serializable("component_damagable")]
 	public class DamagableComponent : EntityComponent
 	{
 		protected int _baseMaxHp;
@@ -69,7 +69,7 @@ namespace Mff.Totem.Core
 		protected virtual void Death() { }
 	}
 
-	[Serializable("character_component")]
+	[Serializable("component_character")]
 	public class CharacterComponent : DamagableComponent
 	{
 		float _baseSpeed, _baseMaxStamina;
@@ -134,7 +134,7 @@ namespace Mff.Totem.Core
 		}
 	}
 
-	[Serializable("tree_component")]
+	[Serializable("component_tree")]
 	public class TreeComponent : DamagableComponent, IUpdatable
 	{
 		Rectangle leafArea;

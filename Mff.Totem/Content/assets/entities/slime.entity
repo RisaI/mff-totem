@@ -1,26 +1,26 @@
 ﻿{
 	"components": [
 		{
-			"class": "humanoid_body",
+			"class": "component_humanoid_body",
 			"width": "1.09375",
 			"height": "1.09375"
 		},
 		{
-			"class": "sprite_component",
+			"class": "component_sprite",
 			"sprite": "slime"
 		},
 		{
-			"class": "inventory_component",
+			"class": "component_inventory",
 			"equip": "true"
 		},
 		{
-			"class": "character_component",
+			"class": "component_character",
 			"maxhp": "10",
 			"stamina": "15",
 			"speed": "100"
 		},
 		{
-			"class": "ai_component",
+			"class": "component_ai",
 			"elements": [
 				{ "class": "ai_attack", "range": "500", "targeted": [ "player" ] }
 			]

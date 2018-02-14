@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
-	[Serializable("player_input")]
+	[Serializable("component_player_input")]
 	public class PlayerInputComponent : EntityComponent, IUpdatable
 	{
 		public PlayerInputComponent()
@@ -62,6 +62,16 @@ namespace Mff.Totem.Core
                 {
                     inventory.Use(EquipSlot.Left);
                 }
+
+				if (World.Game.Input.GetInput(Inputs.Use, InputState.Pressed))
+				{
+					foreach (Entity ent in World.FindEntitiesAt(body.BoundingBox))
+					{
+						if (ent.Interact(Parent))
+							break;
+					}
+				}
+
             }
 
 			if (Math.Abs(movement.X) > Helper.EPSILON)

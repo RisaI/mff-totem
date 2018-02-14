@@ -4,16 +4,16 @@
 	],
 	"components": [
 		{
-			"class": "static_body",
+			"class": "component_static_body",
 			"size": "32; 189"
 		},
 		{
-			"class": "sprite_component",
+			"class": "component_sprite",
 			"sprite": "tree",
 			"depth": 0
 		},
 		{
-			"class": "tree_component",
+			"class": "component_tree",
 			"leaf_area": "-42;-150;84;84",
 			"maxhp": "30"
 		}

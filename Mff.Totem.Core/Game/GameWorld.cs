@@ -129,8 +129,8 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-			//CameraControls = true;
+			//CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+			CameraControls = true;
 		}
 
 		/// <summary>
@@ -202,6 +202,16 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public IEnumerable<Entity> FindEntitiesAt(Rectangle area)
+		{
+			for (int i = 0; i < Entities.Count; ++i)
+			{
+				var body = Entities[i].GetComponent<BodyComponent>();
+				if (body.BoundingBox.Intersects(area))
+					yield return Entities[i];
+			}
+		}
+
 		public Entity FirstEntity(Func<Entity, bool> f)
 		{
 			return Entities.Find(e => f.Invoke(e));
@@ -238,44 +248,47 @@ namespace Mff.Totem.Core
 
 			Weather.Update(this, gameTime);
 
-			if (CameraControls && Camera != null)
+			if (Game.InputEnabled)
 			{
-				// FIXME Use PlayerInputComponent?
-
-				float multiplier = 1f;
-
-				if (Game.Input.GetInput(Inputs.Sprint, InputState.Down))
-					multiplier = 2.5f;
-
-				if (Game.Input.GetInput(Inputs.Left, InputState.Down))
-					Camera.Position.X -= CAMERA_SPEED * multiplier;
-				if (Game.Input.GetInput(Inputs.Right, InputState.Down))
-					Camera.Position.X += CAMERA_SPEED * multiplier;
-				if (Game.Input.GetInput(Inputs.Up, InputState.Down))
-					Camera.Position.Y -= CAMERA_SPEED * multiplier;
-				if (Game.Input.GetInput(Inputs.Down, InputState.Down))
-					Camera.Position.Y += CAMERA_SPEED * multiplier;
-				/*if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
-					Camera.Rotation += 0.1f;
-				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
-					Camera.Rotation -= 0.1f;*/
-
-				if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
+				if (CameraControls && Camera != null)
 				{
-					var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
-					SpawnParticle("leaf", worldMPos);
-					/*Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
-						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
-						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
-						new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
-						new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
-					});*/
+					// FIXME Use PlayerInputComponent?
+
+					float multiplier = 1f;
+
+					if (Game.Input.GetInput(Inputs.Sprint, InputState.Down))
+						multiplier = 2.5f;
+
+					if (Game.Input.GetInput(Inputs.Left, InputState.Down))
+						Camera.Position.X -= CAMERA_SPEED * multiplier;
+					if (Game.Input.GetInput(Inputs.Right, InputState.Down))
+						Camera.Position.X += CAMERA_SPEED * multiplier;
+					if (Game.Input.GetInput(Inputs.Up, InputState.Down))
+						Camera.Position.Y -= CAMERA_SPEED * multiplier;
+					if (Game.Input.GetInput(Inputs.Down, InputState.Down))
+						Camera.Position.Y += CAMERA_SPEED * multiplier;
+					/*if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
+						Camera.Rotation += 0.1f;
+					if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
+						Camera.Rotation -= 0.1f;*/
+
+					if (Game.Input.GetInput(Inputs.A, InputState.Pressed))
+					{
+						var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
+						//SpawnParticle("leaf", worldMPos);
+						/*Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
+							new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
+							new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
+							new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
+							new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
+						});*/
+					}
 				}
+				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
+					Camera.Zoom += 0.01f;
+				if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
+					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
-			if (Game.Input.GetInput(Inputs.Plus, InputState.Down))
-				Camera.Zoom += 0.01f;
-			if (Game.Input.GetInput(Inputs.Minus, InputState.Down))
-				Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 
 			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
 			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);
@@ -340,7 +353,7 @@ namespace Mff.Totem.Core
             Weather.DrawWeatherEffects(this, spriteBatch);
             spriteBatch.End();
             
-            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
             Entities.ForEach(e => e.Draw(spriteBatch));
             Particles.ForEach(p => p.Draw(spriteBatch));
             spriteBatch.End();

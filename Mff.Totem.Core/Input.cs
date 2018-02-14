@@ -43,6 +43,7 @@ namespace Mff.Totem.Core
 		Right,
 		A,
 		B,
+		Use,
 		Plus,
 		Minus,
 		Sprint,
