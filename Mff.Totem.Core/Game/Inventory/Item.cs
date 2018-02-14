@@ -115,6 +115,14 @@ namespace Mff.Totem.Core
 			StaminaMultiplier = reader.ReadSingle();
 			SpeedMultiplier = reader.ReadSingle();
 		}
+
+		public static Item Create(string assetName, int count = 1)
+		{
+			var item = ContentLoader.Items[assetName].Clone();
+			if (item != null)
+				item.Count = count;
+			return item;
+		}
 	}
 
     [Serializable("item_bow")]

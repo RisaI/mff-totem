@@ -1,0 +1,7 @@
+﻿{
+	"class": "item",
+	"id": "wood",
+	"texid": "108",
+	"maxstack": "999",
+	"slot": "None"
+}

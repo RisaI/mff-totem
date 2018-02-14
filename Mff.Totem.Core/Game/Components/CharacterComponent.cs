@@ -183,6 +183,10 @@ namespace Mff.Totem.Core
 		{
 			base.Death();
 			_falling = true;
+
+			var ent = World.CreateEntity("itembag");
+			ent.GetComponent<BodyComponent>().Position = Parent.Position.Value - new Vector2(0, 64);
+			ent.GetComponent<ItemComponent>().AddItem(Item.Create("wood", 10));
 		}
 
 		public override EntityComponent Clone()

@@ -129,8 +129,12 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			//CreateEntity("player").GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-			CameraControls = true;
+			{
+				var player = CreateEntity("player");
+				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
+				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
+			}
+			//CameraControls = true;
 		}
 
 		/// <summary>

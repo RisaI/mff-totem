@@ -126,8 +126,15 @@
     <None Include="Content\assets\parallaxes\standard.parallax">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Content\assets\sprites\bag.sprite" />
-    <None Include="Content\assets\entities\itembag.entity" />
+    <None Include="Content\assets\sprites\bag.sprite">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\assets\entities\itembag.entity">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\assets\items\wood.item">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.csproj">

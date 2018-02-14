@@ -224,10 +224,8 @@ namespace Mff.Totem.Core
 
 			AddCommand("additem", "Add an item to your inventory.", args =>
 			{
-				var item = ContentLoader.Items[args[0]].Clone();
-				if (args.Length >= 2)
-					item.Count = int.Parse(args[1]);
-				Game.Hud.Observed.GetComponent<InventoryComponent>().AddItem(item);
+				Game.Hud.Observed.GetComponent<InventoryComponent>()
+				    .AddItem(Item.Create(args[0], args.Length >= 2 ? int.Parse(args[1]) : 1));
 			}, "id", "[count]");
 
 			AddCommand("debugview", "Toggle debugview.", args =>

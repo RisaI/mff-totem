@@ -11,7 +11,7 @@ namespace Mff.Totem.Core
 		public bool FixedRotation;
 
 		// In PX!
-		public float Width, Height;
+		public float Width, Height, Friction;
 
 		public Body Body;
 
@@ -106,6 +106,11 @@ namespace Mff.Totem.Core
 			                                   1, _valPos / 64f, _valRot, 
 			                                   BodyType.Dynamic, Parent);
 			Body.FixedRotation = FixedRotation;
+			Body.Friction = Friction;
+			Body.OnCollision += (fixtureA, fixtureB, contact) =>
+			{
+				return fixtureB.UserData is Terrain || (fixtureB.UserData is Entity && (fixtureB.UserData as Entity).GetComponent<PropBodyComponent>() != null);
+			};
 		}
 
 		public override EntityComponent Clone()
@@ -115,9 +120,19 @@ namespace Mff.Totem.Core
 				Width = Width,
 				Height = Height,
 				FixedRotation = FixedRotation,
+				Friction = Friction,
 				_valPos = _valPos,
 				_valRot = _valRot
 			};
+		}
+
+		public override void Destroy()
+		{
+			if (Body != null)
+			{
+				Parent.World.Physics.RemoveBody(Body);
+				Body = null;
+			}
 		}
 
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
@@ -127,6 +142,8 @@ namespace Mff.Totem.Core
 				Width = (float)obj["width"];
 			if (obj["height"] != null)
 				Height = (float)obj["height"];
+			if (obj["friction"] != null)
+				Friction = (float)obj["friction"];
 			if (obj["fixedrotation"] != null)
 				FixedRotation = (bool)obj["fixedrotation"];
 		}
