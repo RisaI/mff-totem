@@ -177,11 +177,11 @@ namespace Mff.Totem.Core
 					body.LegPosition = pos;
 			}, "asset", "x", "[y]");
 #endregion
-			AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
+			/*AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
 			{
 				Game.World.Terrain.CreateDamage(new List<IntPoint>() { new IntPoint(200, 0), new IntPoint(250, 0), new IntPoint(250, 1990), new IntPoint(200, 2000) });
 			}, "asset", "x", "y");
-
+*/
 			AddCommand("camera_controls", "Set camera controls on/off.", args =>
 			{
 				Game.World.CameraControls = bool.Parse(args[0]);

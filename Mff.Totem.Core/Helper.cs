@@ -11,9 +11,6 @@ using System.Collections.Generic;
 using FarseerPhysics.Common;
 using ClipperLib;
 
-using Dec = FarseerPhysics.Common.Decomposition;
-using TriangleNet.Geometry;
-
 namespace Mff.Totem
 {
 	public static class Helper
@@ -205,69 +202,6 @@ namespace Mff.Totem
 		public static float Min(params float[] values)
 		{
 			return values.Min();
-		}
-
-		public static List<Vertices> Triangulate(List<IntPoint> polygon, Dec.TriangulationAlgorithm algo = Dec.TriangulationAlgorithm.Earclip)
-		{
-			return Dec.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), algo);
-		}
-
-		public static List<Vertices> Triangulate(List<List<IntPoint>> polygons, Dec.TriangulationAlgorithm algo = Dec.TriangulationAlgorithm.Earclip)
-		{
-			List<Vertices> result = new List<Vertices>();
-			polygons.ForEach(p => { result.AddRange(Triangulate(p)); });
-			return result;
-		}
-
-		public static List<Vertices> TriangulateWithHoles(List<List<IntPoint>> polygons, List<List<IntPoint>> holes)
-		{
-			var p = new Polygon();
-			polygons.ForEach(polygon =>
-			{
-				p.Add(PolygonToContour(polygon), false);
-			});
-			holes.ForEach(hole =>
-			{
-				p.Add(PolygonToContour(hole), true);
-			});
-			var t = p.Triangulate(new TriangleNet.Meshing.ConstraintOptions() {  }).Triangles;
-			List<Vertices> result = new List<Vertices>();
-			for (int i = 0; i < t.Count; ++i)
-			{
-				var triangle = t.ElementAt(i);
-				result.Add(new Vertices(new Vector2[] { 
-					new Vector2((float)triangle.GetVertex(0).X, (float)triangle.GetVertex(0).Y),
-					new Vector2((float)triangle.GetVertex(1).X, (float)triangle.GetVertex(1).Y),
-					new Vector2((float)triangle.GetVertex(2).X, (float)triangle.GetVertex(2).Y)
-				}));
-			}
-
-			return result;
-		}
-
-		public static Contour PolygonToContour(List<IntPoint> polygon)
-		{
-			Vertex[] verts = new Vertex[polygon.Count];
-			for (int i = 0; i < polygon.Count; ++i)
-			{
-				verts[i] = new Vertex(polygon[i].X, polygon[i].Y);
-			}
-			return new Contour(verts);
-		}
-
-		public static Vertices PolygonToVertices(List<IntPoint> polygon, float scale = 1 / 64f)
-		{
-			Vector2[] v = new Vector2[polygon.Count];
-			int i = 0;
-			polygon.ForEach(p => v[i++] = new Vector2(p.X, p.Y) * scale);
-			return new Vertices(v);
-		}
-
-		public static List<IntPoint> VerticesToPolygon(Vertices verts, float scale = 1 / 64f)
-		{
-			List<IntPoint> result = new List<IntPoint>();
-			verts.ForEach(v => result.Add(new IntPoint((int)(v.X * scale), (int)(v.Y * scale))));
-			return result;
 		}
 
 		public static List<IntPoint> CreateRectangle(int x, int y, int width, int height)

@@ -129,12 +129,12 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			{
+			/*{
 				var player = CreateEntity("player");
 				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
-			}
-			//CameraControls = true;
+			}*/
+			CameraControls = true;
 		}
 
 		/// <summary>
@@ -227,7 +227,7 @@ namespace Mff.Totem.Core
             GTime = gameTime;
 			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
-			Terrain.Update();
+			//Terrain.Update();
 
 			lock (EntityQueue)
 			{
@@ -294,8 +294,7 @@ namespace Mff.Totem.Core
 					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
 
-			Terrain.SetActiveRegion((int)(Camera.BoundingBox.Left) - Chunk.WIDTH, 
-			                         (int)(Camera.BoundingBox.Right) + Chunk.WIDTH);
+			Terrain.ActiveRegion(Camera.Position);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -331,24 +330,22 @@ namespace Mff.Totem.Core
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
-			if (Terrain.ActiveChunks.Count > 0)
 			{
 				GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
 					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
 				GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
 
-				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
 				{
 					var chunk = Terrain.ActiveChunks[i];
-					if (!chunk.Generated)
+					if (chunk.State != Terrain.ChunkStateEnum.Placed)
 						continue;
 
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 					{
 						pass.Apply();
-						if (chunk.TriangulatedWholeVertices != null)
-							Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedWholeVertices,
-																   0, chunk.TriangulatedWholeVertices.Length / 3);
+						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedBackgroundVertices,
+																0, chunk.TriangulatedBackgroundVertices.Length / 3);
 					}
 				}
 			}
@@ -363,18 +360,18 @@ namespace Mff.Totem.Core
             spriteBatch.End();
 
 			// Ground rendering
-			if (Terrain.ActiveChunks.Count > 0)
 			{
-				for (int i = 0; i < Terrain.ActiveChunks.Count; ++i)
+				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
 				{
 					var chunk = Terrain.ActiveChunks[i];
-					if (!chunk.Generated)
+					if (chunk.State != Terrain.ChunkStateEnum.Placed)
 						continue;
 					
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 					{
 						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedVertices, 0, chunk.TriangulatedVertices.Length / 3);
+						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedForegroundVertices, 
+						                                       0, chunk.TriangulatedForegroundVertices.Length / 3);
 					}
 				}
 			}
