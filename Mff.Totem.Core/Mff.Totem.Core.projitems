@@ -47,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\StaticBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\PropBodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Parallax.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

@@ -40,7 +40,7 @@ namespace Mff.Totem.Core
 		{
 			public Color SkyColor = Color.LightSkyBlue;
 			Color SkyTintColor;
-			float SkyTint;
+			float SkyTint, MovableOffset = 0;
 
 			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
 			{
@@ -57,6 +57,8 @@ namespace Mff.Totem.Core
 				SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
 				SkyTint = MathHelper.Lerp(SkyTint, World.Weather.SkyTint, 0.07f);
 				ClearColor = Color.Lerp(Color.Black, SkyColor, 1f - World.NightTint(World.WorldTime.TimeOfDay.TotalHours));
+				MovableOffset += (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale / 60f;
+				MovableOffset = MovableOffset % 1f;
 			}
 
 			protected override void OnDraw(SpriteBatch spriteBatch)
@@ -111,7 +113,7 @@ namespace Mff.Totem.Core
 				spriteBatch.End();
 			}
 
-			public Texture2D[] Parallax
+			public Parallax Parallax
 			{
 				get;
 				set;
@@ -123,14 +125,14 @@ namespace Mff.Totem.Core
                     return;
 
                 Color clr = Color.Lerp(Color.White, new Color(25, 25, 25, 255), nightTint);
-                for (int i = 0; i < Parallax.Length; ++i)
+				for (int i = 0; i < Parallax.Textures.Length; ++i)
                 {
-                    var texture = Parallax[i];
+					var texture = Parallax.Textures[i];
                     float scale = World.Game.Resolution.Y / texture.Height;
                     float width = scale * texture.Width;
 					int count = Math.Max(3, (int)(Math.Sqrt(2) * World.Game.Resolution.X / width) + 1);
 
-					float offsetX = Helper.NegModulo((int)(World.Camera.Position.X / (float)Math.Pow(2, 2 + i)), (int)width),
+					float offsetX = Helper.NegModulo((int)(World.Camera.Position.X / (float)Math.Pow(2, 2 + i) + (Parallax.Offsetable[i] ? MovableOffset * width : 0)), (int)width),
                         offsetY = -((World.Camera.Position.Y) / (float)Math.Pow(2, 9 + i));
 
                     for (int c = 0; c < count; ++c)

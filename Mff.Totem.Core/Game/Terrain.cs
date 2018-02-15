@@ -303,7 +303,7 @@ namespace Mff.Totem.Core
 
 		public float HeightMap(float x)
 		{
-			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.WIDTH * 8), 0)- 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.WIDTH));
+			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.WIDTH / 2), 0)- 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.WIDTH));
 		}
 
 		public long ChunkID(float x)

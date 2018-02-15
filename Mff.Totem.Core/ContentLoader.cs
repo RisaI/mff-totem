@@ -40,7 +40,7 @@ namespace Mff.Totem
 		}
 
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
-		public static Dictionary<string, Texture2D[]> Parallaxes = new Dictionary<string, Texture2D[]>();
+		public static Dictionary<string, Parallax> Parallaxes = new Dictionary<string, Parallax>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
         public static Dictionary<string, Effect> Shaders = new Dictionary<string, Effect>();
 
@@ -79,10 +79,17 @@ namespace Mff.Totem
 				{
 					var obj = JObject.Load(reader);
 					var array = JArray.FromObject(obj["textures"]);
+					var movArray = JArray.FromObject(obj["movable"]);
+
 					var textures = new string[array.Count];
+					var movable = new int[movArray.Count];
+
 					for (int i = 0; i < textures.Length; ++i)
 						textures[i] = (string)array[i];
-					LoadParallax(game, name, textures);
+					for (int i = 0; i < movable.Length; ++i)
+						movable[i] = (int)movArray[i];
+
+					LoadParallax(game, name, movable, textures);
 				}
 			}
 
@@ -149,14 +156,16 @@ namespace Mff.Totem
 			}
 		}
 
-		static void LoadParallax(Core.TotemGame game, string asset, params string[] layers)
+		static void LoadParallax(Core.TotemGame game, string asset, int[] movable, params string[] layers)
 		{
-			Texture2D[] textures = new Texture2D[layers.Length];
+			var parallax = new Parallax(layers.Length);
 			for (int i = 0; i < layers.Length; ++i)
 			{
-				textures[i] = Textures[layers[i]];
+				parallax.Textures[i] = Textures[layers[i]];
 			}
-			Parallaxes.Add(asset, textures);
+			for (int i = 0; i < movable.Length; ++i)
+				parallax.Offsetable[movable[i]] = true;
+			Parallaxes.Add(asset, parallax);
 		}
 
 		static void GenerateStarSky(Core.TotemGame game)

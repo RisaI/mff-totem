@@ -1,3 +1,4 @@
 ﻿{
-	"textures": [ "parallax/parallax0", "parallax/parallax1", "parallax/parallax2", "parallax/parallax3", "parallax/parallax4" ]
+	"textures": [ "parallax/parallax0", "parallax/parallax1", "parallax/parallax2", "parallax/parallax3", "parallax/parallax4" ],
+	"movable": []
 }

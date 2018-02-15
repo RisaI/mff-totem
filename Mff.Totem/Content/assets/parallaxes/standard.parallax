@@ -1,3 +1,4 @@
 ﻿{
-	"textures": [ "parallax/standard0", "parallax/standard1", "parallax/standard2", "parallax/standard3", "parallax/standard4" ]
+	"textures": [ "parallax/standard0", "parallax/standard1", "parallax/standard2", "parallax/standard3", "parallax/standard4" ],
+	"movable": [ 2, 4 ]
 }
