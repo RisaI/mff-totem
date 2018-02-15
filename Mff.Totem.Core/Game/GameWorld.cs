@@ -227,7 +227,7 @@ namespace Mff.Totem.Core
             GTime = gameTime;
 			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
-			//Terrain.Update();
+			Terrain.Update();
 
 			lock (EntityQueue)
 			{
@@ -280,12 +280,12 @@ namespace Mff.Totem.Core
 					{
 						var worldMPos = Camera.ToWorldSpace(Game.Input.GetPointerInput(0).Position);
 						//SpawnParticle("leaf", worldMPos);
-						/*Terrain.CreateDamage(new List<ClipperLib.IntPoint>() {
+						Terrain.Damage(new List<ClipperLib.IntPoint>() {
 							new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y - 16),
 							new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y - 16),
 							new ClipperLib.IntPoint((int)worldMPos.X + 16, (int)worldMPos.Y + 16),
 							new ClipperLib.IntPoint((int)worldMPos.X - 16, (int)worldMPos.Y + 16)
-						});*/
+						});
 					}
 				}
 				if (Game.Input.GetInput(Inputs.Plus, InputState.Down))

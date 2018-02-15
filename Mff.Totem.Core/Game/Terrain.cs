@@ -59,6 +59,72 @@ namespace Mff.Totem.Core
 			Seed = seed;
 		}
 
+		public void Damage(params IntPoint[] points)
+		{
+			Damage(points.ToList());
+		}
+
+		public void Damage(List<IntPoint> points)
+		{
+			damageQueue.Add(points);
+		}
+
+		private void ApplyDamage(List<IntPoint> damage)
+		{
+			long minX = long.MaxValue, minY = long.MaxValue, 
+				maxX = long.MinValue, maxY = long.MinValue;
+
+			for (int i = 0; i < damage.Count; ++i)
+			{
+				if (damage[i].X < minX)
+					minX = damage[i].X;
+				if (damage[i].X > maxX)
+					maxX = damage[i].X;
+				
+				if (damage[i].Y < minY)
+					minY = damage[i].Y;
+				if (damage[i].Y > maxY)
+					maxY = damage[i].Y;
+			}
+
+			minX = Helper.NegDivision(minX, Chunk.SIZE);
+			maxX = Helper.NegDivision(maxX, Chunk.SIZE);
+			minY = Helper.NegDivision(minY, Chunk.SIZE);
+			maxY = Helper.NegDivision(maxY, Chunk.SIZE);
+
+			var clipper = new Clipper();
+			for (int y = (int)minY; y <= maxY; ++y)
+			{
+				for (int x = (int)minX; x <= maxX; ++x)
+				{
+					var chunk = GetChunk(TerrainHelper.PackCoordinates(x, y));
+
+					clipper.Clear();
+					clipper.AddPolygon(new List<IntPoint>() {
+						new IntPoint(chunk.Left, chunk.Top),
+						new IntPoint(chunk.Left + Chunk.SIZE, chunk.Top),
+						new IntPoint(chunk.Left + Chunk.SIZE, chunk.Top + Chunk.SIZE),
+						new IntPoint(chunk.Left, chunk.Top + Chunk.SIZE)
+					}, PolyType.ptSubject);
+					clipper.AddPolygon(damage, PolyType.ptClip);
+					clipper.AddPolygons(chunk.Damage, PolyType.ptClip);
+					clipper.Execute(ClipType.ctIntersection, chunk.Damage, 
+					                PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+					chunk.Recalculate = true;
+					if (ActiveChunks.Contains(chunk))
+						Task.Run(() => { PlaceChunk(chunk); });
+				}
+			}
+		}
+
+		List<List<IntPoint>> damageQueue = new List<List<IntPoint>>();
+		public void Update()
+		{
+			damageQueue.ForEach(d => ApplyDamage(d));
+			damageQueue.Clear();
+		}
+
 		public float HeightMap(float x)
 		{
 			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
@@ -92,8 +158,7 @@ namespace Mff.Totem.Core
 					else
 					{
 						chunk = GetChunk(id);
-						//Task.Run(() => { PlaceChunk(chunk); });
-						PlaceChunk(chunk);
+						Task.Run(() => { PlaceChunk(chunk); });
 					}
 					newActive[x + y * CHUNK_CACHE] = chunk;
 				}
@@ -104,7 +169,8 @@ namespace Mff.Totem.Core
 				if (ActiveChunks[i] != null && !newActive.Contains(ActiveChunks[i]))
 				{
 					UnplaceChunk(ActiveChunks[i]);
-					// TODO: Clear from cache if unchanged
+					if (ActiveChunks[i].Damage.Count <= 0)
+						ChunkCache.Remove(ActiveChunks[i].ID);
 				}
 			}
 			ActiveChunks = newActive;
@@ -166,19 +232,24 @@ namespace Mff.Totem.Core
 		{
 			if (chunk.State == ChunkStateEnum.Emtpy)
 				GenerateChunk(chunk);
-			else if (chunk.State == ChunkStateEnum.Placed)
-				return;
 
 			if (chunk.Recalculate)
 				chunk.Calculate();
 
 			lock (World.Physics)
 			{
-				chunk.Body = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
-				chunk.PhysicsOutput.ForEach(o =>
+				lock (chunk)
 				{
-					var fixture = FixtureFactory.AttachLoopShape(o, chunk.Body, this);
-				});
+					if (chunk.Body != null)
+						World.Physics.RemoveBody(chunk.Body);
+
+					chunk.Body = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
+
+					chunk.PhysicsOutput.ForEach(o =>
+					{
+						var fixture = FixtureFactory.AttachLoopShape(o, chunk.Body, this);
+					});
+				}
 			}
 
 			chunk.State = ChunkStateEnum.Placed;
@@ -259,6 +330,7 @@ namespace Mff.Totem.Core
 
 			public List<List<IntPoint>> Polygons;
 			public List<List<IntPoint>> Cavities;
+			public List<List<IntPoint>> Damage;
 
 			// Calculated by the Calculate method
 			public List<Vertices> PhysicsOutput
@@ -329,6 +401,7 @@ namespace Mff.Totem.Core
 				ID = id;
 				State = ChunkStateEnum.Emtpy;
 				PhysicsOutput = new List<Vertices>();
+				Damage = new List<List<IntPoint>>();
 			}
 
 			public void Calculate()
@@ -339,6 +412,7 @@ namespace Mff.Totem.Core
 				// Calculate difference
 				clipper.AddPolygons(Polygons, PolyType.ptSubject);
 				clipper.AddPolygons(Cavities, PolyType.ptClip);
+				clipper.AddPolygons(Damage, PolyType.ptClip);
 				clipper.Execute(ClipType.ctDifference, output, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
 				// Triangulate background for rendering
@@ -349,7 +423,7 @@ namespace Mff.Totem.Core
 					for (int i = 0; i < triangulation.Count; ++i)
 						for (int b = 0; b < 3; ++b)
 							TriangulatedBackgroundVertices[index++] = new VertexPositionColor(
-								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), Color.White);
+								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), Color.Gray);
 				}
 
 				// Triangulate foreground for rendering
