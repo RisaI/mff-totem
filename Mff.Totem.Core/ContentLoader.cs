@@ -63,7 +63,11 @@ namespace Mff.Totem
 			foreach (string file in FindAllFiles(textureFolder, ".xnb"))
 			{
 				var dir = Path.GetDirectoryName(file);
-				var name = Path.Combine(dir.Remove(0, Math.Min(textureFolder.Length, dir.Length)), Path.GetFileNameWithoutExtension(file));
+				var name = Path.Combine(
+                    dir.Remove(0, Math.Min(textureFolder.Length, dir.Length)),
+                    Path.GetFileNameWithoutExtension(file)
+                ).Replace('\\', '/');
+
 				Console.WriteLine("Loading texture: {0}", name);
 				Textures.Add(name, game.Content.Load<Texture2D>("textures/" + name));
 			}

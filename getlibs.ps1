@@ -17,11 +17,16 @@ function Expand-Tar($TarFile, $Destination) {
 Write-Output "Downloading libraries..."
 
 Invoke-WebRequest http://fna.flibitijibibo.com/archive/fnalibs.tar.bz2 -OutFile libs.tar.bz2
+
+if (Test-Path -Path libs) {
+    Remove-Item libs -Force -Recurse
+}
+
 New-Item -ItemType directory -Name libs
 
 Write-Output "Exctracting..."
 
-Expand-Tar -TarFile libs.tar.bz2
+Expand-Tar -TarFile libs.tar.bz2 -Destination .
 Remove-Item libs.tar.bz2
 Expand-Tar -TarFile libs.tar -Destination libs
 Remove-Item libs.tar
