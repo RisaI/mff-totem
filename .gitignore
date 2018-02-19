@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 
 libs/
+libs.tar
+libs.tar.bz2

@@ -8,9 +8,14 @@ if "%1" == "build" (
     ) DO SET msbuild="%%MMSBuild.exe"
 
     echo Building...
-    echo MSBuild path: %msbuild%
+    echo MSBuild path:
+    echo %msbuild%
 
-    %msbuild%
+    if "%2" == "release" (
+        %msbuild% /p:Configuration=Release /p:Platform="Any CPU"
+    ) else (
+        %msbuild% /p:Configuration=Debug /p:Platform="Any CPU"
+    )
 )
 
 if "%1" == "content" (
@@ -20,7 +25,11 @@ if "%1" == "content" (
     .\shaders.bat
     cd ..
     mkdir Mff.Totembin\DesktopGL\AnyCPU\Debug\Content
-    robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Debug\Content\ /SEC /E
+    if "%2" == "release" (
+        robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Release\Content\ /SEC /E
+    ) else (
+        robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Debug\Content\ /SEC /E
+    )
 
 )
 
@@ -30,7 +39,11 @@ if "%1" == "content-ns" (
     mgcb /@:Content.mgcb
     cd ..
     mkdir Mff.Totembin\DesktopGL\AnyCPU\Debug\Content
-    robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Debug\Content\ /SEC /E
+    if "%2" == "release" (
+        robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Release\Content\ /SEC /E
+    ) else (
+        robocopy Content\bin\DesktopGL Mff.Totem\bin\DesktopGL\AnyCPU\Debug\Content\ /SEC /E
+    )
 
 )
 
@@ -40,7 +53,17 @@ if "%1" == "libs" (
 )
 
 if "%1" == "run" (
-    Mff.Totem\bin\DesktopGL\AnyCPU\Debug\Mff.Totem.exe
+    pushd "%~dp0\Mff.Totem\bin\DesktopGL\AnyCPU\"
+
+    if "%2" == "release" (
+        cd Release
+    ) else (
+        cd Debug
+    )
+
+    Mff.Totem.exe
+
+    popd
 )
 
 if "%1" == "clean" (
