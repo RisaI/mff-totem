@@ -17,7 +17,7 @@ namespace Mff.Totem.Core
 {
 	public class Terrain
 	{
-		const int CHUNK_CACHE = 7;
+		const int CHUNK_CACHE = 15;
 
 		public const int SPACING = 32;
 		public const int BASE_HEIGHT = 0, BASE_STEP = 2048;
@@ -43,7 +43,6 @@ namespace Mff.Totem.Core
 
 		public Dictionary<ulong, Chunk> ChunkCache = new Dictionary<ulong, Chunk>();
 		public Chunk[] ActiveChunks = new Chunk[CHUNK_CACHE * CHUNK_CACHE];
-		//Body TerrainBody;
 
 		public Terrain(GameWorld world)
 		{
@@ -53,22 +52,41 @@ namespace Mff.Totem.Core
 
 		Clipper c;
 		Random Random;
+
+		/// <summary>
+		/// Sets generation data from a seed.
+		/// </summary>
+		/// <returns>The generate.</returns>
+		/// <param name="seed">Seed.</param>
 		public void Generate(long seed = 0)
 		{
-			Random = new Random();
+			Random = new Random((int)seed);
 			Seed = seed;
+			c.Clear();
 		}
 
+		/// <summary>
+		/// Damage the specified points.
+		/// </summary>
+		/// <param name="points">Points.</param>
 		public void Damage(params IntPoint[] points)
 		{
 			Damage(points.ToList());
 		}
 
+		/// <summary>
+		/// Damage the specified points.
+		/// </summary>
+		/// <param name="points">Points.</param>
 		public void Damage(List<IntPoint> points)
 		{
 			damageQueue.Add(points);
 		}
 
+		/// <summary>
+		/// Applies the damage to affected chunks.
+		/// </summary>
+		/// <param name="damage">Damage.</param>
 		private void ApplyDamage(List<IntPoint> damage)
 		{
 			long minX = long.MaxValue, minY = long.MaxValue, 
@@ -119,17 +137,33 @@ namespace Mff.Totem.Core
 		}
 
 		List<List<IntPoint>> damageQueue = new List<List<IntPoint>>();
+
+		/// <summary>
+		/// Updates the terrain.
+		/// </summary>
 		public void Update()
 		{
+			// Apply damage from the damage queue
 			damageQueue.ForEach(d => ApplyDamage(d));
 			damageQueue.Clear();
 		}
 
+		/// <summary>
+		/// Get surface height on x.
+		/// </summary>
+		/// <returns>The height.</returns>
+		/// <param name="x">The x coordinate.</param>
 		public float HeightMap(float x)
 		{
 			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
 		}
 
+		/// <summary>
+		/// Get the ID of a chunk at a given position.
+		/// </summary>
+		/// <returns>ID.</returns>
+		/// <param name="x">The x coordinate.</param>
+		/// <param name="y">The y coordinate.</param>
 		public ulong ChunkID(float x, float y)
 		{
 			return TerrainHelper.PackCoordinates(Helper.NegDivision((int)x, Chunk.SIZE), 
@@ -137,6 +171,10 @@ namespace Mff.Totem.Core
 		}
 
 		int _activeX, _activeY;
+		/// <summary>
+		/// Sets a region around a point as active.
+		/// </summary>
+		/// <param name="center">Center.</param>
 		public void ActiveRegion(Vector2 center)
 		{
 			_activeX = Helper.NegDivision((int)center.X, Chunk.SIZE);
@@ -176,6 +214,12 @@ namespace Mff.Totem.Core
 			ActiveChunks = newActive;
 		}
 
+		/// <summary>
+		/// Get chunk with id from registry or create new if not in registry yet.
+		/// </summary>
+		/// <returns>The chunk.</returns>
+		/// <param name="id">Identifier.</param>
+		/// <param name="onlyread">If set to <c>true</c>, chunk will not be added to chunk cache if created.</param>
 		public Chunk GetChunk(ulong id, bool onlyread = false)
 		{
 			if (ChunkCache.ContainsKey(id))
@@ -189,6 +233,10 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		/// <summary>
+		/// Generate chunk data for a given chunk.
+		/// </summary>
+		/// <param name="chunk">Chunk.</param>
 		public void GenerateChunk(Chunk chunk)
 		{
 			if (chunk.State != ChunkStateEnum.Emtpy)
@@ -216,27 +264,38 @@ namespace Mff.Totem.Core
 			surfacePolygon.Add(new IntPoint(left, top + Chunk.SIZE));
 			clipper.AddPolygon(surfacePolygon, PolyType.ptClip);
 
+			// Check midpoint for surface
+			{
+				var midpoint = HeightMap(left + Chunk.SIZE / 2);
+				chunk.IsSurface = midpoint >= top && midpoint <= top + Chunk.SIZE;
+			}
+
 			// Add solution to chunk data
 			clipper.Execute(ClipType.ctIntersection, 
 			                chunk.Polygons, 
 			                PolyFillType.pftNonZero,
 			                PolyFillType.pftNonZero);
 
+			// Cave generation
 			chunk.Cavities = new List<List<IntPoint>>();
 
 			chunk.Recalculate = true;
 			chunk.State = ChunkStateEnum.Generated;
 		}
 
+		/// <summary>
+		/// Places the chunk and its contents in the game world.
+		/// </summary>
+		/// <param name="chunk">Chunk.</param>
 		public void PlaceChunk(Chunk chunk)
 		{
-			if (chunk.State == ChunkStateEnum.Emtpy)
+			if (chunk.State == ChunkStateEnum.Emtpy) // Skip if empty
 				GenerateChunk(chunk);
 
-			if (chunk.Recalculate)
+			if (chunk.Recalculate) // Recalculate if needed
 				chunk.Calculate();
 
-			lock (World.Physics)
+			lock (World.Physics) // Lock the physics engine while manipulating chunk bodies.
 			{
 				lock (chunk)
 				{
@@ -252,9 +311,22 @@ namespace Mff.Totem.Core
 				}
 			}
 
+			if (chunk.IsSurface) // Place a tree if on surface
+			{
+				var ent = World.CreateEntity("tree");
+				ent.GetComponent<BodyComponent>().Position = 
+					new Vector2(chunk.Left + Chunk.SIZE / 2, 
+					            HeightMap(chunk.Left + Chunk.SIZE / 2));
+				chunk.Trees.Add(ent);
+			}
+
 			chunk.State = ChunkStateEnum.Placed;
 		}
 
+		/// <summary>
+		/// Remove a chunk and its contents from the game world
+		/// </summary>
+		/// <param name="chunk">Chunk.</param>
 		public void UnplaceChunk(Chunk chunk)
 		{
 			if (chunk.State != ChunkStateEnum.Placed)
@@ -264,22 +336,42 @@ namespace Mff.Totem.Core
 			{
 				World.Physics.RemoveBody(chunk.Body);
 			}
+
+			chunk.Trees.ForEach(t => t.Remove = true);
+
 			chunk.Body = null;
 			chunk.State = ChunkStateEnum.Generated;
 		}
 
 		public static class TerrainHelper
 		{
+			/// <summary>
+			/// Create chunk ID from coordinates
+			/// </summary>
+			/// <returns>Chunk ID.</returns>
+			/// <param name="x">The x coordinate.</param>
+			/// <param name="y">The y coordinate.</param>
 			public static ulong PackCoordinates(int x, int y)
 			{
 				return ((ulong)((uint)x) << 32) | (uint)y;
 			}
 
+			/// <summary>
+			/// Chunk position from chunk ID.
+			/// </summary>
+			/// <returns>The coordinates.</returns>
+			/// <param name="packed">Chunk ID.</param>
 			public static Tuple<int, int> UnpackCoordinates(ulong packed)
 			{
 				return Tuple.Create((int)(packed >> 32), (int)packed);
 			}
 
+			/// <summary>
+			/// Convert triangulated polygons to render data.
+			/// </summary>
+			/// <returns>The render data.</returns>
+			/// <param name="triangulated">Triangulated polygons.</param>
+			/// <param name="c">Vertex color.</param>
 			public static VertexPositionColor[] TriangulatedRenderData(List<Vertices> triangulated, Color c)
 			{
 				var output = new VertexPositionColor[triangulated.Count * 3];
@@ -289,11 +381,23 @@ namespace Mff.Totem.Core
 				return output;
 			}
 
+			/// <summary>
+			/// Triangulate a polygon.
+			/// </summary>
+			/// <returns>The triangulation.</returns>
+			/// <param name="polygon">Polygon.</param>
+			/// <param name="algo">Algorithm.</param>
 			public static List<Vertices> Triangulate(List<IntPoint> polygon, TriangulationAlgorithm algo = TriangulationAlgorithm.Earclip)
 			{
 				return FarseerPhysics.Common.Decomposition.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), algo);
 			}
 
+			/// <summary>
+			/// Triangulate a list of polygons.
+			/// </summary>
+			/// <returns>The triangulation.</returns>
+			/// <param name="polygons">Polygons.</param>
+			/// <param name="algo">Algorithm.</param>
 			public static List<Vertices> Triangulate(List<List<IntPoint>> polygons, TriangulationAlgorithm algo = TriangulationAlgorithm.Earclip)
 			{
 				List<Vertices> result = new List<Vertices>();
@@ -301,6 +405,12 @@ namespace Mff.Totem.Core
 				return result;
 			}
 
+			/// <summary>
+			/// Converts a list of IntPoints to vertices.
+			/// </summary>
+			/// <returns>The polygon in vertices.</returns>
+			/// <param name="polygon">Polygon.</param>
+			/// <param name="scale">Scale.</param>
 			public static Vertices PolygonToVertices(List<IntPoint> polygon, float scale = 1 / 64f)
 			{
 				Vector2[] v = new Vector2[polygon.Count];
@@ -309,6 +419,12 @@ namespace Mff.Totem.Core
 				return new Vertices(v);
 			}
 
+			/// <summary>
+			/// Converts vertices to a list of IntPoints
+			/// </summary>
+			/// <returns>The polygon as a list of IntPoints.</returns>
+			/// <param name="verts">Polygon in Vertices.</param>
+			/// <param name="scale">Scale.</param>
 			public static List<IntPoint> VerticesToPolygon(Vertices verts, float scale = 1 / 64f)
 			{
 				List<IntPoint> result = new List<IntPoint>();
@@ -324,7 +440,8 @@ namespace Mff.Totem.Core
 			public ulong ID;
 			//public Task GenerationTask;
 			public ChunkStateEnum State;
-			public bool Recalculate = true;
+			public bool Recalculate = true,
+				IsSurface = false;
 
 			public List<Entity> Trees = new List<Entity>();
 
@@ -404,6 +521,9 @@ namespace Mff.Totem.Core
 				Damage = new List<List<IntPoint>>();
 			}
 
+			/// <summary>
+			/// Calculate render and physics data.
+			/// </summary>
 			public void Calculate()
 			{
 				var clipper = new Clipper();

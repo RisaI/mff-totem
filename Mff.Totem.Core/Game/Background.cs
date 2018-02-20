@@ -138,7 +138,7 @@ namespace Mff.Totem.Core
                     for (int c = 0; c < count; ++c)
                     {
                         spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY)) - Resolution / 2, null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.None, 0.5f - 0.01f * i);
-                        spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY) + texture.Height * scale) - Resolution / 2, null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.FlipVertically, 0.5f - 0.01f * i);
+                        //spriteBatch.Draw(texture, new Vector2(-offsetX + c * width, Math.Max(0, offsetY) + texture.Height * scale) - Resolution / 2, null, clr, 0, Vector2.Zero, new Vector2(scale), SpriteEffects.FlipVertically, 0.5f - 0.01f * i);
                     }
                 }
             }

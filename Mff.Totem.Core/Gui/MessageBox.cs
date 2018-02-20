@@ -28,7 +28,6 @@ namespace Mff.Totem.Gui
 		{
 			var font = ContentLoader.Fonts["menu"];
 			var size = font.MeasureString(Text);
-			spriteBatch.DrawRectangle(new Rectangle(2,-2, (int)Size.X + 4, (int)Size.Y - 4), Color.Red, 0f);
 			spriteBatch.DrawString(font, Text, Size / 2, Color.White, 0, size / 2, Math.Min(1, font.Fit(Text, Size)), SpriteEffects.None, 1f);
 		}
 	}

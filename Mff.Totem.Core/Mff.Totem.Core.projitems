@@ -30,7 +30,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Gui\GuiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\MessageBox.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\HUD.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\CharacterComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SimplexNoise.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Inventory\IInventory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Inventory\Item.cs" />
@@ -49,6 +48,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\PropBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Parallax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Entities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\CharacterComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\DamagableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\TreeComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
@@ -57,5 +59,6 @@
     <Folder Include="$(MSBuildThisFileDirectory)Game\Inventory\" />
     <Folder Include="$(MSBuildThisFileDirectory)Menu\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Physics\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Character\" />
   </ItemGroup>
 </Project>
