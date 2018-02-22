@@ -352,7 +352,7 @@ namespace Mff.Totem.Core
 				}
 				else if (KInput.GetKeyState(Keys.Home) == InputState.Released)
 				{
-					_cursorIndex = Input.Length; // Go to the beggining
+					_cursorIndex = Input.Length; // Go to the beginning
 				}
 
 				if (KInput.GetKeyState(Keys.Escape) == InputState.Released)
