@@ -51,10 +51,38 @@ with.
     See the documentation for more information.
     -->
     <CharacterRegions>
+
+      <!-- Basic Latin -->
       <CharacterRegion>
         <Start>&#32;</Start>
         <End>&#126;</End>
       </CharacterRegion>
+
+      <!-- Latin-1 Supplement, Latin Extended A & B -->
+      <CharacterRegion>
+        <Start>&#160;</Start>
+        <End>&#591;</End>
+      </CharacterRegion>
+
+      <!-- Latin Extended Additional -->
+      <CharacterRegion>
+        <Start>&#647;</Start>
+        <End>&#669;</End>
+      </CharacterRegion>
+
+      <!-- Greek -->
+      <CharacterRegion>
+        <Start>&#880;</Start>
+        <End>&#991;</End>
+      </CharacterRegion>
+
+      <!-- Cyrillic -->
+      <CharacterRegion>
+        <Start>&#456;</Start>
+        <End>&#551;</End>
+      </CharacterRegion>
+
     </CharacterRegions>
+
   </Asset>
 </XnaContent>

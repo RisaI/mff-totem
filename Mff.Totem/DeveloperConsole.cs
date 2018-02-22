@@ -176,7 +176,8 @@ namespace Mff.Totem.Core
 				if (body != null)
 					body.LegPosition = pos;
 			}, "asset", "x", "[y]");
-#endregion
+            #endregion
+
 			/*AddCommand("terrain_test", "Spawns an entity loaded from assets.", args =>
 			{
 				Game.World.Terrain.CreateDamage(new List<IntPoint>() { new IntPoint(200, 0), new IntPoint(250, 0), new IntPoint(250, 1990), new IntPoint(200, 2000) });
@@ -458,7 +459,7 @@ namespace Mff.Totem.Core
                             {
                                 escapedLine.Append(ch);
                             }
-                            else
+                            else if(ch != '\r')
                             {
                                 escapedLine.Append('?');
                             }
