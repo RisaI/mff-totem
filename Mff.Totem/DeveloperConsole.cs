@@ -418,7 +418,7 @@ namespace Mff.Totem.Core
 			}
 
 			// Toggle the console
-			if (KInput.GetKeyState(Keys.OemSemicolon) == InputState.Pressed) 
+			if (KInput.GetKeyState(Keys.F12) == InputState.Pressed) 
 			{
 				Enabled = !Enabled;
 			}
