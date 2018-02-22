@@ -520,6 +520,9 @@ namespace Mff.Totem.Core
 		/// <param name="args">Arguments.</param>
 		public void Command(string command, string[] args)
 		{
+            // Write the input
+            Console.WriteLine(">{0} {1}", command, string.Join(" ", args));
+
 			if (Commands.ContainsKey(command))
 			{
 				try
