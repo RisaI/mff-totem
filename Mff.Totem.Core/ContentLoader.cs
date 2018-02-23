@@ -23,16 +23,6 @@ namespace Mff.Totem
 			private set;
 		}
 
-		/// <summary>
-		/// A generated texture of night sky
-		/// </summary>
-		/// <value>Night sky.</value>
-		public static Texture2D GeneratedStarSky
-		{
-			get;
-			private set;
-		}
-
 		public static Texture2D LightTexture
 		{
 			get;
@@ -56,7 +46,6 @@ namespace Mff.Totem
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
 			LightTexture = Krypton.LightTextureBuilder.CreatePointLight(game.GraphicsDevice, 512);
-			GenerateStarSky(game);
 
 			// Load Textures
 			var textureFolder = "Content/textures/";
@@ -170,34 +159,6 @@ namespace Mff.Totem
 			for (int i = 0; i < movable.Length; ++i)
 				parallax.Offsetable[movable[i]] = true;
 			Parallaxes.Add(asset, parallax);
-		}
-
-		static void GenerateStarSky(Core.TotemGame game)
-		{
-			int size = 256;
-			GeneratedStarSky = new Texture2D(game.GraphicsDevice, size, size);
-			Color[] colorMap = new Color[size * size];
-			for (int i = 0; i < size * size; ++i)
-			{
-				if (Core.TotemGame.Random.Next(280) != 0)
-					continue;
-
-				float intensity = 0.3f + 0.7f * (float)Core.TotemGame.Random.NextDouble();
-				Color main = Color.Lerp(Color.Transparent, Color.White, intensity),
-					secondary = Color.Lerp(main, Color.Transparent, 0.75f);
-
-				colorMap[i] = main;
-				if (i >= size)
-					colorMap[i - size] = secondary;
-				if (i < size * (size - 1))
-					colorMap[i + size] = secondary;
-				int mod = i % size;
-				if (mod > 0)
-					colorMap[i - 1] = secondary;
-				if (mod < size - 1)
-					colorMap[i + 1] = secondary;
-			}
-			GeneratedStarSky.SetData<Color>(colorMap);
 		}
 
 		/// <summary>

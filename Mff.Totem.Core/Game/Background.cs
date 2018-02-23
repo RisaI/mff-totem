@@ -77,7 +77,7 @@ namespace Mff.Totem.Core
 					if (nightTint > 0.1f)
 					{
 						Color stars = Color.Lerp(Color.Transparent, Color.White, nightTint);
-						Texture2D starTexture = ContentLoader.GeneratedStarSky;
+						Texture2D starTexture = World?.Planet?.NightSky;
 						int width = ((int)World.Game.Resolution.X) / starTexture.Width + 1,
 							height = ((int)World.Game.Resolution.Y) / starTexture.Height + 1;
 						for (int x = 0; x < width; ++x)
@@ -87,6 +87,9 @@ namespace Mff.Totem.Core
 								spriteBatch.Draw(starTexture, new Vector2(x, y) * 256 - Resolution / 2, null, stars, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.01f);
 							}
 						}
+						if (World?.Planet?.NightSkyNebulae != null)
+							spriteBatch.Draw(World.Planet.NightSkyNebulae, -Resolution / 2, null, stars,
+						                 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0.01f);
 					}
 				}
 
@@ -108,8 +111,8 @@ namespace Mff.Totem.Core
 					spriteBatch.Draw(moonTexture, new Vector2(1.3f, 1) * Helper.AngleToDirection(angle_moon) * World.Game.Resolution / 2, null,
 									 Color.White, 0, moonTexture.Size() / 2, Vector2.One * 1f, SpriteEffects.None, 0f);
 				}
-				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
-				DrawParallax(spriteBatch, nightTint);
+				spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, Color.Lerp(Color.Transparent, SkyTintColor, SkyTint), 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0.1f);
+				//DrawParallax(spriteBatch, nightTint);
 				spriteBatch.End();
 			}
 

@@ -107,6 +107,7 @@ namespace Mff.Totem.Core
 			set
 			{
 				_info = value;
+				_info.GenerateTextures(this);
 				Physics.Gravity = new Vector2(0, _info.Gravity);
 				Terrain.Generate(_info.TerrainSeed);
 			}
@@ -124,6 +125,7 @@ namespace Mff.Totem.Core
 			// Planet info
 			_info = new PlanetInfo();
 			_info.Randomize(TotemGame.Random.Next());
+			_info.GenerateTextures(this);
 
 			// Physics
 			Physics = new World(new Vector2(0, _info.Gravity));
