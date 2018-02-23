@@ -97,6 +97,21 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		private PlanetInfo _info;
+		public PlanetInfo Planet
+		{
+			get
+			{
+				return _info;
+			}
+			set
+			{
+				_info = value;
+				Physics.Gravity = new Vector2(0, _info.Gravity);
+				Terrain.Generate(_info.TerrainSeed);
+			}
+		}
+
 		public GameWorld(TotemGame game)
 		{
 			Game = game;
@@ -106,8 +121,12 @@ namespace Mff.Totem.Core
 			// Particles
 			Particles = new List<Particle>(8192);
 
+			// Planet info
+			_info = new PlanetInfo();
+			_info.Randomize(TotemGame.Random.Next());
+
 			// Physics
-			Physics = new World(new Vector2(0, 9.81f));
+			Physics = new World(new Vector2(0, _info.Gravity));
 
 			// Physical engine debug view
 			DebugView = new DebugViewXNA(Physics) { Enabled = true };
@@ -115,7 +134,7 @@ namespace Mff.Totem.Core
 
 			// Load basic terrain for debugging
 			Terrain = new Terrain(this);
-			Terrain.Generate();
+			Terrain.Generate(_info.TerrainSeed);
 
 			// Default camera
 			_camera = new Camera(game);

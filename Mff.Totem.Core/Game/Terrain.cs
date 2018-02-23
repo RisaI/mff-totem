@@ -293,7 +293,7 @@ namespace Mff.Totem.Core
 				GenerateChunk(chunk);
 
 			if (chunk.Recalculate) // Recalculate if needed
-				chunk.Calculate();
+				chunk.Calculate(World);
 
 			lock (World.Physics) // Lock the physics engine while manipulating chunk bodies.
 			{
@@ -524,7 +524,7 @@ namespace Mff.Totem.Core
 			/// <summary>
 			/// Calculate render and physics data.
 			/// </summary>
-			public void Calculate()
+			public void Calculate(GameWorld world)
 			{
 				var clipper = new Clipper();
 				List<List<IntPoint>> output = new List<List<IntPoint>>();
@@ -543,7 +543,7 @@ namespace Mff.Totem.Core
 					for (int i = 0; i < triangulation.Count; ++i)
 						for (int b = 0; b < 3; ++b)
 							TriangulatedBackgroundVertices[index++] = new VertexPositionColor(
-								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), Color.Gray);
+								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), world.Planet.BackgroundSoilTint);
 				}
 
 				// Triangulate foreground for rendering
@@ -554,7 +554,7 @@ namespace Mff.Totem.Core
 					for (int i = 0; i < triangulation.Count; ++i)
 						for (int b = 0; b < 3; ++b)
 							TriangulatedForegroundVertices[index++] = new VertexPositionColor(
-								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), Color.White);
+								new Vector3(triangulation[i][b].X, triangulation[i][b].Y, 0), world.Planet.SoilTint);
 				}
 
 				// Convert to Farseer data
