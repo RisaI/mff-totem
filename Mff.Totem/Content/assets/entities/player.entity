@@ -17,7 +17,8 @@
 		},
 		{
 			"class": "component_inventory",
-			"equip": "true"
+			"equip": "true",
+			"use": "true"
 		},
 		{
 			"class": "component_character",

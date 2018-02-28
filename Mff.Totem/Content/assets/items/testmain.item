@@ -2,7 +2,7 @@
 	"class": "item",
 	"id": "test_weapon",
 	"maxstack": "1",
-	"slot": "Left",
+	"slot": "Use",
 	"spdmul": "0.5",
 	"hpmul": "1.25"
 }

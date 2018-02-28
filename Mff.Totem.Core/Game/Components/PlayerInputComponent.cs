@@ -60,8 +60,18 @@ namespace Mff.Totem.Core
 
 				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) && inventory != null)
                 {
-                    inventory.Use(EquipSlot.Left);
+                    inventory.Use(0);
                 }
+
+				if (World.Game.Input.GetInput(Inputs.Swap, InputState.Pressed) && inventory != null)
+				{
+					if (inventory.UseItems.Length >= 2)
+					{
+						var i = inventory.UseItems[0];
+						inventory.UseItems[0] = inventory.UseItems[1];
+						inventory.UseItems[1] = i;
+					}
+				}
 
 				if (World.Game.Input.GetInput(Inputs.Use, InputState.Pressed))
 				{
@@ -71,6 +81,7 @@ namespace Mff.Totem.Core
 							break;
 					}
 				}
+
 
             }
 

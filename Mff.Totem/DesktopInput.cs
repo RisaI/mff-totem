@@ -91,6 +91,8 @@ namespace Mff.Totem
 					return GetPointerInput(0).State == state;
 				case Inputs.Use:
 					return GetKeyState(Keys.E) == state;
+				case Inputs.Swap:
+					return GetKeyState(Keys.Q) == state;
 				case Inputs.Inventory:
 					return GetKeyState(Keys.Tab) == state;
 			}

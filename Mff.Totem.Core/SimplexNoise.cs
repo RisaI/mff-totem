@@ -451,4 +451,77 @@ namespace Mff.Totem.Core
 			}
 		}
 	}
+
+	public static class NoiseGenerator
+	{
+		public static int Seed { get; set; }
+		public static int Octaves { get; set; }
+		public static float Amplitude { get; set; }
+		public static float Persistence { get; set; }
+		public static float Frequency { get; set; }
+
+		static NoiseGenerator()
+		{
+			Reroll();
+			Reset();
+		}
+
+		public static void Reset()
+		{
+			Octaves = 8;
+			Amplitude = 1;
+			Frequency = 0.015f;
+			Persistence = 0.65f;
+		}
+
+		public static void Reroll()
+		{
+			Random r = new Random();
+			Seed = r.Next(Int32.MaxValue);
+		}
+
+		public static float Noise(int x, int y)
+		{
+			//returns -1 to 1
+			float total = 0.0f;
+			float freq = Frequency, amp = Amplitude;
+			for (int i = 0; i < Octaves; ++i)
+			{
+				total = total + Smooth(x * freq, y * freq) * amp;
+				freq *= 2;
+				amp *= Persistence;
+			}
+			if (total < -2.4) total = -2.4f;
+			else if (total > 2.4) total = 2.4f;
+
+			return (total / 2.4f);
+		}
+
+		public static float NoiseGeneration(int x, int y)
+		{
+			int n = x + y * 57;
+			n = (n << 13) ^ n;
+
+			return (1.0f - ((n * (n * n * 15731 + 789221) + Seed) & 0x7fffffff) / 1073741824.0f);
+		}
+
+		private static float Interpolate(float x, float y, float a)
+		{
+			float value = (1 - (float)Math.Cos(a * Math.PI)) * 0.5f;
+			return x * (1 - value) + y * value;
+		}
+
+		private static float Smooth(float x, float y)
+		{
+			float n1 = NoiseGeneration((int)x, (int)y);
+			float n2 = NoiseGeneration((int)x + 1, (int)y);
+			float n3 = NoiseGeneration((int)x, (int)y + 1);
+			float n4 = NoiseGeneration((int)x + 1, (int)y + 1);
+
+			float i1 = Interpolate(n1, n2, x - (int)x);
+			float i2 = Interpolate(n3, n4, x - (int)x);
+
+			return Interpolate(i1, i2, y - (int)y);
+		}
+	}
 }

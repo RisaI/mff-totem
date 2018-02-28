@@ -16,8 +16,7 @@ namespace Mff.Totem.Core
 		Torso = 1,
 		Legs = 2,
 		Accessory = 3,
-		Left = 4,
-		Right = 5,
+		Use = 4,
 		None = 255
 	}
 }

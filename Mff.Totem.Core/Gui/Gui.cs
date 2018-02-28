@@ -136,6 +136,12 @@ namespace Mff.Totem.Gui
 			return new Rectangle(ItemArea.X - (int)Size.X / 2, ItemArea.Y + index * (2 + box), box, box);
 		}
 
+		private Rectangle UseArea(int index)
+		{
+			var box = ItemArea.Width / 6;
+			return new Rectangle(ItemArea.X - (int)Size.X / 2 + index * (box + 2), ItemArea.Y + ItemArea.Height - box - 2, box, box);
+		}
+
 		private Rectangle EquipButtons(int index)
 		{
 			return new Rectangle(4 + index * ((int)Size.X / 6 - 12), (int)Size.Y - 4 - ITEM_HEIGHT_CLOSED, (int)Size.X / 6 - 16, ITEM_HEIGHT_CLOSED);
@@ -180,6 +186,31 @@ namespace Mff.Totem.Gui
                     DrawButton(spriteBatch, font, equipButtons[2], "Drop", 0.5f);*/
                 }
             }
+
+			for (int i = 0; i < Inventory.UseItems.Length; ++i)
+			{
+				spriteBatch.DrawRectangle(UseArea(i), selectedEquip == i ? Color.DarkGray : Color.Gray, 0.5f);
+				var item = Inventory.UseItems[i];
+				if (item != null)
+				{
+					var text = item.Count.ToString();
+					var size = font.MeasureString(text);
+					spriteBatch.Draw(ItemSheet, UseArea(i).Location.ToVector2(), new Rectangle(IconSize * (item.TextureID % SheetWidth),
+																								 IconSize * (item.TextureID / SheetWidth),
+																								 IconSize, IconSize),
+					                 Color.White, 0, Vector2.Zero, (float)UseArea(i).Width / IconSize, SpriteEffects.None, 0.6f);
+					spriteBatch.DrawString(font, text, UseArea(i).Location.ToVector2() + new Vector2(UseArea(i).Width, UseArea(i).Height),
+										   Color.White, 0, size, Vector2.One / 2, SpriteEffects.None, 0.6f);
+				}
+
+				/*if (i == selectedEquip)
+				{
+					DrawButton(spriteBatch, font, EquipButtons(0), "Unequip", 0.5f);
+					/*if (item.Usable)
+                        DrawButton(spriteBatch, font, equipButtons[1], "Use", 0.5f);
+                    DrawButton(spriteBatch, font, equipButtons[2], "Drop", 0.5f);
+				}*/
+			}
 
 			// Draw Item Area
             float lineh = font.MeasureString("I").Y;

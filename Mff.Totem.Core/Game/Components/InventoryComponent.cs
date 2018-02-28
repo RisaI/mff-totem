@@ -7,12 +7,14 @@ namespace Mff.Totem.Core
 	[Serializable("component_inventory")]
 	public class InventoryComponent : EntityComponent, IUpdatable
 	{
-		public const int EquipSlots = 5;
+		public const int EquipSlots = 4,
+						 UseSlots = 2;
 
 		public int Size = 24;
 		public List<Item> Items = new List<Item>();
 
 		public Item[] Equip = new Item[0];
+		public Item[] UseItems = new Item[0];
 
 		public InventoryComponent()
 		{
@@ -55,11 +57,11 @@ namespace Mff.Totem.Core
 			return item;
 		}
 
-        public bool Use(EquipSlot slot)
+        public bool Use(int useSlot)
         {
-            if (Equip?.Length != 0 && Equip[(int)slot] != null)
+			if (UseItems?.Length != 0 && UseItems[useSlot] != null)
             {
-                Equip[(int)slot].Use(Parent);
+				UseItems[useSlot].Use(Parent);
                 return true;
             }
             return false;
@@ -67,13 +69,26 @@ namespace Mff.Totem.Core
 
 		public bool EquipItem(int invSlot)
 		{
-			if (Equip.Length <= 0 || invSlot < 0 || invSlot >= Items.Count)
+			if (Equip?.Length <= 0 || invSlot < 0 || invSlot >= Items.Count)
 				return false;
 
 			var item = Items[invSlot];
 
 			if (item.Slot == EquipSlot.None)
 				return false;
+			else if (item.Slot == EquipSlot.Use)
+			{
+				for (int i = 0; i < UseItems.Length; ++i)
+				{
+					if (UseItems[i] == null)
+					{
+						UseItems[i] = Items[invSlot];
+						Items.RemoveAt(invSlot);
+						return true;
+					}
+				}
+				return false;
+			}
 			else
 			{
 				var eq = Equip[(int)item.Slot];
@@ -85,14 +100,26 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public bool UnequipItem(int equipSlot)
+		public bool UnequipItem(int equipSlot, bool useItem = false)
 		{
-			if (equipSlot < 0 || equipSlot >= Equip.Length || Equip[equipSlot] == null || Items.Count >= Size)
-				return false;
+			if (!useItem)
+			{
+				if (equipSlot < 0 || equipSlot >= Equip.Length || Equip[equipSlot] == null || Items.Count >= Size)
+					return false;
 
-			Items.Add(Equip[equipSlot]);
-			Equip[equipSlot] = null;
-			return false;
+				Items.Add(Equip[equipSlot]);
+				Equip[equipSlot] = null;
+				return false;
+			}
+			else
+			{
+				if (equipSlot < 0 || equipSlot >= UseItems.Length || UseItems[equipSlot] == null || Items.Count >= Size)
+					return false;
+
+				Items.Add(UseItems[equipSlot]);
+				UseItems[equipSlot] = null;
+				return false;
+			}
 		}
 
 		public void DropItem(int invSlot)
@@ -148,19 +175,23 @@ namespace Mff.Totem.Core
 			writer.WriteValue(Size);
 			writer.WritePropertyName("equip");
 			writer.WriteValue(Equip.Length > 0);
+			writer.WritePropertyName("use");
+			writer.WriteValue(UseItems.Length > 0);
 		}
 
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
 		{
 			Size = obj["size"] != null ? (int)obj["size"] : 24;
+
 			if (obj["equip"] != null && (bool)obj["equip"])
-			{
 				Equip = new Item[EquipSlots];
-			}
 			else
-			{
 				Equip = new Item[0];
-			}
+
+			if (obj["use"] != null && (bool)obj["use"])
+				UseItems = new Item[UseSlots];
+			else
+				UseItems = new Item[0];
 		}
 
 		protected override void OnSerialize(System.IO.BinaryWriter writer)
@@ -172,12 +203,21 @@ namespace Mff.Totem.Core
 			{
 				Items[i].Serialize(writer);
 			}
+
 			writer.Write(Equip.Length);
 			for (int i = 0; i < Equip.Length; ++i)
 			{
 				writer.Write(Equip[i] != null);
 				if (Equip[i] != null)
 					Equip[i].Serialize(writer);
+			}
+
+			writer.Write(UseItems.Length);
+			for (int i = 0; i < UseItems.Length; ++i)
+			{
+				writer.Write(UseItems[i] != null);
+				if (UseItems[i] != null)
+					UseItems[i].Serialize(writer);
 			}
 		}
 
@@ -202,6 +242,17 @@ namespace Mff.Totem.Core
 					Equip[i] = item;
 				}
 			}
+
+			UseItems = new Item[reader.ReadInt32()];
+			for (int i = 0; i < UseItems.Length; ++i)
+			{
+				if (reader.ReadBoolean())
+				{
+					var item = (Item)DeserializationRegister.CreateInstance(reader.ReadString());
+					item.Deserialize(reader);
+					UseItems[i] = item;
+				}
+			}
 		}
 
 		public override EntityComponent Clone()
@@ -216,7 +267,14 @@ namespace Mff.Totem.Core
 					equip[i] = Equip[i].Clone();
 			}
 
-			return new InventoryComponent() { Size = Size, Items = items, Equip = equip };
+			var use = new Item[UseItems.Length];
+			for (int i = 0; i < use.Length; ++i)
+			{
+				if (UseItems[i] != null)
+					use[i] = UseItems[i].Clone();
+			}
+
+			return new InventoryComponent() { Size = Size, Items = items, Equip = equip, UseItems = use };
 		}
 
 		public void Update(GameTime gameTime)
@@ -225,6 +283,11 @@ namespace Mff.Totem.Core
 			{
 				if (Equip[i] != null)
 					Equip[i].Update(Parent, gameTime);
+			}
+			for (int i = 0; i < UseItems.Length; ++i)
+			{
+				if (UseItems[i] != null)
+					UseItems[i].Update(Parent, gameTime);
 			}
 		}
 	}

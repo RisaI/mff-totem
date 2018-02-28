@@ -3,5 +3,5 @@
 	"id": "test_bow",
 	"texid": "66",
 	"maxstack": "1",
-	"slot": "Left"
+	"slot": "Use"
 }

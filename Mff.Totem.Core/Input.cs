@@ -47,6 +47,7 @@ namespace Mff.Totem.Core
 		Plus,
 		Minus,
 		Sprint,
+		Swap,
 		Pause,
 		Inventory
 	}

@@ -90,17 +90,26 @@ namespace Mff.Totem.Core
 
 
 			{
-				Color nebulaColor = MultiLerp((float)random.NextDouble(), Color.Purple, Color.Pink, Color.PaleGreen, Color.Red, Color.Yellow);
+				Color nebulaColor = MultiLerp(/*(float)random.NextDouble()*/0, Color.Purple, Color.Pink, Color.PaleGreen, Color.Red, Color.Yellow);
 
 				var nebulae = new Texture2D(world.Game.GraphicsDevice, (int)world.Game.Resolution.X, (int)world.Game.Resolution.Y);
 				Color[] colorMap = new Color[nebulae.Width * nebulae.Height];
-				for (int i = 0; i < colorMap.Length; ++i)
+
+				NoiseGenerator.Seed = 0;
+				//NoiseGenerator.Reroll();
+				NoiseGenerator.Frequency = 0.00006f;
+				NoiseGenerator.Persistence = 0.65f;
+				NoiseGenerator.Amplitude = 1.1f;
+
+
+				// Nebula
+				for (int i = 0; i < colorMap.Length; i++)
 				{
-					float x = (i % nebulae.Width) / 128f,
-						  y = (i / nebulae.Width) / 128f;
-					Color main = Color.Lerp(Color.Transparent, nebulaColor, 
-					                        Math.Max((float)noise.Evaluate(x,y ) - 0.3f, 0));
-					colorMap[i] = main;
+					float value = NoiseGenerator.Noise((i % nebulae.Width) * 128, (i / nebulae.Width) * 128);
+					if (value >= 0.1f)
+					{
+						colorMap[i] = Color.Lerp(Color.Transparent, nebulaColor, value - 0.1f);
+					}
 				}
 				nebulae.SetData<Color>(colorMap);
 
