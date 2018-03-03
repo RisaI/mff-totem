@@ -91,7 +91,8 @@ namespace Mff.Totem.Core
 		/// <param name="obj">JObject.</param>
 		public static EntityComponent CreateFromBinary(BinaryReader reader)
 		{
-			EntityComponent component = (EntityComponent)DeserializationRegister.CreateInstance(reader.ReadString());
+			var cc = reader.ReadString();
+			EntityComponent component = (EntityComponent)DeserializationRegister.CreateInstance(cc);
 			component.Deserialize(reader);
 			return component;
 		}

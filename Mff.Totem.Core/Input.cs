@@ -49,7 +49,9 @@ namespace Mff.Totem.Core
 		Sprint,
 		Swap,
 		Pause,
-		Inventory
+		Inventory,
+		QuickSave,
+		QuickLoad
 	}
 
 	public enum InputState

@@ -263,8 +263,12 @@ namespace Mff.Totem.Core
 		public void Serialize(BinaryWriter writer)
 		{
 			writer.Write(UID);
-			writer.Write(Components.Count);
+
+			// Tags
+			writer.Write(Tags.Count);
 			Tags.ForEach(t => writer.Write(t));
+
+			// Components
 			writer.Write((byte)Components.Count);
 			Components.ForEach(c => c.Serialize(writer));
 		}
@@ -272,11 +276,15 @@ namespace Mff.Totem.Core
 		public void Deserialize(BinaryReader reader)
 		{
 			UID = reader.ReadGuid();
+
+			// Tags
 			var tCount = reader.ReadInt32();
 			for (int i = 0; i < tCount; ++i)
 			{
 				Tags.Add(reader.ReadString());
 			}
+
+			// Components
 			var count = reader.ReadByte();
 			for (int i = 0; i < count; ++i)
 			{

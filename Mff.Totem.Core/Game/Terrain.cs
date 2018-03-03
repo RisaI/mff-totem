@@ -12,10 +12,12 @@ using ClipperLib;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Graphics;
+using System.IO;
+using Mff.Totem;
 
 namespace Mff.Totem.Core
 {
-	public class Terrain
+	public class Terrain : ISerializable
 	{
 		const int CHUNK_CACHE = 15;
 
@@ -51,7 +53,6 @@ namespace Mff.Totem.Core
 		}
 
 		Clipper c;
-		Random Random;
 
 		/// <summary>
 		/// Sets generation data from a seed.
@@ -60,7 +61,6 @@ namespace Mff.Totem.Core
 		/// <param name="seed">Seed.</param>
 		public void Generate(long seed = 0)
 		{
-			Random = new Random((int)seed);
 			Seed = seed;
 			c.Clear();
 		}
@@ -396,6 +396,35 @@ namespace Mff.Totem.Core
 
 			chunk.Body = null;
 			chunk.State = ChunkStateEnum.Generated;
+		}
+
+		public void Serialize(BinaryWriter writer)
+		{
+			writer.Write(Seed);
+			writer.Write(ChunkCache.Count);
+			foreach (KeyValuePair<ulong, Chunk> pair in ChunkCache)
+			{
+				writer.Write(pair.Key);
+				writer.Write(pair.Value.Damage.Count);
+				pair.Value.Damage.ForEach(d => writer.Write(d));
+			}
+		}
+
+		public void Deserialize(BinaryReader reader)
+		{
+			Seed = reader.ReadInt64();
+			int cCount = reader.ReadInt32();
+			for (int i = 0; i < cCount; ++i)
+			{
+				ulong id = reader.ReadUInt64();
+				Chunk c = new Chunk(id);
+				int dmgCount = reader.ReadInt32();
+				for (int x = 0; x < dmgCount; ++x)
+				{
+					c.Damage.Add(reader.ReadPolygon());
+				}
+				ChunkCache.Add(id, c);
+			}
 		}
 
 		public static class TerrainHelper

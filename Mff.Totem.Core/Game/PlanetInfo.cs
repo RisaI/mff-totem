@@ -22,7 +22,12 @@ namespace Mff.Totem.Core
 			
 		}
 
-		int Seed = 0;
+		public int Seed
+		{
+			get;
+			private set;
+		}
+
 		public void Randomize(int seed)
 		{
 			Seed = seed;

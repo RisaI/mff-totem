@@ -137,6 +137,24 @@ namespace Mff.Totem
 			writer.Write(vector.Y);
 		}
 
+		public static void Write(this BinaryWriter writer, Rectangle rect)
+		{
+			writer.Write(rect.X);
+			writer.Write(rect.Y);
+			writer.Write(rect.Width);
+			writer.Write(rect.Height);
+		}
+
+		public static void Write(this BinaryWriter writer, List<IntPoint> polygon)
+		{
+			writer.Write(polygon.Count);
+			polygon.ForEach(p =>
+			{
+				writer.Write(p.X);
+				writer.Write(p.Y);
+			});
+		}
+
 		public static void Write(this BinaryWriter writer, Guid guid)
 		{
 			writer.Write(guid.ToByteArray());
@@ -152,9 +170,26 @@ namespace Mff.Totem
 			serializable.Serialize(writer);
 		}
 
+		public static List<IntPoint> ReadPolygon(this BinaryReader reader)
+		{
+			var c = reader.ReadInt32();
+			List<IntPoint> polygon = new List<IntPoint>(c);
+			for (int i = 0; i < c; ++i)
+			{
+				polygon.Add(new IntPoint(reader.ReadInt64(), reader.ReadInt64()));
+			}
+			return polygon;
+		}
+
 		public static Vector2 ReadVector2(this BinaryReader reader)
 		{
 			return new Vector2(reader.ReadSingle(), reader.ReadSingle());
+		}
+
+		public static Rectangle ReadRectangle(this BinaryReader reader)
+		{
+			return new Rectangle(reader.ReadInt32(), reader.ReadInt32(), 
+			                     reader.ReadInt32(), reader.ReadInt32());
 		}
 
 		public static Guid ReadGuid(this BinaryReader reader)

@@ -75,5 +75,17 @@ namespace Mff.Totem.Core
 			if (obj["leaf_area"] != null)
 				leafArea = Helper.JTokenToRectangle(obj["leaf_area"]);
 		}
+
+		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		{
+			base.OnSerialize(writer);
+			writer.Write(leafArea);
+		}
+
+		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		{
+			base.OnDeserialize(reader);
+			leafArea = reader.ReadRectangle();
+		}
 	}
 }

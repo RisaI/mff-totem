@@ -107,13 +107,13 @@ namespace Mff.Totem.Core
 			set
 			{
 				_info = value;
-				_info.GenerateTextures(this);
+				System.Threading.Tasks.Task.Run(() => { _info.GenerateTextures(this);});
 				Physics.Gravity = new Vector2(0, _info.Gravity);
 				Terrain.Generate(_info.TerrainSeed);
 			}
 		}
 
-		public GameWorld(TotemGame game)
+		GameWorld(TotemGame game)
 		{
 			Game = game;
 			Entities = new List<Entity>(512);
@@ -122,13 +122,8 @@ namespace Mff.Totem.Core
 			// Particles
 			Particles = new List<Particle>(8192);
 
-			// Planet info
-			_info = new PlanetInfo();
-			_info.Randomize(TotemGame.Random.Next());
-			_info.GenerateTextures(this);
-
 			// Physics
-			Physics = new World(new Vector2(0, _info.Gravity));
+			Physics = new World(new Vector2(0, 0));
 
 			// Physical engine debug view
 			DebugView = new DebugViewXNA(Physics) { Enabled = true };
@@ -136,11 +131,9 @@ namespace Mff.Totem.Core
 
 			// Load basic terrain for debugging
 			Terrain = new Terrain(this);
-			Terrain.Generate(_info.TerrainSeed);
 
 			// Default camera
 			_camera = new Camera(game);
-			_camera.Position.Y = Terrain.HeightMap(0);
 
 			WorldTime = new DateTime(2034, 5, 27, 12, 0, 0);
 
@@ -276,7 +269,7 @@ namespace Mff.Totem.Core
 				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
 				{
 					var chunk = Terrain.ActiveChunks[i];
-					if (chunk.State != Terrain.ChunkStateEnum.Placed)
+					if (chunk == null || chunk.State != Terrain.ChunkStateEnum.Placed)
 						continue;
 
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
@@ -303,7 +296,7 @@ namespace Mff.Totem.Core
 				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
 				{
 					var chunk = Terrain.ActiveChunks[i];
-					if (chunk.State != Terrain.ChunkStateEnum.Placed)
+					if (chunk == null || chunk.State != Terrain.ChunkStateEnum.Placed)
 						continue;
 					
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
@@ -363,24 +356,5 @@ namespace Mff.Totem.Core
         {
             return hour <= 4 || hour >= 20 ? 1 : (float)(hour > 8 && hour < 16 ? 0 : 1f - Math.Pow(Math.Cos(Math.PI * (hour / 8 - 1)), 2));
         }
-
-        public void Serialize(BinaryWriter writer)
-		{
-			// Entities
-			writer.Write((Int16)(Entities.Count + EntityQueue.Count));
-			Entities.ForEach(e => e.Serialize(writer));
-			EntityQueue.ForEach(e => e.Serialize(writer));
-		}
-
-		public void Deserialize(BinaryReader reader)
-		{
-			// Entities
-			var count = reader.ReadInt16();
-			for (int i = 0; i < count; ++i)
-			{
-				var ent = CreateEntity();
-				ent.Deserialize(reader);
-			}
-		}
 	}
 }

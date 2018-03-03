@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Input;
 
 using Krypton;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Mff.Totem.Core
 {
@@ -152,7 +153,31 @@ namespace Mff.Totem.Core
 			ContentLoader.Load(this);
 			ContentLoader.RefreshShaders(this);
 
-			World = new GameWorld(this);
+			World = GameWorld.CreateTestWorld(this);
+		}
+
+		public void SaveWorldToFile(string filename)
+		{
+			if (World == null)
+				return;
+			
+			using (FileStream file = new FileStream(filename, FileMode.Create))
+			using (BinaryWriter writer = new BinaryWriter(file))
+			{
+				World.Serialize(writer);
+			}
+		}
+
+		public bool LoadWorldFromFile(string filename)
+		{
+			if (!File.Exists(filename))
+				return false;
+
+			using (FileStream file = new FileStream(filename, FileMode.Open))
+			{
+				World = GameWorld.LoadFromStream(this, file);
+			}
+			return true;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -171,13 +196,26 @@ namespace Mff.Totem.Core
 					Hud.Update(gameTime);
 
 
-					if (World.Game.Input.GetInput(Inputs.Pause, InputState.Pressed))
+					if (Input.GetInput(Inputs.Pause, InputState.Pressed))
 					{
-						var g = World.Game.GuiManager.GetGuiOfType<Gui.MiniMenu>();
+						var g = GuiManager.GetGuiOfType<Gui.MiniMenu>();
 						if (g == null)
 							GuiManager.Add(new Gui.MiniMenu());
 						else
 							g.Closing = true;
+					}
+
+					if (Input.GetInput(Inputs.QuickLoad, InputState.Pressed))
+					{
+						if (LoadWorldFromFile("quicksave.sav"))
+						{
+							Hud.Chat("Loading from quick save");
+						}
+					}
+					else if (Input.GetInput(Inputs.QuickSave, InputState.Pressed))
+					{
+						SaveWorldToFile("quicksave.sav");
+						Hud.Chat("Quick saving...");
 					}
 
 					GuiManager.Update(gameTime);

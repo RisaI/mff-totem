@@ -95,6 +95,10 @@ namespace Mff.Totem
 					return GetKeyState(Keys.Q) == state;
 				case Inputs.Inventory:
 					return GetKeyState(Keys.Tab) == state;
+				case Inputs.QuickSave:
+					return GetKeyState(Keys.F9) == state;
+				case Inputs.QuickLoad:
+					return GetKeyState(Keys.F5) == state;
 			}
 			return false;
 		}

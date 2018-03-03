@@ -51,7 +51,7 @@ namespace Mff.Totem.Core
 
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
 		{
-			base.Deserialize(reader);
+			base.OnDeserialize(reader);
 			_baseMaxHp = reader.ReadInt32();
 			_hp = reader.ReadInt32();
 		}
