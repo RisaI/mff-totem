@@ -10,39 +10,14 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Mff.Totem.Core
 {
 	[Serializable("component_projectile_body")]
-	public class ProjectileBody : BodyComponent
+	public class ProjectileBody : BodyComponent, IUpdatable
 	{
-		public Body MainBody;
-		public float Radius = 0.01f;
-		private Vector2? FuturePosition;
-
 		public Guid OwnerID;
-
-		public ProjectileBody()
-		{
-
-		}
-
-		public ProjectileBody(float radius)
-		{
-			Radius = radius;
-		}
 
 		public override Vector2 Position
 		{
-			get
-			{
-				return MainBody != null ? MainBody.Position * 64f : (FuturePosition != null ? (Vector2)FuturePosition : Vector2.Zero);
-			}
-			set
-			{
-				if (MainBody != null)
-				{
-					MainBody.Position = value / 64f;
-				}
-				else
-					FuturePosition = value;
-			}
+			get;
+			set;
 		}
 
 		public override Vector2 LegPosition
@@ -54,20 +29,27 @@ namespace Mff.Totem.Core
 			set { Position = value; }
 		}
 
+		private float _lastRot = 0;
 		public override float Rotation
 		{
 			get
 			{
-				return MainBody != null ? MainBody.Rotation : 0;
+				if (LinearVelocity != Vector2.Zero)
+					_lastRot = -Helper.DirectionToAngle(LinearVelocity);
+				return _lastRot;
 			}
 			set
 			{
-				if (MainBody != null)
-					MainBody.Rotation = value;
-				else
-					spawnInfo.FRotation = value;
+				_lastRot = value;
+				LinearVelocity = LinearVelocity.Length() * Helper.AngleToDirection(_lastRot);
 			}
 		}
+
+		public Vector2 LinearVelocity;
+
+		public bool Gravity = false;
+		public float Friction = 0;
+		public int Damage;
 
 		public override Rectangle BoundingBox
 		{
@@ -82,57 +64,37 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		void CreateBody()
+		public ProjectileBody()
 		{
-			MainBody = BodyFactory.CreateCircle(World.Physics, Radius, 1f, Vector2.Zero, BodyType.Dynamic, Parent);
-			//MainBody.IsBullet = true;
 
-			MainBody.OnCollision += (fixtureA, fixtureB, contact) =>
+		}
+
+		public void Update(GameTime gameTime)
+		{
+			if (LinearVelocity.LengthSquared() >= 1e-7)
 			{
-				if (fixtureB.Body.UserData is Terrain)
+				var step = LinearVelocity * World.TimeScale * (float)gameTime.ElapsedGameTime.TotalSeconds;
+				bool stopped = false;
+				World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 				{
-					MainBody.BodyType = BodyType.Static;
-					return true;
-				}
-				else if (fixtureB.Body.UserData is Entity)
-				{
-
-				}
-
-				return false;
-			};
-
-			if (FuturePosition != null)
-				Position = (Vector2)FuturePosition;
-
-			MainBody.LinearVelocity = spawnInfo.VVelocity;
-			MainBody.Rotation = spawnInfo.FRotation;
-		}
-
-		protected override void OnEntityAttach(Entity entity)
-		{
-			if (MainBody != null)
-			{
-				MainBody.UserData = entity;
+					if (arg1.Body.UserData is Terrain)
+					{
+						Position = arg2 * 64f;
+						LinearVelocity = Vector2.Zero;
+						stopped = true;
+					}
+					return arg4;
+				}, Position / 64f, (Position + step) / 64f);
+				if (!stopped)
+					Position += step;
+				else
+					Gravity = false;
 			}
-		}
-
-		public override void Initialize()
-		{
-			if (MainBody != null)
-			{
-				FuturePosition = MainBody.Position * 64f;
-				MainBody.Dispose();
-			}
-			CreateBody();
-		}
-
-		public override void Destroy()
-		{
-			if (MainBody != null)
-			{
-				World.Physics.RemoveBody(MainBody);
-			}
+			if (Gravity)
+				LinearVelocity.Y += World.Physics.Gravity.Y * 64f * 
+					(float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale;
+			if (Friction > 0)
+				LinearVelocity /= Friction;
 		}
 
 		public override void Move(Vector2 direction)
@@ -142,63 +104,58 @@ namespace Mff.Totem.Core
 
 		public override EntityComponent Clone()
 		{
-			return new ProjectileBody(Radius) { Rotation = Rotation, Position = Position };
+			return new ProjectileBody()
+			{
+				Rotation = Rotation,
+				Position = Position,
+				Gravity = Gravity,
+				Friction = Friction
+			};
 		}
 
-		public void SetProjectileData(Entity owner, Vector2 direction)
+		public void SetProjectileData(Entity owner, Vector2 speed)
 		{
 			OwnerID = owner.UID;
 			Position = owner.GetComponent<BodyComponent>().Position;
-			Rotation = -Helper.DirectionToAngle(direction);
-
-			if (MainBody != null)
-				MainBody.LinearVelocity = direction / 64f;
-			else
-				spawnInfo.VVelocity = direction / 64f;
-
+			LinearVelocity = speed;
 		}
 
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
 		{
-			if (obj["radius"] != null)
-				Radius = (float)obj["radius"];
+			if (obj["gravity"] != null)
+				Gravity = (bool)obj["gravity"];
+			if (obj["friction"] != null)
+				Friction = (float)obj["friction"];
 		}
 
 		protected override void WriteToJson(Newtonsoft.Json.JsonWriter writer)
 		{
-			writer.WritePropertyName("radius");
-			writer.WriteValue(Radius);
+			writer.WritePropertyName("gravity");
+			writer.WriteValue(Gravity);
+			writer.WritePropertyName("friction");
+			writer.WriteValue(Friction);
 		}
 
 		protected override void OnSerialize(System.IO.BinaryWriter writer)
 		{
-			writer.Write(Radius);
 			writer.Write(Position);
+			writer.Write(Rotation);
+			writer.Write(LinearVelocity);
 
-			writer.Write(MainBody.LinearVelocity);
-			writer.Write(MainBody.Rotation);
+			writer.Write(Gravity);
+			writer.Write(Friction);
+			writer.Write(OwnerID);
 		}
 
-		private BodySpawnInfo spawnInfo;
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
 		{
-			Radius = reader.ReadSingle();
 			Position = reader.ReadVector2();
+			Rotation = reader.ReadSingle();
+			LinearVelocity = reader.ReadVector2();
 
-			//TODO: Load linear velocities
-			spawnInfo = new BodySpawnInfo(reader.ReadVector2(), reader.ReadSingle());
-		}
-
-		struct BodySpawnInfo
-		{
-			public Vector2 VVelocity;
-			public float FRotation;
-
-			public BodySpawnInfo(Vector2 vv, float frot)
-			{
-				VVelocity = vv;
-				FRotation = frot;
-			}
+			Gravity = reader.ReadBoolean();
+			Friction = reader.ReadSingle();
+			OwnerID = reader.ReadGuid();
 		}
 	}
 }

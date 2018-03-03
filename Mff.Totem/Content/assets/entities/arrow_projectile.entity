@@ -2,7 +2,8 @@
 	"components": [
 		{
 			"class": "component_projectile_body",
-            "radius": "0.05"
+			"friction": "0",
+			"gravity": "true"
 		},
         {
             "class": "component_sprite",

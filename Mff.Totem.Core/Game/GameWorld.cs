@@ -154,6 +154,7 @@ namespace Mff.Totem.Core
 				var player = CreateEntity("player");
 				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
+				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_bow"));
 			}
 			//CameraControls = true;
 		}
