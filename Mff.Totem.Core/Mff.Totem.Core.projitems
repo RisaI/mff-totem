@@ -51,6 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\CharacterComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\DamagableComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\TreeComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\PlayerComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

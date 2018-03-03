@@ -155,7 +155,44 @@ namespace Mff.Totem.Core
 		/// <param name="x">The x coordinate.</param>
 		public float HeightMap(float x)
 		{
-			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
+			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * 
+			                             BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
+		}
+
+		/// <summary>
+		/// Get surface normal on x.
+		/// </summary>
+		/// <returns>The normal.</returns>
+		/// <param name="x">The x coordinate.</param>
+		public Vector2 Normal(float x)
+		{
+			var v = new Vector2(HeightMap(x + 1f) - HeightMap(x - 1f), -2f);
+			v.Normalize();
+			return v;
+		}
+
+		public float[] TreesInChunkX(int chunkX)
+		{
+			Random rand = new Random((int)(chunkX * Seed));
+			float[] result = new float[rand.Next(0, 8)];
+			for (int i = 0; i < result.Length; ++i)
+			{
+				float x = Chunk.SIZE * (chunkX + (float)rand.NextDouble());
+				while (true)
+				{
+					for (int a = 0; a < i; ++a)
+					{
+						if (Math.Abs(result[a] - x) < 32)
+						{
+							x = Chunk.SIZE * (chunkX + (float)rand.NextDouble());
+							continue;
+						}
+					}
+					break;
+				}
+				result[i] = x;
+			}
+			return result;
 		}
 
 		/// <summary>
@@ -279,6 +316,19 @@ namespace Mff.Totem.Core
 			// Cave generation
 			chunk.Cavities = new List<List<IntPoint>>();
 
+			for (int i = 0; i < Chunk.SIZE / SPACING; ++i)
+			{
+				var x = left + SPACING / 2 + i * SPACING;
+				var y = HeightMap(x) + 4;
+				if (chunk.ContainsHeight(y))
+				{
+					chunk.GrassPoints.Add(new Chunk.GrassPoint() { 
+						Position = new Vector2(x, y),
+						Rotation = MathHelper.PiOver2 - Helper.DirectionToAngle(Normal(x))
+					});
+				}
+			}
+
 			chunk.Recalculate = true;
 			chunk.State = ChunkStateEnum.Generated;
 		}
@@ -311,13 +361,18 @@ namespace Mff.Totem.Core
 				}
 			}
 
-			if (chunk.IsSurface) // Place a tree if on surface
+			var trees = TreesInChunkX(chunk.X);
+			foreach (float x in trees)
 			{
-				var ent = World.CreateEntity("tree");
-				ent.GetComponent<BodyComponent>().Position = 
-					new Vector2(chunk.Left + Chunk.SIZE / 2, 
-					            HeightMap(chunk.Left + Chunk.SIZE / 2));
-				chunk.Trees.Add(ent);
+				var height = HeightMap(x);
+				if (chunk.ContainsHeight(height)) // Place a tree if on surface
+				{
+					var ent = World.CreateEntity("tree");
+					ent.GetComponent<BodyComponent>().Position =
+						new Vector2(x,
+									height);
+					chunk.Trees.Add(ent);
+				}
 			}
 
 			chunk.State = ChunkStateEnum.Placed;
@@ -449,6 +504,8 @@ namespace Mff.Totem.Core
 			public List<List<IntPoint>> Cavities;
 			public List<List<IntPoint>> Damage;
 
+			public List<GrassPoint> GrassPoints = new List<GrassPoint>();
+
 			// Calculated by the Calculate method
 			public List<Vertices> PhysicsOutput
 			{
@@ -563,6 +620,17 @@ namespace Mff.Totem.Core
 				{
 					PhysicsOutput.Add(TerrainHelper.PolygonToVertices(p));
 				});
+			}
+
+			public bool ContainsHeight(float height)
+			{
+				return height >= Top && height < Bottom;
+			}
+
+			public struct GrassPoint
+			{
+				public Vector2 Position;
+				public float Rotation;
 			}
 		}
 

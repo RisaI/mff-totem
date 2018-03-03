@@ -150,13 +150,13 @@ namespace Mff.Totem.Core
 			Game.OnResolutionChange += PrepareRenderData;
 
 			// Make the world less empty
-			{
+			/*{
 				var player = CreateEntity("player");
 				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_bow"));
-			}
-			//CameraControls = true;
+			}*/
+			CameraControls = true;
 		}
 
         private GameTime GTime;
@@ -290,14 +290,15 @@ namespace Mff.Totem.Core
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
             Weather.DrawWeatherEffects(this, spriteBatch);
-            spriteBatch.End();
-            
+			spriteBatch.End();
+
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-            Entities.ForEach(e => e.Draw(spriteBatch));
-            Particles.ForEach(p => p.Draw(spriteBatch));
-            spriteBatch.End();
+			Entities.ForEach(e => e.Draw(spriteBatch));
+			Particles.ForEach(p => p.Draw(spriteBatch));
+			spriteBatch.End();
 
 			// Ground rendering
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			{
 				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
 				{
@@ -311,8 +312,15 @@ namespace Mff.Totem.Core
 						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedForegroundVertices, 
 						                                       0, chunk.TriangulatedForegroundVertices.Length / 3);
 					}
+					foreach (Terrain.Chunk.GrassPoint g in chunk.GrassPoints)
+					{
+						var texture = ContentLoader.Textures["grass"];
+						spriteBatch.Draw(texture, g.Position, null, Color.Green, g.Rotation, new Vector2(texture.Width / 2, texture.Height), 1.2f, SpriteEffects.None, 1f);
+					}
 				}
 			}
+			spriteBatch.End();
+
 
             Game.GraphicsDevice.SetRenderTarget(null);
 			Game.GraphicsDevice.Clear(Color.Black);
