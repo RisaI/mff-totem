@@ -196,6 +196,19 @@ namespace Mff.Totem.Core
 			switch (_gameState)
 			{
 				case GameStateEnum.Game:
+					if (Input.GetInput(Inputs.QuickLoad, InputState.Pressed))
+					{
+						if (LoadSession("quicksave.sav"))
+						{
+							Hud.Chat("Loading from quick save");
+						}
+					}
+					else if (Input.GetInput(Inputs.QuickSave, InputState.Pressed))
+					{
+						SaveSession("quicksave.sav");
+						Hud.Chat("Quick saving...");
+					}
+
 					if (Session != null)
 						Session.Update(gameTime);
 
@@ -209,19 +222,6 @@ namespace Mff.Totem.Core
 							GuiManager.Add(new Gui.MiniMenu());
 						else
 							g.Closing = true;
-					}
-
-					if (Input.GetInput(Inputs.QuickLoad, InputState.Pressed))
-					{
-						if (LoadSession("quicksave.sav"))
-						{
-							Hud.Chat("Loading from quick save");
-						}
-					}
-					else if (Input.GetInput(Inputs.QuickSave, InputState.Pressed))
-					{
-						SaveSession("quicksave.sav");
-						Hud.Chat("Quick saving...");
 					}
 
 					GuiManager.Update(gameTime);
@@ -298,7 +298,7 @@ namespace Mff.Totem.Core
 				};
 
 				// Building main menu
-				Menus["main"].Controls.Add(new MenuButton(game) { OnClick = () => { game.GameState = GameStateEnum.Game; }, Text = "New Game" });
+				Menus["main"].Controls.Add(new MenuButton(game) { OnClick = () => { game.LoadNewGame(); }, Text = "New Game" });
 				Menus["main"].Controls.Add(new MenuButton(game) { OnClick = () => { game.Exit(); }, Text = "Exit", Position = new Vector2(0, 64) });
 			}
 		}

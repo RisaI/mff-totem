@@ -54,6 +54,9 @@ namespace Mff.Totem.Core
 
 			// Time
 			TimeScale = reader.ReadSingle();
+
+			// Load camera region to prevent entities falling out of the world
+			Terrain.ActiveRegion(Camera.Position, false);
 		}
 
 		public static GameWorld CreatePlanet(GameSession session, int planetId)

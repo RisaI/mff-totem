@@ -212,7 +212,7 @@ namespace Mff.Totem.Core
 		/// Sets a region around a point as active.
 		/// </summary>
 		/// <param name="center">Center.</param>
-		public void ActiveRegion(Vector2 center)
+		public void ActiveRegion(Vector2 center, bool multithreading = true)
 		{
 			_activeX = Helper.NegDivision((int)center.X, Chunk.SIZE);
 			_activeY = Helper.NegDivision((int)center.Y, Chunk.SIZE);
@@ -233,7 +233,10 @@ namespace Mff.Totem.Core
 					else
 					{
 						chunk = GetChunk(id);
-						Task.Run(() => { PlaceChunk(chunk); });
+						if (multithreading)
+							Task.Run(() => { PlaceChunk(chunk); });
+						else
+							PlaceChunk(chunk);
 					}
 					newActive[x + y * CHUNK_CACHE] = chunk;
 				}
@@ -244,7 +247,7 @@ namespace Mff.Totem.Core
 				if (ActiveChunks[i] != null && !newActive.Contains(ActiveChunks[i]))
 				{
 					UnplaceChunk(ActiveChunks[i]);
-					if (ActiveChunks[i].Damage.Count <= 0)
+					if (!ActiveChunks[i].ShouldSave)
 						ChunkCache.Remove(ActiveChunks[i].ID);
 				}
 			}
@@ -401,13 +404,19 @@ namespace Mff.Totem.Core
 		public void Serialize(BinaryWriter writer)
 		{
 			writer.Write(Seed);
-			writer.Write(ChunkCache.Count);
+			List<Chunk> toSave = new List<Chunk>(ChunkCache.Count);
 			foreach (KeyValuePair<ulong, Chunk> pair in ChunkCache)
 			{
-				writer.Write(pair.Key);
-				writer.Write(pair.Value.Damage.Count);
-				pair.Value.Damage.ForEach(d => writer.Write(d));
+				if (pair.Value.ShouldSave)
+					toSave.Add(pair.Value);
 			}
+			writer.Write(toSave.Count);
+			toSave.ForEach(c =>
+			{
+				writer.Write(c.ID);
+				writer.Write(c.Damage.Count);
+				c.Damage.ForEach(d => writer.Write(d));
+			});
 		}
 
 		public void Deserialize(BinaryReader reader)
@@ -526,6 +535,11 @@ namespace Mff.Totem.Core
 			public ChunkStateEnum State;
 			public bool Recalculate = true,
 				IsSurface = false;
+
+			public bool ShouldSave
+			{
+				get { return Damage.Count > 0; }
+			}
 
 			public List<Entity> Trees = new List<Entity>();
 

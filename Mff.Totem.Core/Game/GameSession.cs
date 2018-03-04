@@ -45,7 +45,8 @@ namespace Mff.Totem.Core
 			UniverseTime = new DateTime(reader.ReadInt64());
 			if (reader.ReadBoolean())
 				CurrentPlanet = GameWorld.LoadWorld(this, reader);
-			switch (reader.ReadByte())
+			var a = reader.ReadByte();
+			switch (a)
 			{
 				case 1:
 					CurrentInstance = GameWorld.LoadWorld(this, reader);
@@ -66,7 +67,7 @@ namespace Mff.Totem.Core
 				CurrentPlanet.Serialize(writer);
 
 			// Determine saving procedure for current instance
-			var a = (byte)(CurrentInstance != null ? (CurrentInstance != CurrentPlanet ? 1 : 2) : 0);
+			byte a = (byte)(CurrentInstance != null ? (CurrentInstance != CurrentPlanet ? 1 : 2) : 0);
 			writer.Write(a);
 			if (a == 1)
 				CurrentInstance.Serialize(writer);
