@@ -69,6 +69,15 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		// Should this entity be saved during GameWorld serialization
+		public bool ShouldSave
+		{
+			get
+			{
+				return !Components.Any(c => c.DisableEntitySaving);
+			}
+		}
+
 		/// <summary>
 		/// A list of entity components that belong to this entity.
 		/// </summary>

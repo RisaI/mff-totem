@@ -31,11 +31,6 @@ namespace Mff.Totem.Core
 				return _baseSpeed * (inv != null ? inv.SpeedMultiplier() : 1); }
 		}
 
-		public bool Alive
-		{
-			get { return _hp > 0; }
-		}
-
         public Vector2 Target = Vector2.Zero;
 
 		public CharacterComponent()
@@ -59,6 +54,22 @@ namespace Mff.Totem.Core
 			writer.WriteValue(_baseSpeed);
 			writer.WritePropertyName("stamina");
 			writer.WriteValue(_baseMaxStamina);
+		}
+
+		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		{
+			base.OnSerialize(writer);
+			writer.Write(_baseSpeed);
+			writer.Write(_baseMaxStamina);
+			writer.Write(_stamina);
+		}
+
+		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		{
+			base.OnDeserialize(reader);
+			_baseSpeed = reader.ReadSingle();
+			_baseMaxStamina = reader.ReadSingle();
+			_stamina = reader.ReadSingle();
 		}
 
 		public override EntityComponent Clone()

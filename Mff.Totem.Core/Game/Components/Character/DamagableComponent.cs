@@ -28,6 +28,11 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public bool Alive
+		{
+			get { return _hp > 0; }
+		}
+
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
 		{
 			base.ReadFromJson(obj);

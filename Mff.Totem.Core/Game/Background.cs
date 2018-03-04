@@ -56,7 +56,7 @@ namespace Mff.Totem.Core
 			{
 				SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
 				SkyTint = MathHelper.Lerp(SkyTint, World.Weather.SkyTint, 0.07f);
-				ClearColor = Color.Lerp(Color.Black, SkyColor, 1f - World.NightTint(World.WorldTime.TimeOfDay.TotalHours));
+				ClearColor = Color.Lerp(Color.Black, SkyColor, 1f - World.NightTint(World.Session.UniverseTime.TimeOfDay.TotalHours));
 				MovableOffset += (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale / 60f;
 				MovableOffset = MovableOffset % 1f;
 			}
@@ -68,8 +68,8 @@ namespace Mff.Totem.Core
 				                   Matrix.CreateTranslation(World.Game.Resolution.X / 2, World.Game.Resolution.Y / 2, 0);
 
 				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, matrix);
-				double hour = World.WorldTime.TimeOfDay.TotalHours;
-				float nightTint = World.NightTint(World.WorldTime.TimeOfDay.TotalHours);
+				double hour = World.Session.UniverseTime.TimeOfDay.TotalHours;
+				float nightTint = World.NightTint(hour);
 
 				//Background color
 				//spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, ClearColor, 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);

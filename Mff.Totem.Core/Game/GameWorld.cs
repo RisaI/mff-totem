@@ -77,7 +77,7 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public DateTime WorldTime
+		public GameSession Session
 		{
 			get;
 			private set;
@@ -135,28 +135,17 @@ namespace Mff.Totem.Core
 			// Default camera
 			_camera = new Camera(game);
 
-			WorldTime = new DateTime(2034, 5, 27, 12, 0, 0);
-
 			Background = new Backgrounds.OutsideBG(this);
 
 			PrepareRenderData((int)game.Resolution.X, (int)game.Resolution.Y);
 			Game.OnResolutionChange += PrepareRenderData;
-
-			// Make the world less empty
-			/*{
-				var player = CreateEntity("player");
-				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, Terrain.HeightMap(0));
-				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
-				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_bow"));
-			}*/
-			CameraControls = true;
 		}
 
         private GameTime GTime;
 		public void Update(GameTime gameTime)
 		{
             GTime = gameTime;
-			WorldTime = WorldTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
+			Session.UniverseTime = Session.UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
 			Terrain.Update();
 

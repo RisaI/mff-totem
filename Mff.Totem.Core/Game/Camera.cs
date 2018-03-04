@@ -1,9 +1,10 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
-	public class Camera
+	public class Camera : ISerializable
 	{
 		public Vector2 Position;
 		public float Zoom = 1;
@@ -95,6 +96,20 @@ namespace Mff.Totem.Core
 				         Matrix.CreateScale(Zoom, Zoom, 1) *
 				         Matrix.CreateScale(x, y, 1) *
 						 Matrix.CreateTranslation(Game.Resolution.X / 2, Game.Resolution.Y / 2, 0);
+		}
+
+		public void Serialize(BinaryWriter writer)
+		{
+			writer.Write(Position);
+			writer.Write(Zoom);
+			writer.Write(_rotation);
+		}
+
+		public void Deserialize(BinaryReader reader)
+		{
+			Position = reader.ReadVector2();
+			Zoom = reader.ReadSingle();
+			_rotation = reader.ReadSingle();
 		}
 	}
 }

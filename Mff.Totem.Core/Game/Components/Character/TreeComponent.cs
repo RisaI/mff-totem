@@ -87,5 +87,14 @@ namespace Mff.Totem.Core
 			base.OnDeserialize(reader);
 			leafArea = reader.ReadRectangle();
 		}
+
+		// Makes sure trees are not serialized when saving the GameWorld as they are managed by the terrain system
+		public override bool DisableEntitySaving
+		{
+			get
+			{
+				return true;
+			}
+		}
 	}
 }

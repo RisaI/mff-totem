@@ -201,7 +201,7 @@ namespace Mff.Totem.Core
 			writer.Write(Items.Count);
 			for (int i = 0; i < Items.Count; ++i)
 			{
-				Items[i].Serialize(writer);
+				DeserializationRegister.WriteObject(writer, Items[i]);
 			}
 
 			writer.Write(Equip.Length);
@@ -209,7 +209,7 @@ namespace Mff.Totem.Core
 			{
 				writer.Write(Equip[i] != null);
 				if (Equip[i] != null)
-					Equip[i].Serialize(writer);
+					DeserializationRegister.WriteObject(writer, Equip[i]);
 			}
 
 			writer.Write(UseItems.Length);
@@ -217,7 +217,7 @@ namespace Mff.Totem.Core
 			{
 				writer.Write(UseItems[i] != null);
 				if (UseItems[i] != null)
-					UseItems[i].Serialize(writer);
+					DeserializationRegister.WriteObject(writer, UseItems[i]);
 			}
 		}
 
@@ -228,8 +228,7 @@ namespace Mff.Totem.Core
 			int a = reader.ReadInt32();
 			for (int i = 0; i < a; ++i)
 			{
-				var item = (Item)DeserializationRegister.CreateInstance(reader.ReadString());
-				item.Deserialize(reader);
+				var item = DeserializationRegister.ReadObject<Item>(reader);
 				Items.Add(item);
 			}
 			Equip = new Item[reader.ReadInt32()];
@@ -237,8 +236,7 @@ namespace Mff.Totem.Core
 			{
 				if (reader.ReadBoolean())
 				{
-					var item = (Item)DeserializationRegister.CreateInstance(reader.ReadString());
-					item.Deserialize(reader);
+					var item = DeserializationRegister.ReadObject<Item>(reader);
 					Equip[i] = item;
 				}
 			}
@@ -248,8 +246,7 @@ namespace Mff.Totem.Core
 			{
 				if (reader.ReadBoolean())
 				{
-					var item = (Item)DeserializationRegister.CreateInstance(reader.ReadString());
-					item.Deserialize(reader);
+					var item = DeserializationRegister.ReadObject<Item>(reader);
 					UseItems[i] = item;
 				}
 			}

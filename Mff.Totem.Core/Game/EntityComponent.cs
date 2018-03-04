@@ -20,6 +20,11 @@ namespace Mff.Totem.Core
 			get { return Parent != null ? Parent.World : World; }
 		}
 
+		public virtual bool DisableEntitySaving
+		{
+			get { return false; }
+		}
+
 		/// <summary>
 		/// Attach an entity to this component.
 		/// </summary>

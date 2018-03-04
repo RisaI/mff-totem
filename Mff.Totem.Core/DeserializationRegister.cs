@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using Newtonsoft.Json;
@@ -74,6 +75,23 @@ namespace Mff.Totem.Core
 			writer.WriteValue(((SerializableAttribute)attributes[0]).ID);
 			obj.ToJson(writer);
 			writer.WriteEndObject();
+		}
+
+		public static T ReadObject<T>(BinaryReader reader) where T : ISerializable
+		{
+			var instance = (ISerializable)CreateInstance(reader.ReadString());
+			instance.Deserialize(reader);
+			return (T)instance;
+		}
+
+		public static void WriteObject<T>(BinaryWriter writer, T obj) where T : ISerializable
+		{
+			var attributes = obj.GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
+			if (attributes.Length == 0)
+				return;
+
+			writer.Write(((SerializableAttribute)attributes[0]).ID);
+			obj.Serialize(writer);
 		}
 	}
 }
