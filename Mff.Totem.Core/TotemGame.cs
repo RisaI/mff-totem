@@ -105,7 +105,7 @@ namespace Mff.Totem.Core
             get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
         }
 
-        public GameWorld World
+        public GameSession Session
         {
             get;
             private set;
@@ -153,31 +153,37 @@ namespace Mff.Totem.Core
 			ContentLoader.Load(this);
 			ContentLoader.RefreshShaders(this);
 
-			World = GameWorld.CreateTestWorld(this);
+			LoadNewGame();
 		}
 
-		public void SaveWorldToFile(string filename)
+		public void SaveSession(string filename)
 		{
-			if (World == null)
+			if (Session == null)
 				return;
 			
 			using (FileStream file = new FileStream(filename, FileMode.Create))
 			using (BinaryWriter writer = new BinaryWriter(file))
 			{
-				World.Serialize(writer);
+				Session.Serialize(writer);
 			}
 		}
 
-		public bool LoadWorldFromFile(string filename)
+		public bool LoadSession(string filename)
 		{
 			if (!File.Exists(filename))
 				return false;
 
 			using (FileStream file = new FileStream(filename, FileMode.Open))
 			{
-				World = GameWorld.LoadFromStream(this, file);
+				Session = GameSession.LoadGame(this, file);
 			}
 			return true;
+		}
+
+		public void LoadNewGame()
+		{
+			Session = GameSession.CreateNewGame(this);
+			GameState = GameStateEnum.Game;
 		}
 
 		protected override void Update(GameTime gameTime)
@@ -190,8 +196,8 @@ namespace Mff.Totem.Core
 			switch (_gameState)
 			{
 				case GameStateEnum.Game:
-					if (World != null)
-						World.Update(gameTime);
+					if (Session != null)
+						Session.Update(gameTime);
 
 					Hud.Update(gameTime);
 
@@ -207,14 +213,14 @@ namespace Mff.Totem.Core
 
 					if (Input.GetInput(Inputs.QuickLoad, InputState.Pressed))
 					{
-						if (LoadWorldFromFile("quicksave.sav"))
+						if (LoadSession("quicksave.sav"))
 						{
 							Hud.Chat("Loading from quick save");
 						}
 					}
 					else if (Input.GetInput(Inputs.QuickSave, InputState.Pressed))
 					{
-						SaveWorldToFile("quicksave.sav");
+						SaveSession("quicksave.sav");
 						Hud.Chat("Quick saving...");
 					}
 
@@ -235,10 +241,8 @@ namespace Mff.Totem.Core
 			switch (_gameState)
 			{
 				case GameStateEnum.Game:
-					if (World != null)
-					{
-						World.Draw(spriteBatch);
-					}
+					if (Session != null)
+						Session.Draw(spriteBatch);
 					else
 						GraphicsDevice.Clear(Color.Black);
 

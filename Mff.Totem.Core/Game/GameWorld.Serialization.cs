@@ -10,9 +10,6 @@ namespace Mff.Totem.Core
 	{
 		public void Serialize(BinaryWriter writer)
 		{
-			// Session
-			writer.Write(Session);
-
 			writer.Write(Camera);
 			writer.Write(CameraControls);
 
@@ -35,10 +32,6 @@ namespace Mff.Totem.Core
 
 		public void Deserialize(BinaryReader reader)
 		{
-			// Session
-			Session = new GameSession();
-			Session.Deserialize(reader);
-
 			Camera.Deserialize(reader);
 			CameraControls = reader.ReadBoolean();
 
@@ -63,15 +56,13 @@ namespace Mff.Totem.Core
 			TimeScale = reader.ReadSingle();
 		}
 
-		public static GameWorld CreateTestWorld(TotemGame game, GameSession session = null)
+		public static GameWorld CreatePlanet(GameSession session, int planetId)
 		{
-			var w = new GameWorld(game);
-
-			w.Session = session ?? new GameSession();
+			var w = new GameWorld(session);
 
 			// Planet info
 			var _info = new PlanetInfo();
-			_info.Randomize(TotemGame.Random.Next());
+			_info.Randomize(planetId);
 			_info.GenerateTextures(w);
 			w.Planet = _info;
 
@@ -89,13 +80,10 @@ namespace Mff.Totem.Core
 			return w;
 		}
 
-		public static GameWorld LoadFromStream(TotemGame game, Stream s)
+		public static GameWorld LoadWorld(GameSession session, BinaryReader reader)
 		{
-			var w = new GameWorld(game);
-			using (BinaryReader reader = new BinaryReader(s))
-			{
-				w.Deserialize(reader);
-			}
+			var w = new GameWorld(session);
+			w.Deserialize(reader);
 			return w;
 		}
 	}

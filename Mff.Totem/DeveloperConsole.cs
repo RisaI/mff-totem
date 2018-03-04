@@ -29,6 +29,11 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		public GameWorld WorldInstance
+		{
+			get { return Game?.Session?.CurrentInstance; }
+		}
+
 		DesktopInput KInput
 		{
 			get { return (DesktopInput)Game.Input; }
@@ -159,7 +164,7 @@ namespace Mff.Totem.Core
 			AddCommand("list_ents", "Lists all entities in GameWorld.", args => // List of entities
 			{
 				int index = 0;
-				Game.World.Entities.ForEach(e =>
+				WorldInstance.Entities.ForEach(e =>
 				{
 					string pos = "none";
 					var body = e.GetComponent<BodyComponent>();
@@ -170,8 +175,8 @@ namespace Mff.Totem.Core
 			});
 			AddCommand("ent_spawn", "Spawns an entity loaded from assets.", args =>
 			{
-				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : Game.World.Terrain.HeightMap(float.Parse(args[1])));
-				var ent = Game.World.CreateEntity(args[0]);
+				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : WorldInstance.Terrain.HeightMap(float.Parse(args[1])));
+				var ent = WorldInstance.CreateEntity(args[0]);
 				var body = ent.GetComponent<BodyComponent>();
 				if (body != null)
 					body.LegPosition = pos;
@@ -185,18 +190,18 @@ namespace Mff.Totem.Core
 */
 			AddCommand("camera_controls", "Set camera controls on/off.", args =>
 			{
-				Game.World.CameraControls = bool.Parse(args[0]);
+				WorldInstance.CameraControls = bool.Parse(args[0]);
 			}, "true/false");
 
 			AddCommand("timescale", "Set the timescale.", args =>
 			{
-				Game.World.TimeScale = float.Parse(args[0]);
+				WorldInstance.TimeScale = float.Parse(args[0]);
 			}, "float");
 
 			AddCommand("heightmap", "Get the height for specified x.", args =>
 			{
 				var x = float.Parse(args[0]);
-				Console.WriteLine("Height on {0}: {1}", x, Game.World.Terrain.HeightMap(x));
+				Console.WriteLine("Height on {0}: {1}", x, WorldInstance.Terrain.HeightMap(x));
 			}, "x");
 
 			AddCommand("weather", "Set the weather.", args =>
@@ -204,10 +209,10 @@ namespace Mff.Totem.Core
 				switch (args[0].ToLower())
 				{
 					case "rain":
-						Game.World.Weather = new RainWeather();
+						WorldInstance.Weather = new RainWeather();
 						break;
 					default:
-						Game.World.Weather = null;
+						WorldInstance.Weather = null;
 						break;
 				}
 			}, "float");
@@ -237,9 +242,9 @@ namespace Mff.Totem.Core
 			AddCommand("debugview", "Toggle debugview.", args =>
 			{
 				if (args.Length > 0)
-					Game.World.DebugView.Enabled = bool.Parse(args[0]);
+					WorldInstance.DebugView.Enabled = bool.Parse(args[0]);
 				else
-					Game.World.DebugView.Enabled = !Game.World.DebugView.Enabled;
+					WorldInstance.DebugView.Enabled = !WorldInstance.DebugView.Enabled;
 			}, "[on]");
 		}
 

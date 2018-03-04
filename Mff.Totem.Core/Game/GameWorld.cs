@@ -51,8 +51,7 @@ namespace Mff.Totem.Core
 
 		public TotemGame Game
 		{
-			get;
-			private set;
+			get { return Session?.Game; }
 		}
 
 		public Terrain Terrain
@@ -113,9 +112,9 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		GameWorld(TotemGame game)
+		GameWorld(GameSession session)
 		{
-			Game = game;
+			Session = session;
 			Entities = new List<Entity>(512);
 			EntityQueue = new List<Entity>(64);
 
@@ -133,11 +132,11 @@ namespace Mff.Totem.Core
 			Terrain = new Terrain(this);
 
 			// Default camera
-			_camera = new Camera(game);
+			_camera = new Camera(Game);
 
 			Background = new Backgrounds.OutsideBG(this);
 
-			PrepareRenderData((int)game.Resolution.X, (int)game.Resolution.Y);
+			PrepareRenderData((int)Game.Resolution.X, (int)Game.Resolution.Y);
 			Game.OnResolutionChange += PrepareRenderData;
 		}
 
