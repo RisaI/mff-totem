@@ -93,7 +93,7 @@ namespace Mff.Totem.Core
 				NightSky = sky;
 			}
 
-
+			return;
 			{
 				Color nebulaColor = MultiLerp(/*(float)random.NextDouble()*/0, Color.Purple, Color.Pink, Color.PaleGreen, Color.Red, Color.Yellow);
 

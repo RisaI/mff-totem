@@ -33,6 +33,10 @@ namespace Mff.Totem.Core
 			UniverseTime = new DateTime(2034, 5, 27, 12, 0, 0);
 		}
 
+		/// <summary>
+		/// Sets the planet.
+		/// </summary>
+		/// <param name="planetId">Planet identifier.</param>
 		public void SetPlanet(int planetId)
 		{
 			CurrentInstance = CurrentPlanet = GameWorld.CreatePlanet(this, planetId);
@@ -73,12 +77,20 @@ namespace Mff.Totem.Core
 				CurrentInstance.Serialize(writer);
 		}
 
+		/// <summary>
+		/// Update this game session.
+		/// </summary>
+		/// <param name="gameTime">Game time.</param>
 		public void Update(GameTime gameTime)
 		{
 			if (CurrentInstance != null)
 				CurrentInstance.Update(gameTime);
 		}
 
+		/// <summary>
+		/// Draws this game session.
+		/// </summary>
+		/// <param name="spriteBatch">Sprite batch.</param>
 		public void Draw(SpriteBatch spriteBatch)
 		{
 			if (CurrentInstance != null)

@@ -66,7 +66,6 @@ namespace Mff.Totem.Core
 			// Planet info
 			var _info = new PlanetInfo();
 			_info.Randomize(planetId);
-			_info.GenerateTextures(w);
 			w.Planet = _info;
 
 			w._camera.Position.Y = w.Terrain.HeightMap(0);
