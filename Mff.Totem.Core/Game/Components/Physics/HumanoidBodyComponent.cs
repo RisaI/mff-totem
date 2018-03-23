@@ -21,7 +21,6 @@ namespace Mff.Totem.Core
 		public float Width = 0.5f, Height = 1.25f;
 
 		private Vector2? FuturePosition;
-		private bool CanJump;
 		private Fixture LastTerrainFixture;
 
 		public HumanoidBody()
@@ -100,24 +99,6 @@ namespace Mff.Totem.Core
 			ControllerBody.BodyType = BodyType.Dynamic;
 			ControllerBody.Friction = IDLE_FRICTION;
 
-			ControllerBody.OnCollision += (fixtureA, fixtureB, contact) =>
-			{
-				if (fixtureB.UserData is Terrain)
-				{
-					CanJump = true;
-					LastTerrainFixture = fixtureB;
-				}
-
-				return true;
-			};
-			ControllerBody.OnSeparation += (fixtureA, fixtureB) =>
-			{
-				/*if (fixtureB == LastTerrainFixture && fixtureB.UserData is Terrain)
-				{
-					CanJump = false;
-				}*/
-			};
-
 			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
 			BodyJoint.MotorEnabled = true;
 			BodyJoint.MaxMotorTorque = 0;
@@ -183,13 +164,36 @@ namespace Mff.Totem.Core
 			}
 
 			// Jumping
-			if (direction.Y < -0.5f && CanJump)
+			if (direction.Y < -0.5f && JumpAvailable())
 			{
 				var jumpDir = new Vector2(0, (float)-Math.Sqrt(-direction.Y * World.Physics.Gravity.Y / 32f));
 				MainBody.LinearVelocity += jumpDir;
 				ControllerBody.LinearVelocity += jumpDir;
-				CanJump = false;
 			}
+		}
+
+		public bool JumpAvailable()
+		{
+			Vector2 lg = LegPosition / 64f;
+			Vector2[] positions = new Vector2[] { lg, lg - new Vector2(Width / 2, 0), lg + new Vector2(Width / 2, 0) };
+			for (int i = 0; i < positions.Length; ++i)
+			{
+				bool jumpAvailable = false;
+
+				World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
+				{
+					if (arg1.Body.UserData is Terrain)
+					{
+						jumpAvailable = true;
+						return 0;
+					}
+					return arg4;
+				}, positions[i], positions[i] + new Vector2(0, 3 / 32f));
+
+				if (jumpAvailable)
+					return true;
+			}
+			return false;
 		}
 
 		public override EntityComponent Clone()
