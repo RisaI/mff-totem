@@ -54,6 +54,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\PlayerComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Serialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameSession.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\BindedBodyComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

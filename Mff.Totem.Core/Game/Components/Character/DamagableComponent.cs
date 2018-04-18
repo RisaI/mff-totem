@@ -23,14 +23,15 @@ namespace Mff.Totem.Core
 			set
 			{
 				if (_hp > 0 && value <= 0)
-					Death();
+					Death(null);
 				_hp = (int)MathHelper.Clamp(value, 0, MaxHP);
 			}
 		}
 
 		public bool Alive
 		{
-			get { return _hp > 0; }
+			get { 
+				return _hp > 0; }
 		}
 
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
@@ -63,7 +64,9 @@ namespace Mff.Totem.Core
 
 		public virtual void Damage(object source, int damage)
 		{
-			HP -= damage;
+			if (_hp > 0 && damage >= _hp)
+				Death(source);
+			_hp = (int)MathHelper.Clamp(_hp - damage, 0, MaxHP);
 		}
 
 		public override EntityComponent Clone()
@@ -71,6 +74,6 @@ namespace Mff.Totem.Core
 			return new DamagableComponent() { _baseMaxHp = _baseMaxHp, _hp = _hp };
 		}
 
-		protected virtual void Death() { }
+		protected virtual void Death(object source) { }
 	}
 }

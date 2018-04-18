@@ -9,6 +9,19 @@ namespace Mff.Totem.Core
 {
 	public abstract class EntityComponent : ICloneable<EntityComponent>, IJsonSerializable, ISerializable
 	{
+		bool _remove;
+		public bool Remove
+		{
+			get
+			{
+				return _remove;
+			}
+			set
+			{
+				_remove = value;
+			}
+		}
+
 		public Entity Parent
 		{
 			get;
@@ -32,8 +45,6 @@ namespace Mff.Totem.Core
 		public void Attach(Entity ent)
 		{
 			OnEntityAttach(ent);
-			if (Parent != null)
-				Parent.RemoveComponent(this);
 			Parent = ent;
 		}
 

@@ -48,6 +48,11 @@ namespace Mff.Totem.Core
 			return p;
 		}
 
+		public Entity GetEntity(Guid uid)
+		{
+			return Entities.Find(e => e.UID == uid) ?? EntityQueue.Find(e => e.UID == uid);
+		}
+
 		public IEnumerable<Entity> FindEntities(Func<Entity, bool> f)
 		{
 			for (int i = 0; i < Entities.Count; ++i)

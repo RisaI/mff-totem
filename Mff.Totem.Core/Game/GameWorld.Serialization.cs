@@ -3,6 +3,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.IO;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 
 namespace Mff.Totem.Core
 {
@@ -76,6 +77,8 @@ namespace Mff.Totem.Core
 				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, w.Terrain.HeightMap(0));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_bow"));
+				var slime = w.CreateEntity("slime");
+				slime.GetComponent<BodyComponent>().LegPosition = new Vector2(600, w.Terrain.HeightMap(600));
 			}
 			//CameraControls = true;
 

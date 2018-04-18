@@ -1,4 +1,7 @@
 ﻿{
+	"tags": [
+		"hostile"
+	],
 	"components": [
 		{
 			"class": "component_humanoid_body",
@@ -17,10 +20,12 @@
 			"class": "component_character",
 			"maxhp": "10",
 			"stamina": "15",
-			"speed": "100"
+			"speed": "100",
+			"expReward": "30"
 		},
 		{
 			"class": "component_ai",
+			"stopMovementOnDeath": "true",
 			"elements": [
 				{ "class": "ai_attack", "range": "500", "targeted": [ "player" ] }
 			]

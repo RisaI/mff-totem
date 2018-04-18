@@ -16,6 +16,7 @@ namespace Mff.Totem.Core
 	public class AiComponent : EntityComponent, IUpdatable
 	{
 		public List<AiElement> Elements;
+		public bool StopMovementOnDeath = true;
 
 		public AiComponent() : this(new List<AiElement>())
 		{
@@ -36,7 +37,7 @@ namespace Mff.Totem.Core
 		{
 			List<AiElement> c = new List<AiElement>();
 			Elements.ForEach(e => c.Add(e.Clone()));
-			return new AiComponent(c);
+			return new AiComponent(c) { StopMovementOnDeath = StopMovementOnDeath };
 		}
 
 		protected override void WriteToJson(JsonWriter writer)
@@ -45,6 +46,8 @@ namespace Mff.Totem.Core
 			writer.WriteStartArray();
 			Elements.ForEach(el => DeserializationRegister.ObjectToJson(writer, el));
 			writer.WriteEndArray();
+			writer.WritePropertyName("stopMovementOnDeath");
+			writer.WriteValue(StopMovementOnDeath);
 		}
 
 		protected override void ReadFromJson(JObject obj)
@@ -57,10 +60,50 @@ namespace Mff.Totem.Core
 					Elements.Add(DeserializationRegister.ObjectFromJson<AiElement>((JObject)elemArray[i]));
 				}
 			}
+			if (obj["stopMovementOnDeath"] != null)
+			{
+				StopMovementOnDeath = (bool)obj["stopMovementOnDeath"];
+			}
+		}
+
+		protected override void OnSerialize(BinaryWriter writer)
+		{
+			base.OnSerialize(writer);
+			writer.Write(StopMovementOnDeath);
+			writer.Write(Elements.Count);
+			for (int i = 0; i < Elements.Count; ++i)
+			{
+				DeserializationRegister.WriteObject(writer, Elements[i]);
+			}
+		}
+
+		protected override void OnDeserialize(BinaryReader reader)
+		{
+			base.OnDeserialize(reader);
+			StopMovementOnDeath = reader.ReadBoolean();
+			int a = reader.ReadInt32();
+			for (int i = 0; i < a; ++i)
+			{
+				Elements.Add(DeserializationRegister.ReadObject<AiElement>(reader));
+			}
 		}
 
 		public void Update(GameTime gameTime)
 		{
+			var d = Parent.GetComponent<DamagableComponent>();
+			if (d != null && !d.Alive)
+			{
+				if (StopMovementOnDeath)
+				{
+					var body = Parent.GetComponent<BodyComponent>();
+					if (body != null)
+					{
+						body.Move(Vector2.Zero);
+					}
+				}
+				return;
+			}
+
 			for (int i = 0; i < Elements.Count; ++i)
 			{
 				if (Elements[i].Stimulated(Parent))

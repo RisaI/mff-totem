@@ -128,6 +128,12 @@ namespace Mff.Totem.Core
     [Serializable("item_bow")]
     public class Bow : Item
     {
+		public int Damage
+		{
+			get;
+			private set;
+		}
+
 		protected float _cooldown;
         public override void Use(Entity ent)
         {
@@ -139,7 +145,7 @@ namespace Mff.Totem.Core
 					var direction = character.Target;
 					direction.Normalize();
 					direction *= 3000f;
-					ent.World.CreateEntity("arrow_projectile").GetComponent<ProjectileBody>().SetProjectileData(ent, direction);
+					ent.World.CreateEntity("arrow_projectile").GetComponent<ProjectileBody>().SetProjectileData(ent, direction, Damage);
 					_cooldown = 1f;
 				}
 			}
@@ -151,10 +157,37 @@ namespace Mff.Totem.Core
 				_cooldown -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 		}
 
+		public override void OnFromJson(JObject obj)
+		{
+			base.OnFromJson(obj);
+			if (obj["damage"] != null)
+			{
+				Damage = (int)obj["damage"];
+			}
+		}
+
+		public override void OnToJson(JsonWriter writer)
+		{
+			base.OnToJson(writer);
+			writer.WritePropertyName("damage");
+			writer.WriteValue(Damage);
+		}
+
+		public override void Serialize(BinaryWriter writer)
+		{
+			base.Serialize(writer);
+			writer.Write(Damage);
+		}
+
+		public override void Deserialize(BinaryReader reader)
+		{
+			base.Deserialize(reader);
+			Damage = reader.ReadInt32();
+		}
 
         public override Item Clone()
         {
-            return new Bow().CopyData(this);
+			return (new Bow() { Damage = Damage }).CopyData(this);
         }
     }
 

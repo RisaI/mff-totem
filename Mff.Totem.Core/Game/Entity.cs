@@ -57,6 +57,30 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public Vector2? LegPosition
+		{
+			get
+			{
+				var body = GetComponent<BodyComponent>();
+				if (body != null)
+					return body.LegPosition;
+				else
+					return null;
+			}
+		}
+
+		public float Rotation
+		{
+			get
+			{
+				var body = GetComponent<BodyComponent>();
+				if (body != null)
+					return body.Rotation;
+				else
+					return 0;
+			}
+		}
+
 		public Vector2? Targeting
 		{
 			get
@@ -145,21 +169,18 @@ namespace Mff.Totem.Core
 		}
 
 		/// <summary>
-		/// Remove a specific component from this entity.
-		/// </summary>
-		/// <param name="component">Component.</param>
-		public void RemoveComponent(EntityComponent component)
-		{
-			Components.Remove(component);
-		}
-
-		/// <summary>
 		/// Remove all components of a type.
 		/// </summary>
 		/// <typeparam name="T">Component type.</typeparam>
 		public void RemoveComponents<T>() where T : EntityComponent
 		{
-			Components.RemoveAll(c => c is T);
+			Components.ForEach(c =>
+			{
+				if (c is T)
+				{
+					c.Remove = true;
+				}
+			});
 		}
 
 		/// <summary>
@@ -176,11 +197,16 @@ namespace Mff.Totem.Core
 
 		public void Update(GameTime gameTime)
 		{
-			for (int i = 0; i < Components.Count; ++i)
+			for (int i = Components.Count - 1; i >= 0; --i)
 			{
-				var updatable = Components[i] as IUpdatable;
-				if (updatable != null)
-					updatable.Update(gameTime);
+				if (Components[i].Remove)
+					Components.RemoveAt(i);
+				else
+				{
+					var updatable = Components[i] as IUpdatable;
+					if (updatable != null)
+						updatable.Update(gameTime);
+				}
 			}
 		}
 

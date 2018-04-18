@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace Mff.Totem.Core
 {
 	[Serializable("component_player")]
@@ -12,6 +14,8 @@ namespace Mff.Totem.Core
 		{
 			get { return _techExp; }
 			set {
+				if (_techExp < value)
+					World.Game.Hud.Chat("Added " + (value - _techExp) + " experience to TECH.");
 				_techExp = value;
 				while (_techExp >= TechExpCap)
 				{
@@ -67,6 +71,27 @@ namespace Mff.Totem.Core
 
 			_techExp = reader.ReadInt32();
 			_magExp = reader.ReadInt32();
+		}
+
+		public override EntityComponent Clone()
+		{
+
+			List<string> tags = new List<string>();
+			TargetedTags.ForEach(t => tags.Add(t));
+			return new PlayerComponent()
+			{
+				_hp = _hp,
+				_stamina = _stamina,
+				_baseMaxHp = _baseMaxHp,
+				_baseMaxStamina = _baseMaxStamina,
+				_baseSpeed = _baseSpeed,
+				_expReward = _expReward,
+				TargetedTags = tags,
+				TechnologyLevel = TechnologyLevel,
+				_techExp = _techExp,
+				MagicLevel = MagicLevel,
+				_magExp = _magExp,
+			};
 		}
 	}
 }

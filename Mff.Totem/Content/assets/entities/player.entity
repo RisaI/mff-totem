@@ -21,7 +21,10 @@
 			"use": "true"
 		},
 		{
-			"class": "component_character",
+			"class": "component_player",
+			"targetedTags": [
+				"hostile"
+			],
 			"maxhp": "100",
 			"stamina": "15",
 			"speed": "280"

@@ -48,9 +48,9 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		protected override void Death()
+		protected override void Death(object source)
 		{
-			base.Death();
+			base.Death(source);
 			_falling = true;
 
 			var ent = World.CreateEntity("itembag");

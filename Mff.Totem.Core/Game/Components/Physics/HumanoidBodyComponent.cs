@@ -21,7 +21,6 @@ namespace Mff.Totem.Core
 		public float Width = 0.5f, Height = 1.25f;
 
 		private Vector2? FuturePosition;
-		private Fixture LastTerrainFixture;
 
 		public HumanoidBody()
 		{
@@ -175,7 +174,7 @@ namespace Mff.Totem.Core
 		public bool JumpAvailable()
 		{
 			Vector2 lg = LegPosition / 64f;
-			Vector2[] positions = new Vector2[] { lg, lg - new Vector2(Width / 2, 0), lg + new Vector2(Width / 2, 0) };
+			Vector2[] positions = { lg, lg - new Vector2(Width / 2, 0), lg + new Vector2(Width / 2, 0) };
 			for (int i = 0; i < positions.Length; ++i)
 			{
 				bool jumpAvailable = false;

@@ -26,20 +26,15 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		protected override void OnEntityAttach(Entity entity)
-		{
-			body = entity.GetComponent<BodyComponent>();
-		}
-
 		public void Draw(SpriteBatch spriteBatch)
 		{
             if (Sprite != null)
             {
-                Sprite.Draw(spriteBatch, body != null ? body.LegPosition : Vector2.Zero, body != null ? body.Rotation : 0, Depth);
+				var pos = Parent.LegPosition;
+				Sprite.Draw(spriteBatch, pos != null ? pos.Value : Vector2.Zero, Parent.Rotation, Depth);
             }
 		}
 
-		private BodyComponent body;
 		public void Update(GameTime gameTime)
 		{
 			if (Sprite != null)
