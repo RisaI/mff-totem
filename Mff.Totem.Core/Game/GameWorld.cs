@@ -162,8 +162,21 @@ namespace Mff.Totem.Core
 			{
 				Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 			}
-			Entities.ForEach(e => e.Update(gameTime));
-			Entities.RemoveAll(e => e.Remove);
+
+			// Update entities
+			var activeArea = ActiveArea;
+			for (int i = Entities.Count - 1; i >= 0; --i)
+			{
+				var ent = Entities[i];
+				var body = ent.GetComponent<BodyComponent>();
+
+				if (body != null)
+					ent.Active = activeArea.Intersects(body.BoundingBox);
+				
+				ent.Update(gameTime);
+				if (ent.Remove)
+					Entities.RemoveAt(i);
+			}
 
 			/// Clear and update particles
 			Particles.ForEach(p => p.Update(gameTime));
@@ -344,5 +357,21 @@ namespace Mff.Totem.Core
         {
             return hour <= 4 || hour >= 20 ? 1 : (float)(hour > 8 && hour < 16 ? 0 : 1f - Math.Pow(Math.Cos(Math.PI * (hour / 8 - 1)), 2));
         }
+
+		const int ACTIVE_AREA = 14 * 512;
+		public Rectangle ActiveArea
+		{
+			get
+			{
+				int x = Camera != null ? (int)Camera.Position.X : 0,
+					y = Camera != null ? (int)Camera.Position.Y : 0;
+				return new Rectangle(
+					x - ACTIVE_AREA / 2,
+					y - ACTIVE_AREA / 2,
+					ACTIVE_AREA,
+					ACTIVE_AREA
+				);
+			}
+		}
 	}
 }

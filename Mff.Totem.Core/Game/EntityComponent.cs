@@ -65,6 +65,11 @@ namespace Mff.Totem.Core
 		public virtual void Destroy() { return; }
 
 		/// <summary>
+		/// Called when Parent.Active changes.
+		/// </summary>
+		public virtual void ActiveStateChanged() { }
+
+		/// <summary>
 		/// Clone this instance.
 		/// </summary>
 		/// <returns>The clone.</returns>

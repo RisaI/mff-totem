@@ -109,6 +109,12 @@ namespace Mff.Totem.Core
 		{
 		}
 
+		public override void ActiveStateChanged()
+		{
+			base.ActiveStateChanged();
+			Body.Enabled = Parent.Active;
+		}
+
 		public override void Initialize()
 		{
 			base.Initialize();

@@ -30,6 +30,28 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		bool _active = true;
+
+		/// <summary>
+		/// Is this entity in the active region during an update?
+		/// </summary>
+		/// <value><c>true</c> if active; otherwise, <c>false</c>.</value>
+		public bool Active
+		{
+			get
+			{
+				return _active;
+			}
+			set
+			{
+				if (_active != value)
+				{
+					Components.ForEach(c => c.ActiveStateChanged());
+					_active = value;
+				}
+			}
+		}
+
 		private bool _remove;
 		public bool Remove
 		{
@@ -298,6 +320,7 @@ namespace Mff.Totem.Core
 		public void Serialize(BinaryWriter writer)
 		{
 			writer.Write(UID);
+			writer.Write(_active);
 
 			// Tags
 			writer.Write(Tags.Count);
@@ -311,6 +334,7 @@ namespace Mff.Totem.Core
 		public void Deserialize(BinaryReader reader)
 		{
 			UID = reader.ReadGuid();
+			_active = reader.ReadBoolean();
 
 			// Tags
 			var tCount = reader.ReadInt32();

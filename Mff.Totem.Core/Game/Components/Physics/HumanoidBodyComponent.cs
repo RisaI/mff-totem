@@ -28,14 +28,20 @@ namespace Mff.Totem.Core
 
 		public override Vector2 Position
 		{
-			get;
-			set;
+			get
+			{
+				return LegPosition - new Vector2(0, Height / 2);
+			}
+			set
+			{
+				LegPosition = value + new Vector2(0, Height / 2);
+			}
 		}
 
 		public override Vector2 LegPosition
 		{
-			get { return Position; }
-			set { Position = value; }
+			get;
+			set;
 		}
 
 		public override float Rotation
@@ -49,8 +55,8 @@ namespace Mff.Totem.Core
 			get
 			{
 				return new Rectangle(
-					(int)(Position.X - Width / 2),
-					(int)(Position.Y - Height),
+					(int)(LegPosition.X - Width / 2),
+					(int)(LegPosition.Y - Height),
 					(int)Width, (int)Height);
 			}
 
@@ -69,41 +75,9 @@ namespace Mff.Totem.Core
 		private bool _wasGround = false;
 		public void Update(GameTime gameTime)
 		{
-			/*var gravStep = World.Physics.Gravity * (float)gameTime.ElapsedGameTime.TotalSeconds * 64f;
-			Vector2? ground = OnGround();
-			if (ground.HasValue)
-			{
-				Position = ground.Value;
-				LinearVelocity = new Vector2(LinearVelocity.X, 0);
-			}
-			else
-			{
-				LinearVelocity += new Vector2(0, gravStep.Y);
-			}
-			Position += new Vector2(LinearVelocity.X, 0) * (float)gameTime.ElapsedGameTime.TotalSeconds;
-			if (ground.HasValue)
-			{
-				LinearVelocity *= new Vector2(0.5f, 1);
-			}
-
-			var step = LinearVelocity.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
-			if (step >= 0)
-			{
-				ground = OnGround(step);
-				if (ground.HasValue)
-				{
-					Position = ground.Value;
-					LinearVelocity = new Vector2(LinearVelocity.X, 0);
-				}
-				else
-				{
-					Position += new Vector2(0, step);
-				}
-			}
-			else
-			{
-				Position += new Vector2(0, step);
-			}*/
+			if (!Parent.Active)
+				return;
+			
 			var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
 			LinearVelocity += World.Physics.Gravity * World.TimeScale * delta * 64f;
 
@@ -113,15 +87,17 @@ namespace Mff.Totem.Core
 			if (step.Y > 0 && ground.HasValue)
 			{
 				LinearVelocity *= new Vector2(1, step.Y = 0);
-				Position = ground.Value + step;
+				LegPosition = ground.Value + step;
 				LinearVelocity *= new Vector2(0.5f, 1);
 				_wasGround = true;
 			}
 			else
 			{
-				Position += step;
+				LegPosition += step;
 				_wasGround = false;
 			}
+			if (b != null)
+				b.Position = (Position - new Vector2(0, 0.1f * Height)) / 64f;
 		}
 
 		public override void Move(Vector2 direction)
@@ -168,6 +144,27 @@ namespace Mff.Totem.Core
 			}, beggining / 64, end / 64f);
 
 			return groundPos * 64f;
+		}
+
+		Body b;
+		public override void Initialize()
+		{
+			base.Initialize();
+			b = BodyFactory.CreateRectangle(
+				World.Physics,
+				Width / 64f,
+				0.8f * Height / 64f,
+				1,
+				(Position - new Vector2(0, 0.1f * Height)) / 64f,
+				0,
+				BodyType.Dynamic,
+				this.Parent
+			);
+
+			// b.Enabled = false;
+			b.IsSensor = true;
+			b.FixedRotation = true;
+			b.IgnoreGravity = true;
 		}
 
 		public override EntityComponent Clone()
