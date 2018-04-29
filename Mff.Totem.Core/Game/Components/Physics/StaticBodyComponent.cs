@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
@@ -33,6 +34,19 @@ namespace Mff.Totem.Core
 			{
 				Position = value.Center.ToVector2() + new Vector2(0, value.Height / 2);
 				Size = new Vector2(value.Width, value.Height);
+			}
+		}
+
+		public override Vector2 LinearVelocity
+		{
+			get
+			{
+				return default(Vector2);
+			}
+
+			set
+			{
+				return;
 			}
 		}
 

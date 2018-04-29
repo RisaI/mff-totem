@@ -19,16 +19,16 @@ namespace Mff.Totem.Core
 			return new PlayerInputComponent();
 		}
 
-		private BodyComponent body;
-		private SpriteComponent sprite;
 		public override void Initialize()
 		{
-			body = Parent.GetComponent<BodyComponent>();
-			sprite = Parent.GetComponent<SpriteComponent>();
+			
 		}
 
 		public void Update(GameTime gameTime)
 		{
+			var body   = Parent.GetComponent<BodyComponent>();
+			var sprite = Parent.GetComponent<SpriterComponent>();
+
 			World.Camera.MoveTo(body.Position, 0.3f);
 			World.Game.Hud.Observed = Parent;
 
@@ -60,7 +60,7 @@ namespace Mff.Totem.Core
 
 				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) && inventory != null)
                 {
-                    inventory.Use(0);
+					inventory.Use(0);
                 }
 
 				if (World.Game.Input.GetInput(Inputs.Swap, InputState.Pressed) && inventory != null)
@@ -81,18 +81,30 @@ namespace Mff.Totem.Core
 							break;
 					}
 				}
-
-
             }
 
-			if (Math.Abs(movement.X) > Helper.EPSILON)
+			if (!(body is HumanoidBody) || (body as HumanoidBody).OnGround().HasValue)
 			{
-				sprite.PlayAnim("move");
-				sprite.Effect = movement.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+				if (Math.Abs(movement.X) > Helper.EPSILON)
+				{
+					sprite.PlayAnim("walk", false, 200);
+					sprite.Effect = movement.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+				}
+				else
+				{
+					sprite.PlayAnim("idle", false, 200);
+				}
 			}
 			else
 			{
-				sprite.PlayAnim("idle");
+				if (body.LinearVelocity.Y < -4)
+				{
+					sprite.PlayAnim("jump_start", false, 0);
+				}
+				else if (body.LinearVelocity.Y > 4)
+				{
+					sprite.PlayAnim("fall_start", false, 0);
+				}
 			}
 
 			body.Move(movement);

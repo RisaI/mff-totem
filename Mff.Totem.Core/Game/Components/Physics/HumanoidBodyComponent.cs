@@ -11,16 +11,9 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Mff.Totem.Core
 {
 	[Serializable("component_humanoid_body")]
-	public class HumanoidBody : BodyComponent
+	public class HumanoidBody : BodyComponent, IUpdatable
 	{
-		const float IDLE_FRICTION = 16f;
-
-		public Body MainBody, ControllerBody;
-		public RevoluteJoint BodyJoint;
-
-		public float Width = 0.5f, Height = 1.25f;
-
-		private Vector2? FuturePosition;
+		public float Width = 32f, Height = 80f;
 
 		public HumanoidBody()
 		{
@@ -35,51 +28,30 @@ namespace Mff.Totem.Core
 
 		public override Vector2 Position
 		{
-			get
-			{
-				return MainBody != null ? MainBody.Position * 64f : (FuturePosition != null ? (Vector2)FuturePosition : Vector2.Zero);
-			}
-			set
-			{
-				if (MainBody != null)
-				{
-					MainBody.Position = value / 64f;
-					ControllerBody.Position = value / 64f + new Vector2(0, Height / 2);
-				}
-				else
-					FuturePosition = value;
-			}
+			get;
+			set;
 		}
 
 		public override Vector2 LegPosition
 		{
-			get
-			{
-				return Position + new Vector2(0, 32f * (Height + Width / 2));
-			}
-			set { Position = value - new Vector2(0, 32f * (Height + Width)); }
+			get { return Position; }
+			set { Position = value; }
 		}
 
 		public override float Rotation
 		{
-			get
-			{
-				return MainBody != null ? MainBody.Rotation : 0;
-			}
-			set
-			{
-				if (MainBody != null)
-					MainBody.Rotation = value;
-			}
+			get;
+			set;
 		}
 
 		public override Rectangle BoundingBox
 		{
 			get
 			{
-				int x = (int)((MainBody.Position.X - Width / 2) * 64f);
-				int y = (int)(LegPosition.Y - Height * 64f);
-				return new Rectangle(x, y, (int)(Width * 64f), (int)(Height * 64f));
+				return new Rectangle(
+					(int)(Position.X - Width / 2),
+					(int)(Position.Y - Height),
+					(int)Width, (int)Height);
 			}
 
 			set
@@ -88,111 +60,114 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		void CreateBody()
+		public override Vector2 LinearVelocity
 		{
-			MainBody = BodyFactory.CreateRectangle(World.Physics, Width, Height - Width / 2, 1f, Vector2.Zero, 0, BodyType.Dynamic, Parent);
-			MainBody.FixedRotation = true;
-			MainBody.BodyType = BodyType.Dynamic;
-
-			ControllerBody = BodyFactory.CreateCircle(World.Physics, Width / 2, 1f, new Vector2(0, Height / 2 - Width / 4), BodyType.Dynamic, Parent);
-			ControllerBody.BodyType = BodyType.Dynamic;
-			ControllerBody.Friction = IDLE_FRICTION;
-
-			BodyJoint = JointFactory.CreateRevoluteJoint(World.Physics, MainBody, ControllerBody, Vector2.Zero);
-			BodyJoint.MotorEnabled = true;
-			BodyJoint.MaxMotorTorque = 0;
-			BodyJoint.LimitEnabled = true;
-
-			if (FuturePosition != null)
-				Position = (Vector2)FuturePosition;
-
-			if (spawnInfo != null)
-			{
-				MainBody.LinearVelocity = spawnInfo.MVelocity;
-				ControllerBody.LinearVelocity = spawnInfo.CVelocity;
-				ControllerBody.AngularVelocity = spawnInfo.CAngVelocity;
-				ControllerBody.Rotation = spawnInfo.CRot;
-				spawnInfo = null;
-			}
+			get;
+			set;
 		}
 
-		protected override void OnEntityAttach(Entity entity)
+		private bool _wasGround = false;
+		public void Update(GameTime gameTime)
 		{
-			if (MainBody != null)
+			/*var gravStep = World.Physics.Gravity * (float)gameTime.ElapsedGameTime.TotalSeconds * 64f;
+			Vector2? ground = OnGround();
+			if (ground.HasValue)
 			{
-				MainBody.UserData = entity;
-				ControllerBody.UserData = entity;
-				BodyJoint.UserData = entity;
+				Position = ground.Value;
+				LinearVelocity = new Vector2(LinearVelocity.X, 0);
 			}
-		}
-
-		public override void Initialize()
-		{
-			if (MainBody != null)
+			else
 			{
-				FuturePosition = MainBody.Position * 64f;
-				MainBody.Dispose();
-				ControllerBody.Dispose();
+				LinearVelocity += new Vector2(0, gravStep.Y);
 			}
-			CreateBody();
-		}
-
-		public override void Destroy()
-		{
-			if (MainBody != null)
+			Position += new Vector2(LinearVelocity.X, 0) * (float)gameTime.ElapsedGameTime.TotalSeconds;
+			if (ground.HasValue)
 			{
-				World.Physics.RemoveBody(MainBody);
-				World.Physics.RemoveBody(ControllerBody);
+				LinearVelocity *= new Vector2(0.5f, 1);
+			}
+
+			var step = LinearVelocity.Y * (float)gameTime.ElapsedGameTime.TotalSeconds;
+			if (step >= 0)
+			{
+				ground = OnGround(step);
+				if (ground.HasValue)
+				{
+					Position = ground.Value;
+					LinearVelocity = new Vector2(LinearVelocity.X, 0);
+				}
+				else
+				{
+					Position += new Vector2(0, step);
+				}
+			}
+			else
+			{
+				Position += new Vector2(0, step);
+			}*/
+			var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
+			LinearVelocity += World.Physics.Gravity * World.TimeScale * delta * 64f;
+
+			var step = LinearVelocity * World.TimeScale * delta;
+			var ground = OnGround(_wasGround ? Math.Max(3, step.Y) : step.Y);
+
+			if (step.Y > 0 && ground.HasValue)
+			{
+				LinearVelocity *= new Vector2(1, step.Y = 0);
+				Position = ground.Value + step;
+				LinearVelocity *= new Vector2(0.5f, 1);
+				_wasGround = true;
+			}
+			else
+			{
+				Position += step;
+				_wasGround = false;
 			}
 		}
 
 		public override void Move(Vector2 direction)
 		{
-			// Convert the horizontal part from pixel per second to radians per second
-			var horizontal = (direction.X / 32f) / Width;
-			if (Math.Abs(horizontal) > 0.5f)
+			if (OnGround().HasValue)
 			{
-				BodyJoint.LimitEnabled = false;
-				BodyJoint.MaxMotorTorque = float.MaxValue;
-				BodyJoint.MotorSpeed = horizontal;
-			}
-			else
-			{
-				BodyJoint.LimitEnabled = true;
-				BodyJoint.MaxMotorTorque = 0;
-			}
+				var horizontal = direction.X;
+				if (Math.Abs(horizontal) > 0.5f)
+				{
+					LinearVelocity = new Vector2(horizontal, LinearVelocity.Y);
+				}
 
-			// Jumping
-			if (direction.Y < -0.5f && JumpAvailable())
-			{
-				var jumpDir = new Vector2(0, (float)-Math.Sqrt(-direction.Y * World.Physics.Gravity.Y / 32f));
-				MainBody.LinearVelocity += jumpDir;
-				ControllerBody.LinearVelocity += jumpDir;
+				// Jumping
+				if (direction.Y < -0.5f)
+				{
+
+					LinearVelocity += new Vector2(0, (float)-Math.Sqrt(-direction.Y * World.Physics.Gravity.Y * 64f) * 1.5f);
+				}
 			}
 		}
 
-		public bool JumpAvailable()
+		public Vector2? OnGround(float underBody = 3)
+		{
+			Vector2 lg = LegPosition;
+			return RayCast(lg - new Vector2(0, 8), lg + new Vector2(0, underBody));
+		}
+
+
+		public Vector2? RayCast(Vector2 beggining, Vector2 end)
 		{
 			Vector2 lg = LegPosition / 64f;
-			Vector2[] positions = { lg, lg - new Vector2(Width / 2, 0), lg + new Vector2(Width / 2, 0) };
-			for (int i = 0; i < positions.Length; ++i)
+			Vector2? groundPos = null;
+			float frac = 1;
+
+			World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 			{
-				bool jumpAvailable = false;
-
-				World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
+				if (arg1.Body.UserData is Terrain && frac > arg4)
 				{
-					if (arg1.Body.UserData is Terrain)
-					{
-						jumpAvailable = true;
-						return 0;
-					}
-					return arg4;
-				}, positions[i], positions[i] + new Vector2(0, 3 / 32f));
+					groundPos = arg2;
+					frac = arg4;
+					return 1;
+				}
+				return arg4;
+			}, beggining / 64, end / 64f);
 
-				if (jumpAvailable)
-					return true;
-			}
-			return false;
+			return groundPos * 64f;
 		}
 
 		public override EntityComponent Clone()
@@ -221,36 +196,16 @@ namespace Mff.Totem.Core
 			writer.Write(Width);
 			writer.Write(Height);
 			writer.Write(Position);
+			writer.Write(LinearVelocity);
 
-			writer.Write(MainBody.LinearVelocity);
-			writer.Write(ControllerBody.LinearVelocity);
-			writer.Write(ControllerBody.AngularVelocity);
-			writer.Write(ControllerBody.Rotation);
 		}
 
-		private BodySpawnInfo spawnInfo;
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
 		{
 			Width = reader.ReadSingle();
 			Height = reader.ReadSingle();
 			Position = reader.ReadVector2();
-
-			//TODO: Load linear velocities
-			spawnInfo = new BodySpawnInfo(reader.ReadVector2(), reader.ReadVector2(), reader.ReadSingle(), reader.ReadSingle());
-		}
-
-		class BodySpawnInfo
-		{
-			public Vector2 MVelocity, CVelocity;
-			public float CAngVelocity, CRot;
-
-			public BodySpawnInfo(Vector2 mv, Vector2 cv, float cang, float crot)
-			{
-				MVelocity = mv;
-				CVelocity = cv;
-				CAngVelocity = cang;
-				CRot = crot;
-			}
+			LinearVelocity = reader.ReadVector2();
 		}
 	}
 }

@@ -65,6 +65,12 @@ namespace Mff.Totem.Core
 			}
 		}
 
+		public override Vector2 LinearVelocity
+		{
+			get;
+			set;
+		}
+
 		public BindedBodyComponent()
 		{
 

@@ -5,8 +5,8 @@
 	"components": [
 		{
 			"class": "component_humanoid_body",
-			"width": "1.09375",
-			"height": "1.09375"
+			"width": "70",
+			"height": "70"
 		},
 		{
 			"class": "component_sprite",

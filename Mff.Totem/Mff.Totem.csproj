@@ -88,11 +88,11 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="clipper_library">
       <HintPath>..\packages\Clipper.6.4.0\lib\net40\clipper_library.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -171,19 +171,14 @@
     <None Include="Content\assets\items\wood.item">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Content\Font.xnb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FNA\FNA.csproj">
       <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
       <Name>FNA</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FarseerPhysicsFNA\SourceFiles\Farseer Physics FNA.csproj">
-      <Project>{0AAD36E3-51A5-4A07-AB60-5C8A66BD38B7}</Project>
-      <Name>Farseer Physics FNA</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FarseerPhysicsFNA\DebugViews\DebugView FNA\DebugView FNA.csproj">
-      <Project>{566F1803-90B5-4947-8730-57F092FBB002}</Project>
-      <Name>DebugView FNA</Name>
     </ProjectReference>
     <ProjectReference Include="..\Krypton\Krypton.csproj">
       <Project>{5FB6646A-D491-4F6B-AEB8-215AD3CE0DB7}</Project>
@@ -192,6 +187,14 @@
     <ProjectReference Include="..\Triangle\Triangle.csproj">
       <Project>{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}</Project>
       <Name>Triangle</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Spriter\Spriter.csproj">
+      <Project>{E6E89823-B0CC-4145-BB41-6FF552B9F6C7}</Project>
+      <Name>Spriter</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FarseerFNA\FarseerFNA.csproj">
+      <Project>{0F067340-34F7-4668-9FD4-AA7A4E1C1921}</Project>
+      <Name>FarseerFNA</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -5,12 +5,13 @@
 	"components": [
 		{
 			"class": "component_humanoid_body",
-			"width": "0.5",
-			"height": "1.5"
+			"width": "32",
+			"height": "80"
 		},
 		{
-			"class": "component_sprite",
-			"sprite": "character"
+			"class": "component_spriter",
+			"sprite": "Player",
+			"scale": "0.4;0.4"
 		},
 		{
 			"class": "component_player_input"

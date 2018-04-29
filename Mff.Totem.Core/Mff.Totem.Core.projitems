@@ -43,7 +43,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\ItemComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\BodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\ProjectileBodyComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\StaticBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\PropBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Parallax.cs" />
@@ -55,6 +54,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Serialization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameSession.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\BindedBodyComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\SpriterComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

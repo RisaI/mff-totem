@@ -18,7 +18,6 @@ namespace Mff.Totem.Core
 		private Vector2 _valPos;
 		public override Vector2 Position
 		{
-
 			get
 			{
 				if (Body != null)
@@ -83,6 +82,26 @@ namespace Mff.Totem.Core
 				Position = value.Center.ToVector2();
 				Width = value.Width;
 				Height = value.Height;
+			}
+		}
+
+		Vector2 _valLVel;
+		public override Vector2 LinearVelocity
+		{
+			get
+			{
+				if (Body != null)
+					return Body.LinearVelocity * 64f;
+				else
+					return _valLVel;
+			}
+
+			set
+			{
+				if (Body != null)
+					Body.LinearVelocity = value / 64f;
+				else
+					_valLVel = value;
 			}
 		}
 

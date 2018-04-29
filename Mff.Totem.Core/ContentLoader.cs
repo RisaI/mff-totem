@@ -1,13 +1,18 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Audio;
 
 using Newtonsoft.Json.Linq;
 using Mff.Totem.Core;
+
+using SpriterDotNet;
+using SpriterDotNet.MonoGame;
 
 namespace Mff.Totem
 {
@@ -37,6 +42,7 @@ namespace Mff.Totem
         public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
 		public static Dictionary<string, Core.Item> Items = new Dictionary<string, Core.Item>();
 		public static Dictionary<string, Core.Sprite> Sprites = new Dictionary<string, Core.Sprite>();
+		public static Dictionary<string, SpriteWrapper> BoneSprites = new Dictionary<string, SpriteWrapper>();
 		public static Dictionary<string, Core.Particle> Particles = new Dictionary<string, Core.Particle>();
 
 		public static void Load(Core.TotemGame game)
@@ -105,7 +111,45 @@ namespace Mff.Totem
 				{
 					Sprites.Add(name, new Core.Sprite(JObject.Load(reader)));
 				}
+            }
+
+			{
+				var file = "Content/textures/sprites.scml";
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				{
+					var spriter = SpriterReader.Default.Read(sReader.ReadToEnd());
+					var provider = new SpriterDotNet.Providers.DefaultProviderFactory<ISprite, SoundEffect>(new Config() { SoundsEnabled = false });
+					foreach (SpriterFolder folder in spriter.Folders)
+					{
+						foreach (SpriterFile sfile in folder.Files)
+						{
+							var sprite = new SpriterDotNet.MonoGame.Sprites.TextureSprite(Textures[sfile.Name.Replace(".png", "")]);
+							provider.SetSprite(spriter, folder, sfile, sprite);
+						}
+					}
+
+					// Add wrapper
+					foreach (SpriterEntity ent in spriter.Entities)
+						BoneSprites.Add(ent.Name, new SpriteWrapper(ent, provider));
+				}
 			}
+
+            // SPRITEs
+            foreach (string file in FindAllFiles("Content/sprites", ".scml"))
+            {
+                var name = Path.GetFileNameWithoutExtension(file);
+                Console.WriteLine("Loading a sprite: {0}", name);
+                using (FileStream stream = new FileStream(file, FileMode.Open))
+                using (StreamReader sReader = new StreamReader(stream))
+                {
+                    var spriter = SpriterReader.Default.Read(sReader.ReadToEnd());
+					var provider = new SpriterDotNet.Providers.DefaultProviderFactory<Texture2D, SoundEffect>(new Config() { SoundsEnabled = false });
+					foreach (SpriterEntity ent in spriter.Entities) {
+						var wrapper = new SpriteWrapper(ent, provider as IProviderFactory<ISprite, SoundEffect>);
+					}
+                }
+            }
 
 			foreach (string file in FindAllFiles("Content/assets/items", ".item"))
 			{
@@ -189,6 +233,23 @@ namespace Mff.Totem
 		{
 			if (Shaders.ContainsKey("menu"))
 				Shaders["menu"].Parameters["Resolution"].SetValue(game.Resolution);
+		}
+	}
+
+	public class SpriteWrapper
+	{
+		public IProviderFactory<ISprite, SoundEffect> AssetProvider;
+		public SpriterEntity Entity;
+
+		public SpriteWrapper(SpriterEntity ent, IProviderFactory<ISprite, SoundEffect> prov)
+		{
+			Entity = ent;
+			AssetProvider = prov;
+		}
+
+		public MonoGameAnimator GetAnimator()
+		{
+			return new MonoGameAnimator(Entity, AssetProvider);
 		}
 	}
 }

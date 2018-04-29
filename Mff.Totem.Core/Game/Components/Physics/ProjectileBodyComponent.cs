@@ -47,7 +47,11 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public Vector2 LinearVelocity;
+		public override Vector2 LinearVelocity
+		{
+			get;
+			set;
+		}
 
 		public bool Gravity = false;
 		public float Friction = 0;
@@ -112,8 +116,8 @@ namespace Mff.Totem.Core
 					Gravity = false;
 			}
 			if (Gravity)
-				LinearVelocity.Y += World.Physics.Gravity.Y * 64f * 
-					(float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale;
+				LinearVelocity += new Vector2(0, World.Physics.Gravity.Y * 64f * 
+				                              (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale);
 			if (Friction > 0)
 				LinearVelocity /= Friction;
 		}

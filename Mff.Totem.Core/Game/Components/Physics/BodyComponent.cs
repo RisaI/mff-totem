@@ -10,6 +10,12 @@ namespace Mff.Totem.Core
 			set;
 		}
 
+		public abstract Vector2 LinearVelocity
+		{
+			get;
+			set;
+		}
+
 		public abstract Vector2 LegPosition
 		{
 			get;
