@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 
 using Microsoft.Xna.Framework;
-using FarseerPhysics.Collision;
-using FarseerPhysics.Dynamics;
-using FarseerPhysics.Dynamics.Joints;
-using FarseerPhysics.Factories;
+using Physics2D.Collision;
+using Physics2D.Dynamics;
+using Physics2D.Dynamics.Joints;
+//using Physics2D.Factories;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
@@ -84,15 +84,15 @@ namespace Mff.Totem.Core
 				var rf = this;
 				World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 				{
-					if (arg1.Body.UserData is Terrain)
+					if (arg1.Body.Tag is Terrain)
 					{
 						Position = arg2 * 64f;
 						LinearVelocity = Vector2.Zero;
 						stopped = true;
 					}
-					else if (arg1.Body.UserData is Entity)
+					else if (arg1.Body.Tag is Entity)
 					{
-						var ent = arg1.Body.UserData as Entity;
+						var ent = arg1.Body.Tag as Entity;
 						if (ent.Tags.Any(t => TargetedTags.Contains(t)))
 						{
 							var ch = ent.GetComponent<CharacterComponent>();

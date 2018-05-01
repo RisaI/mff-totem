@@ -1,12 +1,12 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
-using FarseerPhysics.Dynamics;
-using FarseerPhysics.Factories;
-using FarseerPhysics.Common;
-using FarseerPhysics.Common.Decomposition;
+using Physics2D.Dynamics;
+// using Physics2D.Factories;
+using Physics2D.Common;
+using Physics2D.Common.Decomposition;
 
 using ClipperLib;
 using System.Threading;
@@ -353,13 +353,15 @@ namespace Mff.Totem.Core
 				lock (chunk)
 				{
 					if (chunk.Body != null)
-						World.Physics.RemoveBody(chunk.Body);
+						World.Physics.Remove(chunk.Body);
 
-					chunk.Body = BodyFactory.CreateBody(World.Physics, Vector2.Zero, 0, BodyType.Static, this);
+					chunk.Body = World.Physics.CreateBody(Vector2.Zero, 0, BodyType.Static);
+					chunk.Body.Tag = this;
 
 					chunk.PhysicsOutput.ForEach(o =>
 					{
-						var fixture = FixtureFactory.AttachLoopShape(o, chunk.Body, this);
+						var fixture = chunk.Body.CreateLoopShape(o);
+						fixture.Tag = this;
 					});
 				}
 			}
@@ -392,7 +394,7 @@ namespace Mff.Totem.Core
 
 			lock (World.Physics)
 			{
-				World.Physics.RemoveBody(chunk.Body);
+				World.Physics.Remove(chunk.Body);
 			}
 
 			chunk.Trees.ForEach(t => t.Remove = true);
@@ -482,7 +484,7 @@ namespace Mff.Totem.Core
 			/// <param name="algo">Algorithm.</param>
 			public static List<Vertices> Triangulate(List<IntPoint> polygon, TriangulationAlgorithm algo = TriangulationAlgorithm.Earclip)
 			{
-				return FarseerPhysics.Common.Decomposition.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), algo);
+				return Physics2D.Common.Decomposition.Triangulate.ConvexPartition(PolygonToVertices(polygon, 1), algo);
 			}
 
 			/// <summary>

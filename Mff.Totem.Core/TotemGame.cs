@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-using Krypton;
+using Penumbra;
 using System.Collections.Generic;
 using System.IO;
 
@@ -57,7 +57,7 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public KryptonEngine Krypton
+		public PenumbraComponent Lighting
         {
             get;
             private set;
@@ -126,6 +126,7 @@ namespace Mff.Totem.Core
 			Hud = new HUD(this);
 			/*Krypton = new KryptonEngine(this, "shaders/lighting");
 			Krypton.AmbientColor = Color.Red;*/
+			Lighting = new PenumbraComponent(this);
 			IsMouseVisible = true;
 			MenuState = new MenuStateManager(this);
 		}
@@ -149,9 +150,9 @@ namespace Mff.Totem.Core
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
 			// Load textues and fonts
-			// Krypton.Initialize();
 			ContentLoader.Load(this);
 			ContentLoader.RefreshShaders(this);
+			Lighting.Initialize();
 
 			LoadNewGame();
 		}
@@ -211,6 +212,9 @@ namespace Mff.Totem.Core
 
 					if (Session != null)
 						Session.Update(gameTime);
+
+					// Do lighting stuff
+					Lighting.Update(gameTime);
 
 					Hud.Update(gameTime);
 

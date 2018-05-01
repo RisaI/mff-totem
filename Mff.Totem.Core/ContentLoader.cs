@@ -28,12 +28,6 @@ namespace Mff.Totem
 			private set;
 		}
 
-		public static Texture2D LightTexture
-		{
-			get;
-			private set;
-		}
-
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
 		public static Dictionary<string, Parallax> Parallaxes = new Dictionary<string, Parallax>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
@@ -50,8 +44,6 @@ namespace Mff.Totem
 			// Generate a pixel texture
 			Pixel = new Texture2D(game.GraphicsDevice, 1, 1);
 			Pixel.SetData<Color>(new Color[] { Color.White });
-
-			LightTexture = Krypton.LightTextureBuilder.CreatePointLight(game.GraphicsDevice, 512);
 
 			// Load Textures
 			var textureFolder = "Content/textures/";

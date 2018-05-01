@@ -1,6 +1,5 @@
-﻿using System;
-using FarseerPhysics.Dynamics;
-using FarseerPhysics.Factories;
+using System;
+using Physics2D.Dynamics;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
@@ -124,17 +123,18 @@ namespace Mff.Totem.Core
 		void CreateBody()
 		{
 			if (Body != null)
-				Parent.World.Physics.RemoveBody(Body);
+				Parent.World.Physics.Remove(Body);
 
-			Body = BodyFactory.CreateRectangle(Parent.World.Physics, 
+			Body = Parent.World.Physics.CreateRectangle(
 			                                   Width / 64f, Height / 64f, 
 			                                   1, _valPos / 64f, _valRot, 
-			                                   BodyType.Dynamic, Parent);
+			                                   BodyType.Dynamic);
+			Body.Tag = Parent;
 			Body.FixedRotation = FixedRotation;
-			Body.Friction = Friction;
+			Body.SetFriction(Friction);
 			Body.OnCollision += (fixtureA, fixtureB, contact) =>
 			{
-				return fixtureB.UserData is Terrain || (fixtureB.UserData is Entity && (fixtureB.UserData as Entity).GetComponent<PropBodyComponent>() != null);
+				return fixtureB.Tag is Terrain || (fixtureB.Tag is Entity && (fixtureB.Tag as Entity).GetComponent<PropBodyComponent>() != null);
 			};
 		}
 
@@ -155,7 +155,7 @@ namespace Mff.Totem.Core
 		{
 			if (Body != null)
 			{
-				Parent.World.Physics.RemoveBody(Body);
+				Parent.World.Physics.Remove(Body);
 				Body = null;
 			}
 		}

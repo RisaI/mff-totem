@@ -239,13 +239,13 @@ namespace Mff.Totem.Core
 				    .AddItem(Item.Create(args[0], args.Length >= 2 ? int.Parse(args[1]) : 1));
 			}, "id", "[count]");
 
-			AddCommand("debugview", "Toggle debugview.", args =>
+			/*AddCommand("debugview", "Toggle debugview.", args =>
 			{
 				if (args.Length > 0)
 					WorldInstance.DebugView.Enabled = bool.Parse(args[0]);
 				else
 					WorldInstance.DebugView.Enabled = !WorldInstance.DebugView.Enabled;
-			}, "[on]");
+			}, "[on]");*/
 		}
 
 		/// <summary>

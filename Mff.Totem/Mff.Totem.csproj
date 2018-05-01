@@ -180,21 +180,17 @@
       <Project>{35253CE1-C864-4CD3-8249-4D1319748E8F}</Project>
       <Name>FNA</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Krypton\Krypton.csproj">
-      <Project>{5FB6646A-D491-4F6B-AEB8-215AD3CE0DB7}</Project>
-      <Name>Krypton</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Triangle\Triangle.csproj">
-      <Project>{F7907A0A-B75F-400B-9E78-BFAD00DB4D6B}</Project>
-      <Name>Triangle</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Spriter\Spriter.csproj">
       <Project>{E6E89823-B0CC-4145-BB41-6FF552B9F6C7}</Project>
       <Name>Spriter</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FarseerFNA\FarseerFNA.csproj">
-      <Project>{0F067340-34F7-4668-9FD4-AA7A4E1C1921}</Project>
-      <Name>FarseerFNA</Name>
+    <ProjectReference Include="..\Physics2D\Physics2D.csproj">
+      <Project>{0B902B6E-A793-42F5-93B3-7E79CD0C908F}</Project>
+      <Name>Physics2D</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Penumbra\Penumbra.csproj">
+      <Project>{3F53D144-2287-485F-91ED-FDA8435396B9}</Project>
+      <Name>Penumbra</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

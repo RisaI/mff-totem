@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-using FarseerPhysics.DebugView;
-using FarseerPhysics.Dynamics;
+// using Physics2D.DebugView;
+using Physics2D.Dynamics;
 using System.IO;
 using Microsoft.Xna.Framework.Input;
 using System.Text;
@@ -41,13 +41,13 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public Krypton.KryptonEngine Lighting => Game.Krypton;
+		public Penumbra.PenumbraComponent Lighting => Game.Lighting;
 
-		public DebugViewXNA DebugView
+		/*public DebugViewXNA DebugView
 		{
 			get;
 			private set;
-		}
+		}*/
 
 		public TotemGame Game
 		{
@@ -125,8 +125,8 @@ namespace Mff.Totem.Core
 			Physics = new World(new Vector2(0, 0));
 
 			// Physical engine debug view
-			DebugView = new DebugViewXNA(Physics) { Enabled = true };
-			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
+			// DebugView = new DebugViewXNA(Physics) { Enabled = true };
+			// DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
 			// Load basic terrain for debugging
 			Terrain = new Terrain(this);
@@ -324,7 +324,7 @@ namespace Mff.Totem.Core
             spriteBatch.End();
 
             // Render debug physics view
-            if (DebugView.Enabled)
+            /*if (DebugView.Enabled)
             {
 				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 				foreach (Entity ent in Entities)
@@ -350,7 +350,7 @@ namespace Mff.Totem.Core
 				spriteBatch.Begin();
 				spriteBatch.DrawString(font, text, new Vector2(Game.Resolution.X, 0), Color.White, 0, new Vector2(font.MeasureString(text).X, 0), 0.3f, SpriteEffects.None, 1f);
 				spriteBatch.End();
-            }
+            }*/
         }
 
         public float NightTint(double hour)

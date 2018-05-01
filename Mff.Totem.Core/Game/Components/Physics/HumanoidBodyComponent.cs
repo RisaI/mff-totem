@@ -1,11 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
-using FarseerPhysics.Collision;
-using FarseerPhysics.Dynamics;
-using FarseerPhysics.Dynamics.Joints;
-using FarseerPhysics.Factories;
+using Physics2D.Collision;
+using Physics2D.Dynamics;
+using Physics2D.Dynamics.Joints;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Mff.Totem.Core
@@ -134,7 +133,7 @@ namespace Mff.Totem.Core
 
 			World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 			{
-				if (arg1.Body.UserData is Terrain && frac > arg4)
+				if (arg1.Body.Tag is Terrain && frac > arg4)
 				{
 					groundPos = arg2;
 					frac = arg4;
@@ -150,21 +149,20 @@ namespace Mff.Totem.Core
 		public override void Initialize()
 		{
 			base.Initialize();
-			b = BodyFactory.CreateRectangle(
-				World.Physics,
+
+			b = World.Physics.CreateRectangle(
 				Width / 64f,
 				0.8f * Height / 64f,
 				1,
 				(Position - new Vector2(0, 0.1f * Height)) / 64f,
 				0,
-				BodyType.Dynamic,
-				this.Parent
+				BodyType.Dynamic
 			);
 
 			// b.Enabled = false;
-			b.IsSensor = true;
 			b.FixedRotation = true;
 			b.IgnoreGravity = true;
+			b.Tag = Parent;
 		}
 
 		public override EntityComponent Clone()

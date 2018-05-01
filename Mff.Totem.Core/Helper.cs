@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Globalization;
@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Mff.Totem.Core;
 using System.Collections.Generic;
-using FarseerPhysics.Common;
+using Physics2D.Common;
 using ClipperLib;
 
 namespace Mff.Totem
