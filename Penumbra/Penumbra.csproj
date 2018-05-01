@@ -61,7 +61,7 @@
     <Compile Include="Geometry\LineSegment.cs" />
     <Compile Include="Geometry\PolygonExtensions.cs" />
     <Compile Include="Graphics\Triangulator.cs" />
-    <Compile Include="PenumbraComponent.cs" />
+    <Compile Include="Penumbra.cs" />
     <Compile Include="PenumbraEngine.cs" />
     <Compile Include="TexturedLight.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

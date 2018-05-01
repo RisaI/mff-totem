@@ -41,7 +41,7 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public Penumbra.PenumbraComponent Lighting => Game.Lighting;
+		public Penumbra.Penumbra Lighting => Game.Lighting;
 
 		/*public DebugViewXNA DebugView
 		{
@@ -259,6 +259,7 @@ namespace Mff.Totem.Core
             }
 
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
+			Lighting.BeginDraw();
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
@@ -282,8 +283,8 @@ namespace Mff.Totem.Core
 				}
 			}
 
-            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-            Weather.DrawWeatherEffects(this, spriteBatch);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
+			Weather.DrawWeatherEffects(this, spriteBatch);
 			spriteBatch.End();
 
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
@@ -299,12 +300,12 @@ namespace Mff.Totem.Core
 					var chunk = Terrain.ActiveChunks[i];
 					if (chunk == null || chunk.State != Terrain.ChunkStateEnum.Placed)
 						continue;
-					
+
 					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
 					{
 						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedForegroundVertices, 
-						                                       0, chunk.TriangulatedForegroundVertices.Length / 3);
+						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedForegroundVertices,
+															   0, chunk.TriangulatedForegroundVertices.Length / 3);
 					}
 					foreach (Terrain.Chunk.GrassPoint g in chunk.GrassPoints)
 					{
@@ -314,6 +315,8 @@ namespace Mff.Totem.Core
 				}
 			}
 			spriteBatch.End();
+			Lighting.Draw(default(GameTime));
+
 
 
             Game.GraphicsDevice.SetRenderTarget(null);

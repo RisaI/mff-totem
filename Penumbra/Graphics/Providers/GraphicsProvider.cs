@@ -48,7 +48,9 @@ namespace Penumbra.Graphics.Providers
 
         private void ClientSizeChanged(object sender, EventArgs e)
         {
-            ChangeSize(Engine.Device.Viewport.Width, Engine.Device.Viewport.Height);
+			var x = Engine.Window.ClientBounds.Width;
+			var y = Engine.Window.ClientBounds.Height;
+			ChangeSize(Engine.Window.ClientBounds.Width, Engine.Window.ClientBounds.Height);
         }
 
         private void ChangeSize(int width, int height)

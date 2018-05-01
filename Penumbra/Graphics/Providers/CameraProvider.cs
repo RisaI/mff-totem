@@ -16,7 +16,7 @@ namespace Penumbra.Graphics.Providers
         private bool _loaded;
 
         public bool InvertedY { get; private set; }
-        public bool SpriteBatchTransformEnabled { get; set; } = true;
+		public bool SpriteBatchTransformEnabled { get; set; } = true;
 
         public Matrix Custom
         {

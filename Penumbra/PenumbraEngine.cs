@@ -57,8 +57,8 @@ namespace Penumbra
 
         public ObservableCollection<Light> Lights { get; } = new ObservableCollection<Light>();
         public HullList Hulls { get; } = new HullList();
-        public CameraProvider Camera { get; } = new CameraProvider();
-        public TextureProvider Textures { get; } = new TextureProvider();
+		public CameraProvider Camera { get; set; } = new CameraProvider();
+		public TextureProvider Textures { get; set; } = new TextureProvider();
         public ShadowRenderer ShadowRenderer { get; } = new ShadowRenderer();
         public LightRenderer LightRenderer { get; } = new LightRenderer();
         public LightMapRenderer LightMapRenderer { get; } = new LightMapRenderer();
@@ -159,6 +159,13 @@ namespace Penumbra
             // Clear hulls dirty flag.
             Hulls.Dirty = false;
         }
+
+		public void ReloadStuff()
+		{
+			Textures.Dispose();
+			Textures = new TextureProvider();
+			Textures.Load(this);
+		}
 
         public void Dispose()
         {

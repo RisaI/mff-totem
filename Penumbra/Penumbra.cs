@@ -17,7 +17,7 @@ namespace Penumbra
     /// Before rendering scene, ensure to call <c>PenumbraComponent.BeginDraw</c> to swap render target
     /// in order for the component to be able to later apply generated lightmap.
     /// </remarks>
-    public class PenumbraComponent : DrawableGameComponent
+    public class Penumbra
     {
         private readonly PenumbraEngine _engine = new PenumbraEngine();
         private ContentManager _content;
@@ -25,15 +25,27 @@ namespace Penumbra
         private bool _initialized;
         private bool _beginDrawCalled;
 
+		public Game Game
+		{
+			get;
+			private set;
+		}
+
+		public GraphicsDevice GraphicsDevice
+		{
+			get
+			{
+				return Game.GraphicsDevice;
+			}
+		}
+
         /// <summary>
         /// Constructs a new instance of <see cref="PenumbraComponent"/>.
         /// </summary>
         /// <param name="game">Game object to associate the engine with.</param>
-        public PenumbraComponent(Game game)
-            : base(game)
+        public Penumbra(Game game)
         {
-            // We only need to draw this component.
-            Enabled = false;
+			Game = game;
         }
 
         /// <summary>
@@ -98,17 +110,14 @@ namespace Penumbra
         /// Explicitly initializes the engine. This should only be called if the
         /// component was not added to the game's components list through <c>Components.Add</c>.
         /// </summary>
-        public override void Initialize()
+        public void Initialize()
         {
-            if (_initialized) return;
-
-            base.Initialize();
 			var deviceManager = (GraphicsDeviceManager)Game.Services.GetService(typeof(IGraphicsDeviceManager));
             _content = new ResourceContentManager(Game.Services,
 #if WINDOWSDX
                 new ResourceManager("Penumbra.Resource.WindowsDX", typeof(PenumbraComponent).Assembly)
 #elif DESKTOPGL
-                new ResourceManager("Penumbra.Resource.DesktopGL", typeof(PenumbraComponent).Assembly)
+                new ResourceManager("Penumbra.Resource.DesktopGL", typeof(Penumbra).Assembly)
 #endif
             );
             _engine.Load(
@@ -128,15 +137,12 @@ namespace Penumbra
         /// </summary>
         public void BeginDraw()
         {
-            if (Visible)
-            {
-                if (!_initialized)
-                    throw new InvalidOperationException(
-                        $"{nameof(PenumbraComponent)} is not initialized. Make sure to call {nameof(Initialize)} when setting up a game.");
+            if (!_initialized)
+                throw new InvalidOperationException(
+                    $"{nameof(Penumbra)} is not initialized. Make sure to call {nameof(Initialize)} when setting up a game.");
 
-                _engine.PreRender();
-                _beginDrawCalled = true;
-            }
+			_engine.PreRender();
+            _beginDrawCalled = true;
         }
 
         /// <summary>
@@ -144,28 +150,28 @@ namespace Penumbra
         /// calls to BeginDraw and this and presents the result to the backbuffer.
         /// </summary>
         /// <param name="gameTime">Time passed since the last call to Draw.</param>
-        public override void Draw(GameTime gameTime)
+        public void Draw(GameTime gameTime)
         {
-            if (Visible)
-            {
-                if (!_beginDrawCalled)
-                    throw new InvalidOperationException(
-                        $"{nameof(BeginDraw)} must be called before rendering a scene to be lit and calling {nameof(Draw)}.");
+            if (!_beginDrawCalled)
+                throw new InvalidOperationException(
+                    $"{nameof(BeginDraw)} must be called before rendering a scene to be lit and calling {nameof(Draw)}.");
 
-                _engine.Render();
-                _beginDrawCalled = false;
-            }
+			_engine.Render();
+            _beginDrawCalled = false;
         }
 
-        /// <inheritdoc />
-        protected override void UnloadContent()
+		public void Reload()
+		{
+			_engine.ReloadStuff();
+		}
+
+        protected void UnloadContent()
         {
             _engine.Dispose();
             _content?.Dispose();
         }
 
-        /// <inheritdoc />
-        protected override void Dispose(bool disposing)
+        protected void Dispose(bool disposing)
         {
             if (disposing)
                 UnloadContent();

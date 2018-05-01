@@ -57,7 +57,7 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public PenumbraComponent Lighting
+		public Penumbra.Penumbra Lighting
         {
             get;
             private set;
@@ -124,13 +124,12 @@ namespace Mff.Totem.Core
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
 			Hud = new HUD(this);
-			/*Krypton = new KryptonEngine(this, "shaders/lighting");
-			Krypton.AmbientColor = Color.Red;*/
-			Lighting = new PenumbraComponent(this);
+			Lighting = new Penumbra.Penumbra(this) { Debug = true };
 			IsMouseVisible = true;
 			MenuState = new MenuStateManager(this);
 		}
 
+		private bool _initialized = false;
 		protected override void Initialize()
 		{
 			Window.ClientSizeChanged += (sender, e) =>
@@ -140,6 +139,7 @@ namespace Mff.Totem.Core
 				if (OnResolutionChange != null)
 					OnResolutionChange(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight);
 				ContentLoader.RefreshShaders(this);
+
 			};
 			base.Initialize();
 		}
@@ -153,6 +153,7 @@ namespace Mff.Totem.Core
 			ContentLoader.Load(this);
 			ContentLoader.RefreshShaders(this);
 			Lighting.Initialize();
+			_initialized = true;
 
 			LoadNewGame();
 		}
@@ -213,10 +214,11 @@ namespace Mff.Totem.Core
 					if (Session != null)
 						Session.Update(gameTime);
 
-					// Do lighting stuff
-					Lighting.Update(gameTime);
-
 					Hud.Update(gameTime);
+					if (Input.GetInput(Inputs.Swap, InputState.Pressed))
+					{
+						Lighting.Reload();
+					}
 
 
 					if (Input.GetInput(Inputs.Pause, InputState.Pressed))
