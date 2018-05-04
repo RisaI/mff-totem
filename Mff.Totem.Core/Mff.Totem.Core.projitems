@@ -57,6 +57,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\SpriterComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\LightingManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Components\TotemComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

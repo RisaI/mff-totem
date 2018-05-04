@@ -5,13 +5,16 @@
 	"components": [
 		{
 			"class": "component_static_body",
-			"size": "32; 128"
+			"size": "96; 256"
 		},
 		{
 			"class": "component_spriter",
 			"sprite": "Totem",
 			"scale": "0.6;0.6",
 			"speed": "0.1"
+		},
+		{
+			"class": "component_totem"
 		}
 	]
 }

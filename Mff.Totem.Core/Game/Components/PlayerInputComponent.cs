@@ -83,7 +83,10 @@ namespace Mff.Totem.Core
 					foreach (Entity ent in World.FindEntitiesAt(body.BoundingBox))
 					{
 						if (ent.Interact(Parent))
+						{
+							sprite.PlayAnim("use", true);
 							break;
+						}
 					}
 				}
             }
@@ -97,7 +100,8 @@ namespace Mff.Totem.Core
 				}
 				else
 				{
-					sprite.PlayAnim("idle", false, 200);
+					if ((sprite.Sprite.CurrentAnimation?.Name != "use" && sprite.Sprite.NextAnimation?.Name != "use") || sprite.Sprite.Progress >= 1f)
+						sprite.PlayAnim("idle", false, 200);
 				}
 			}
 			else
