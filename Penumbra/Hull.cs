@@ -270,7 +270,7 @@ namespace Penumbra
             };
     }
 
-    internal class HullList : ObservableCollection<Hull>
+	public class HullList : List<Hull>
     {
         public bool Dirty { get; set; }
 

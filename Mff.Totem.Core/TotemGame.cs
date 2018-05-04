@@ -124,7 +124,7 @@ namespace Mff.Totem.Core
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
 			Hud = new HUD(this);
-			Lighting = new Penumbra.Penumbra(this) { Debug = false, SpriteBatchTransformEnabled = true };
+			Lighting = new Penumbra.Penumbra(this) { Debug = true, SpriteBatchTransformEnabled = true };
 			IsMouseVisible = true;
 			MenuState = new MenuStateManager(this);
 		}
@@ -177,6 +177,7 @@ namespace Mff.Totem.Core
 			{
 				Session = GameSession.LoadGame(this, file);
 			}
+
 			return true;
 		}
 
@@ -201,6 +202,7 @@ namespace Mff.Totem.Core
 						if (LoadSession("quicksave.sav"))
 						{
 							Hud.Chat("Loading from quick save");
+							return;
 						}
 					}
 					else if (Input.GetInput(Inputs.QuickSave, InputState.Pressed))

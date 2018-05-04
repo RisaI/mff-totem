@@ -57,11 +57,15 @@ namespace Penumbra.Graphics.Providers
             base.Dispose(disposing);
         }
 
+		public void Refresh()
+		{
+			OnSizeChanged();
+		}
+
         protected override void OnSizeChanged()
         {
             BuildRenderTargets();
 			_numQueriedBindings = 0;
-			//_originalBindings = null;
         }
 
         private void BuildRenderTargets()

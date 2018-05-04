@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-// using Physics2D.DebugView;
+using Physics2D.Diagnostics;
 using Physics2D.Dynamics;
 using System.IO;
 using Microsoft.Xna.Framework.Input;
@@ -41,13 +41,17 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		public Penumbra.Penumbra Lighting => Game.Lighting;
-
-		/*public DebugViewXNA DebugView
+		public LightingManager Lighting
 		{
 			get;
 			private set;
-		}*/
+		}
+
+		public DebugView DebugView
+		{
+			get;
+			private set;
+		}
 
 		public TotemGame Game
 		{
@@ -121,12 +125,15 @@ namespace Mff.Totem.Core
 			// Particles
 			Particles = new List<Particle>(8192);
 
+			// Load lighting
+			Lighting = new LightingManager(session.Game);
+
 			// Physics
 			Physics = new World(new Vector2(0, 0));
 
 			// Physical engine debug view
-			// DebugView = new DebugViewXNA(Physics) { Enabled = true };
-			// DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
+			DebugView = new DebugView(Physics) { Enabled = true };
+			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
 			// Load basic terrain for debugging
 			Terrain = new Terrain(this);
@@ -226,6 +233,8 @@ namespace Mff.Totem.Core
 					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
 
+			Physics.Tag = this;
+
 			Terrain.ActiveRegion(Camera.Position);
 
 			if (Background != null)
@@ -250,8 +259,15 @@ namespace Mff.Totem.Core
 			BackgroundTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
 		}
 
+		private bool _reloaded = false;
         public void Draw(SpriteBatch spriteBatch)
         {
+			if (!_reloaded)
+			{
+				Game.Lighting.Refresh();
+				_reloaded = true;
+			}
+
             if (Background != null)
             {
                 Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)BackgroundTexture);
@@ -260,9 +276,7 @@ namespace Mff.Totem.Core
 
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
 
-			Lighting.Transform = Camera.ViewMatrix;
-			Lighting.AmbientColor = Color.Lerp(Color.White, Color.Black, NightTint(Session.UniverseTime.TimeOfDay.TotalHours));
-			Lighting.BeginDraw();
+			Lighting.BeginDraw(Color.Lerp(Color.White, Color.Black, NightTint(Session.UniverseTime.TimeOfDay.TotalHours)), Camera.ViewMatrix);
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
@@ -318,7 +332,7 @@ namespace Mff.Totem.Core
 				}
 			}
 			spriteBatch.End();
-			Lighting.Draw(default(GameTime));
+			Lighting.Draw();
 
 
 
@@ -330,7 +344,7 @@ namespace Mff.Totem.Core
             spriteBatch.End();
 
             // Render debug physics view
-            /*if (DebugView.Enabled)
+            if (DebugView.Enabled)
             {
 				spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 				foreach (Entity ent in Entities)
@@ -356,7 +370,7 @@ namespace Mff.Totem.Core
 				spriteBatch.Begin();
 				spriteBatch.DrawString(font, text, new Vector2(Game.Resolution.X, 0), Color.White, 0, new Vector2(font.MeasureString(text).X, 0), 0.3f, SpriteEffects.None, 1f);
 				spriteBatch.End();
-            }*/
+            }
         }
 
         public float NightTint(double hour)

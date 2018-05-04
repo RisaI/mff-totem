@@ -28,8 +28,6 @@ namespace Mff.Totem.Core
 			private set
 			{
 				_instance = value;
-				Game.Lighting.Lights.Clear();
-				Game.Lighting.Hulls.Clear();
 			}
 		}
 

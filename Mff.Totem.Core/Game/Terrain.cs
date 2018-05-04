@@ -345,7 +345,8 @@ namespace Mff.Totem.Core
 			if (chunk.State == ChunkStateEnum.Emtpy) // Skip if empty
 				GenerateChunk(chunk);
 
-			chunk.Hulls.ForEach(h => World.Lighting.Hulls.Remove(h));
+			chunk.Hulls.ForEach(h => 
+			                    World.Lighting.Hulls.Remove(h));
 
 			if (chunk.Recalculate) // Recalculate if needed
 				chunk.Calculate(World);
@@ -355,7 +356,7 @@ namespace Mff.Totem.Core
 				lock (chunk)
 				{
 					if (chunk.Body != null)
-						World.Physics.Remove(chunk.Body);
+						World.Physics.RemoveAsync(chunk.Body);
 
 					chunk.Body = World.Physics.CreateBody(Vector2.Zero, 0, BodyType.Static);
 					chunk.Body.Tag = this;
@@ -642,6 +643,7 @@ namespace Mff.Totem.Core
 				clipper.AddPolygons(Damage, PolyType.ptClip);
 				clipper.Execute(ClipType.ctDifference, output, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
+				Hulls.Clear();
 				output.ForEach(o =>
 				{
 					Vector2[] points = new Vector2[o.Count];

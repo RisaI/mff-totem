@@ -163,6 +163,10 @@
     <Compile Include="Fluids\2\FluidSystem2.cs" />
     <Compile Include="Fluids\2\SpartialTable.cs" />
     <Compile Include="Maths\Complex.cs" />
+    <Compile Include="Diagnostics\PrimitiveBatch.cs" />
+    <Compile Include="Diagnostics\IPrimitiveBatch.cs" />
+    <Compile Include="Diagnostics\Extensions.cs" />
+    <Compile Include="Diagnostics\DebugView.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\Aether.Physics2D.rd.xml" />

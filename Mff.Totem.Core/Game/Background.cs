@@ -74,7 +74,7 @@ namespace Mff.Totem.Core
 				//Background color
 				//spriteBatch.Draw(ContentLoader.Pixel, Vector2.Zero, null, ClearColor, 0, Vector2.Zero, World.Game.Resolution, SpriteEffects.None, 0f);
 				{
-					if (nightTint > 0.1f)
+					if (nightTint > 0.1f && World?.Planet?.NightSky != null)
 					{
 						Color stars = Color.Lerp(Color.Transparent, Color.White, nightTint);
 						Texture2D starTexture = World?.Planet?.NightSky;

@@ -89,12 +89,20 @@ namespace Penumbra
         /// <summary>
         /// Gets the list of lights registered with the engine.
         /// </summary>
-        public ObservableCollection<Light> Lights => _engine.Lights;
+		public System.Collections.Generic.List<Light> Lights
+		{
+			get { return _engine.Lights; }
+			set { _engine.Lights = value; }
+		}
 
         /// <summary>
         /// Gets the list of shadow hulls registered with the engine.
         /// </summary>
-        public ObservableCollection<Hull> Hulls => _engine.Hulls;
+		public HullList Hulls
+		{
+			get { return _engine.Hulls; }
+			set { _engine.Hulls = value; }
+		}
 
         /// <summary>
         /// Gets the diffuse map render target used by Penumbra.
@@ -149,8 +157,7 @@ namespace Penumbra
         /// Generates the lightmap, blends it with whatever was drawn to the scene between the
         /// calls to BeginDraw and this and presents the result to the backbuffer.
         /// </summary>
-        /// <param name="gameTime">Time passed since the last call to Draw.</param>
-        public void Draw(GameTime gameTime)
+        public void Draw()
         {
             if (!_beginDrawCalled)
                 throw new InvalidOperationException(
@@ -159,6 +166,11 @@ namespace Penumbra
 			_engine.Render();
             _beginDrawCalled = false;
         }
+
+		public void Refresh()
+		{
+			_engine.Textures.Refresh();
+		}
 
         protected void UnloadContent()
         {

@@ -95,8 +95,15 @@ namespace Mff.Totem.Core
 				LegPosition += step;
 				_wasGround = false;
 			}
-			if (b != null)
-				b.Position = (Position - new Vector2(0, 0.1f * Height)) / 64f;
+			try
+			{
+				if (b != null)
+					b.Position = (Position - new Vector2(0, 0.1f * Height)) / 64f;
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
 		}
 
 		public override void Move(Vector2 direction)

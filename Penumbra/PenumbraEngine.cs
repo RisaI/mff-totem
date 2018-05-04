@@ -10,7 +10,7 @@
 // TODO:    4.  Normal mapped lighting.
 
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Penumbra.Geometry;
@@ -55,8 +55,8 @@ namespace Penumbra
             }
         }
 
-        public ObservableCollection<Light> Lights { get; } = new ObservableCollection<Light>();
-        public HullList Hulls { get; } = new HullList();
+		public List<Light> Lights { get; set; } = new List<Light>();
+		public HullList Hulls { get; set; } = new HullList();
 		public CameraProvider Camera { get; set; } = new CameraProvider();
 		public TextureProvider Textures { get; set; } = new TextureProvider();
         public ShadowRenderer ShadowRenderer { get; } = new ShadowRenderer();

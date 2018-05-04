@@ -13,6 +13,9 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin DiagnosticsFont.xnb
+/copy:DiagnosticsFont.xnb
+
 #begin fonts/console.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
