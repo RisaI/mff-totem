@@ -27,18 +27,6 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/menu.spritefont
 
-#begin shaders/PenumbraHull.xnb
-/copy:shaders/PenumbraHull.xnb
-
-#begin shaders/PenumbraLight.xnb
-/copy:shaders/PenumbraLight.xnb
-
-#begin shaders/PenumbraShadow.xnb
-/copy:shaders/PenumbraShadow.xnb
-
-#begin shaders/PenumbraTexture.xnb
-/copy:shaders/PenumbraTexture.xnb
-
 #begin textures/arms/p_arm_idle.png
 /importer:TextureImporter
 /processor:TextureProcessor

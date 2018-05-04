@@ -19,9 +19,14 @@ namespace Mff.Totem.Core
 			return new PlayerInputComponent();
 		}
 
+		Penumbra.PointLight light;
 		public override void Initialize()
 		{
-			
+			light = new Penumbra.PointLight();
+			light.Scale = new Vector2(256);
+			light.Color = Color.White;
+			light.ShadowType = Penumbra.ShadowType.Solid;
+			World.Lighting.Lights.Add(light);
 		}
 
 		public void Update(GameTime gameTime)
@@ -108,6 +113,7 @@ namespace Mff.Totem.Core
 			}
 
 			body.Move(movement);
+			light.Position = body.Position;
 		}
 	}
 }

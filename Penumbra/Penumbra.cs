@@ -160,11 +160,6 @@ namespace Penumbra
             _beginDrawCalled = false;
         }
 
-		public void Reload()
-		{
-			_engine.ReloadStuff();
-		}
-
         protected void UnloadContent()
         {
             _engine.Dispose();

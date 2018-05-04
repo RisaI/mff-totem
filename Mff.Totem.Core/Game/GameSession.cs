@@ -21,10 +21,16 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
+		private GameWorld _instance;
 		public GameWorld CurrentInstance
 		{
-			get;
-			private set;
+			get { return _instance; }
+			private set
+			{
+				_instance = value;
+				Game.Lighting.Lights.Clear();
+				Game.Lighting.Hulls.Clear();
+			}
 		}
 
 		GameSession(TotemGame game)

@@ -60,6 +60,8 @@ namespace Penumbra.Graphics.Providers
         protected override void OnSizeChanged()
         {
             BuildRenderTargets();
+			_numQueriedBindings = 0;
+			//_originalBindings = null;
         }
 
         private void BuildRenderTargets()

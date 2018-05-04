@@ -259,6 +259,9 @@ namespace Mff.Totem.Core
             }
 
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
+
+			Lighting.Transform = Camera.ViewMatrix;
+			Lighting.AmbientColor = Color.Lerp(Color.White, Color.Black, NightTint(Session.UniverseTime.TimeOfDay.TotalHours));
 			Lighting.BeginDraw();
 			Game.GraphicsDevice.Clear(Color.Transparent);
 

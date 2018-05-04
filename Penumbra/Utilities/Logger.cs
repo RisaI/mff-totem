@@ -32,7 +32,7 @@ namespace Penumbra.Utilities
             _stringBuilder.Append(caller);
             _stringBuilder.Append("] ");
             _stringBuilder.Append(message);
-            Delegate(_stringBuilder.ToString());
+            //Delegate(_stringBuilder.ToString());
         }
     }
 

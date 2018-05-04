@@ -345,6 +345,8 @@ namespace Mff.Totem.Core
 			if (chunk.State == ChunkStateEnum.Emtpy) // Skip if empty
 				GenerateChunk(chunk);
 
+			chunk.Hulls.ForEach(h => World.Lighting.Hulls.Remove(h));
+
 			if (chunk.Recalculate) // Recalculate if needed
 				chunk.Calculate(World);
 
@@ -363,6 +365,7 @@ namespace Mff.Totem.Core
 						var fixture = chunk.Body.CreateLoopShape(o);
 						fixture.Tag = this;
 					});
+					chunk.Hulls.ForEach(h => World.Lighting.Hulls.Add(h));
 				}
 			}
 
@@ -398,6 +401,7 @@ namespace Mff.Totem.Core
 			}
 
 			chunk.Trees.ForEach(t => t.Remove = true);
+			chunk.Hulls.ForEach(h => World.Lighting.Hulls.Remove(h));
 
 			chunk.Body = null;
 			chunk.State = ChunkStateEnum.Generated;
@@ -573,6 +577,7 @@ namespace Mff.Totem.Core
 			}
 
 			public Body Body;
+			public List<Penumbra.Hull> Hulls = new List<Penumbra.Hull>();
 
 			public long Left
 			{
@@ -636,6 +641,14 @@ namespace Mff.Totem.Core
 				clipper.AddPolygons(Cavities, PolyType.ptClip);
 				clipper.AddPolygons(Damage, PolyType.ptClip);
 				clipper.Execute(ClipType.ctDifference, output, PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+
+				output.ForEach(o =>
+				{
+					Vector2[] points = new Vector2[o.Count];
+					int index = 0;
+					o.ForEach(p => points[index++] = new Vector2(p.X, p.Y));
+					Hulls.Add(new Penumbra.Hull(points));
+				});
 
 				// Triangulate background for rendering
 				{

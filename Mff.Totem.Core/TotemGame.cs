@@ -124,12 +124,11 @@ namespace Mff.Totem.Core
 			GuiManager = new Gui.GuiManager(this);
 			Input = new DesktopInput(this);
 			Hud = new HUD(this);
-			Lighting = new Penumbra.Penumbra(this) { Debug = true };
+			Lighting = new Penumbra.Penumbra(this) { Debug = false, SpriteBatchTransformEnabled = true };
 			IsMouseVisible = true;
 			MenuState = new MenuStateManager(this);
 		}
 
-		private bool _initialized = false;
 		protected override void Initialize()
 		{
 			Window.ClientSizeChanged += (sender, e) =>
@@ -153,7 +152,6 @@ namespace Mff.Totem.Core
 			ContentLoader.Load(this);
 			ContentLoader.RefreshShaders(this);
 			Lighting.Initialize();
-			_initialized = true;
 
 			LoadNewGame();
 		}
@@ -215,10 +213,6 @@ namespace Mff.Totem.Core
 						Session.Update(gameTime);
 
 					Hud.Update(gameTime);
-					if (Input.GetInput(Inputs.Swap, InputState.Pressed))
-					{
-						Lighting.Reload();
-					}
 
 
 					if (Input.GetInput(Inputs.Pause, InputState.Pressed))

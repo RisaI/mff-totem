@@ -160,13 +160,6 @@ namespace Penumbra
             Hulls.Dirty = false;
         }
 
-		public void ReloadStuff()
-		{
-			Textures.Dispose();
-			Textures = new TextureProvider();
-			Textures.Load(this);
-		}
-
         public void Dispose()
         {
             RsDebug?.Dispose();
