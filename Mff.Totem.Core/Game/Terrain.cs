@@ -380,8 +380,16 @@ namespace Mff.Totem.Core
 					ent.GetComponent<BodyComponent>().Position =
 						new Vector2(x,
 									height);
-					chunk.Trees.Add(ent);
+					chunk.Entities.Add(ent);
 				}
+			}
+
+			if (chunk.X == 0 && chunk.ContainsHeight(HeightMap(1)))
+			{
+				var totem = World.CreateEntity("totem");
+				totem.GetComponent<BodyComponent>().Position =
+					     new Vector2(1, HeightMap(1));
+				chunk.Entities.Add(totem);
 			}
 
 			chunk.State = ChunkStateEnum.Placed;
@@ -401,7 +409,7 @@ namespace Mff.Totem.Core
 				World.Physics.Remove(chunk.Body);
 			}
 
-			chunk.Trees.ForEach(t => t.Remove = true);
+			chunk.Entities.ForEach(t => t.Remove = true);
 			chunk.Hulls.ForEach(h => World.Lighting.Hulls.Remove(h));
 
 			chunk.Body = null;
@@ -548,7 +556,7 @@ namespace Mff.Totem.Core
 				get { return Damage.Count > 0; }
 			}
 
-			public List<Entity> Trees = new List<Entity>();
+			public List<Entity> Entities = new List<Entity>();
 
 			public List<List<IntPoint>> Polygons;
 			public List<List<IntPoint>> Cavities;

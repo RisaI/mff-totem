@@ -27,10 +27,14 @@ namespace Mff.Totem.Core
 				_spriterAsset = value;
 				Sprite = ContentLoader.BoneSprites[value].GetAnimator();
 				Sprite.DeltaDepth = -Sprite.DeltaDepth;
+				if (Sprite.HasAnimation("idle"))
+					Sprite.Play("idle");
+				Sprite.Speed = DefaultPlaybackSpeed;
 			}
 		}
 
 		public Vector2 Scale = Vector2.One;
+		public float DefaultPlaybackSpeed = 1f;
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
@@ -61,6 +65,8 @@ namespace Mff.Totem.Core
 				Depth = (float)obj["depth"];
 			if (obj["scale"] != null)
 				Scale = Helper.JTokenToVector2(obj["scale"]);
+			if (obj["speed"] != null)
+				DefaultPlaybackSpeed = (float)obj["speed"];
 		}
 
 		protected override void WriteToJson(Newtonsoft.Json.JsonWriter writer)
@@ -71,6 +77,8 @@ namespace Mff.Totem.Core
 			writer.WriteValue(Depth);
 			writer.WritePropertyName("scale");
 			writer.WriteValue(Scale);
+			writer.WritePropertyName("speed");
+			writer.WriteValue(DefaultPlaybackSpeed);
 		}
 
 		protected override void OnSerialize(System.IO.BinaryWriter writer)
@@ -79,6 +87,7 @@ namespace Mff.Totem.Core
 			// Sprite.SerializeState(writer);
 			writer.Write(Depth);
 			writer.Write(Scale);
+			writer.Write(DefaultPlaybackSpeed);
 		}
 
 		protected override void OnDeserialize(System.IO.BinaryReader reader)
@@ -87,6 +96,7 @@ namespace Mff.Totem.Core
 			// Sprite.DeserializeState(reader);
 			Depth = reader.ReadSingle();
 			Scale = reader.ReadVector2();
+			DefaultPlaybackSpeed = reader.ReadSingle();
 		}
 
 		public override EntityComponent Clone()
@@ -95,6 +105,7 @@ namespace Mff.Totem.Core
 				_spriterAsset = _spriterAsset, 
 				Depth = Depth,
 				Scale = Scale,
+				DefaultPlaybackSpeed = DefaultPlaybackSpeed,
 			};
 			sprite.SpriterAsset = _spriterAsset;
 			return sprite;

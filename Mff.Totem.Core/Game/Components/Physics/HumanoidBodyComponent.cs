@@ -179,6 +179,10 @@ namespace Mff.Totem.Core
 
 			b.FixedRotation = true;
 			b.Tag = Parent;
+			b.OnCollision += (sender, other, contact) =>
+			{
+				return other.Body.Tag is Terrain;
+			};
 		}
 
 		public override EntityComponent Clone()
