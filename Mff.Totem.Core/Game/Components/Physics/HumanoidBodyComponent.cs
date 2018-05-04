@@ -6,12 +6,14 @@ using Physics2D.Collision;
 using Physics2D.Dynamics;
 using Physics2D.Dynamics.Joints;
 using Microsoft.Xna.Framework.Graphics;
+using Physics2D.Dynamics.Contacts;
 
 namespace Mff.Totem.Core
 {
 	[Serializable("component_humanoid_body")]
 	public class HumanoidBody : BodyComponent, IUpdatable
 	{
+		public const float fRECTANGLE = 0.7f, fDELTA = 1 - fRECTANGLE;
 		public float Width = 32f, Height = 80f;
 
 		public HumanoidBody()
@@ -29,24 +31,24 @@ namespace Mff.Totem.Core
 		{
 			get
 			{
-				return LegPosition - new Vector2(0, Height / 2);
+				return b.Position * 64f;
 			}
 			set
 			{
-				LegPosition = value + new Vector2(0, Height / 2);
+				b.Position = value / 64f;
 			}
 		}
 
 		public override Vector2 LegPosition
 		{
-			get;
-			set;
+			get { return Position + new Vector2(0, Height * (1 + fDELTA) / 2); }
+			set { Position = (value - new Vector2(0, Height * (1 + fDELTA) / 2)); }
 		}
 
 		public override float Rotation
 		{
-			get;
-			set;
+			get { return b.Rotation; }
+			set { b.Rotation = value; }
 		}
 
 		public override Rectangle BoundingBox
@@ -67,60 +69,55 @@ namespace Mff.Totem.Core
 
 		public override Vector2 LinearVelocity
 		{
-			get;
-			set;
+			get { return b.LinearVelocity * 64f; }
+			set { b.LinearVelocity = value / 64f; }
 		}
 
 		private bool _wasGround = false;
 		public void Update(GameTime gameTime)
 		{
-			if (!Parent.Active)
-				return;
-			
-			var delta = (float)gameTime.ElapsedGameTime.TotalSeconds;
-			LinearVelocity += World.Physics.Gravity * World.TimeScale * delta * 64f;
+			b.Enabled = Parent.Active;
 
-			var step = LinearVelocity * World.TimeScale * delta;
-			var ground = OnGround(_wasGround ? Math.Max(3, step.Y) : step.Y);
-
-			if (step.Y > 0 && ground.HasValue)
+			var ground = OnGround(2);
+			if ((b.LinearVelocity.Y >= 0 || !_jumped) && ground.HasValue)
 			{
-				LinearVelocity *= new Vector2(1, step.Y = 0);
-				LegPosition = ground.Value + step;
-				LinearVelocity *= new Vector2(0.5f, 1);
-				_wasGround = true;
+				_jumped = false;
+				LegPosition = ground.Value;
+				b.LinearVelocity = new Vector2(b.LinearVelocity.X, 0);
+				if (_moved)
+				{
+					b.LinearDamping = 0;
+					_moved = false;
+				}
+				else
+				{
+					b.LinearDamping = 50f;
+				}
 			}
 			else
 			{
-				LegPosition += step;
-				_wasGround = false;
-			}
-			try
-			{
-				if (b != null)
-					b.Position = (Position - new Vector2(0, 0.1f * Height)) / 64f;
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
+				b.LinearDamping = 0;
 			}
 		}
 
+		private bool _moved = false, _jumped = false;
 		public override void Move(Vector2 direction)
 		{
-			if (OnGround().HasValue)
+			if ((LinearVelocity.Y >= 0 || !_jumped) && OnGround().HasValue)
 			{
 				var horizontal = direction.X;
 				if (Math.Abs(horizontal) > 0.5f)
 				{
-					LinearVelocity = new Vector2(horizontal, LinearVelocity.Y);
+					b.LinearVelocity = new Vector2(horizontal / 64f, b.LinearVelocity.Y);
+					_moved = true;
 				}
 
 				// Jumping
 				if (direction.Y < -0.5f)
 				{
-
-					LinearVelocity += new Vector2(0, (float)-Math.Sqrt(-direction.Y * World.Physics.Gravity.Y * 64f) * 1.5f);
+					b.LinearVelocity = new Vector2(b.LinearVelocity.X, (float)-Math.Sqrt(-direction.Y / 20 * World.Physics.Gravity.Y));
+					b.LinearDamping = 0;
+					_jumped = true;
 				}
 			}
 		}
@@ -128,7 +125,22 @@ namespace Mff.Totem.Core
 		public Vector2? OnGround(float underBody = 3)
 		{
 			Vector2 lg = LegPosition;
-			return RayCast(lg - new Vector2(0, 8), lg + new Vector2(0, underBody));
+			Vector2[] positions = {
+				LegPosition - new Vector2(Width / 2, 0),
+				LegPosition,
+				LegPosition + new Vector2(Width / 2, 0),
+			};
+			Vector2? result = null;
+			for (int i = 0; i < positions.Length; ++i)
+			{
+				var nRay = RayCast(positions[i] - new Vector2(0, Height * fDELTA), 
+				                   positions[i] + new Vector2(0, underBody));
+				if (result == null || (nRay.HasValue && nRay.Value.Y < result.Value.Y))
+					result = nRay;
+			}
+			if (result.HasValue)
+				result = new Vector2(LegPosition.X, result.Value.Y);
+			return result;
 		}
 
 
@@ -152,23 +164,20 @@ namespace Mff.Totem.Core
 			return groundPos * 64f;
 		}
 
-		Body b;
+		Body b = new Body();
 		public override void Initialize()
 		{
 			base.Initialize();
-
 			b = World.Physics.CreateRectangle(
 				Width / 64f,
-				0.8f * Height / 64f,
+				fRECTANGLE * Height / 64f,
 				1,
 				(Position - new Vector2(0, 0.1f * Height)) / 64f,
 				0,
 				BodyType.Dynamic
 			);
 
-			// b.Enabled = false;
 			b.FixedRotation = true;
-			b.IgnoreGravity = true;
 			b.Tag = Parent;
 		}
 
