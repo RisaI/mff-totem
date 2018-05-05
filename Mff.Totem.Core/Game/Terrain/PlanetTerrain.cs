@@ -17,7 +17,7 @@ using Mff.Totem;
 
 namespace Mff.Totem.Core
 {
-	public class Terrain : ISerializable
+	public class PlanetTerrain : Terrain
 	{
 		const int CHUNK_CACHE = 15;
 
@@ -37,22 +37,20 @@ namespace Mff.Totem.Core
 			set { _seed = value; NoiseMap = new OpenSimplexNoise(value); }
 		}
 
-		public GameWorld World
-		{
-			get;
-			private set;
-		}
-
 		public Dictionary<ulong, Chunk> ChunkCache = new Dictionary<ulong, Chunk>();
 		public Chunk[] ActiveChunks = new Chunk[CHUNK_CACHE * CHUNK_CACHE];
 
-		public Terrain(GameWorld world)
-		{
-			World = world;
-			c = new Clipper();
-		}
-
 		Clipper c;
+
+		public PlanetTerrain(GameWorld world) : base(world)
+		{
+			c = new Clipper();
+			PrepareEffect(
+				(int)world.Game.Resolution.X,
+				(int)world.Game.Resolution.Y
+			);
+			world.Game.OnResolutionChange += PrepareEffect;
+		}
 
 		/// <summary>
 		/// Sets generation data from a seed.
@@ -141,11 +139,72 @@ namespace Mff.Totem.Core
 		/// <summary>
 		/// Updates the terrain.
 		/// </summary>
-		public void Update()
+		public override void Update(GameTime gameTime)
 		{
 			// Apply damage from the damage queue
 			damageQueue.ForEach(d => ApplyDamage(d));
 			damageQueue.Clear();
+		}
+
+		Effect GroundEffect;
+		void PrepareEffect(int width, int height)
+		{
+			if (GroundEffect == null)
+				GroundEffect = ContentLoader.Shaders["ground"];
+			GroundEffect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(width, -height, 0, 1));
+		}
+
+		public override void DrawBackground(SpriteBatch spriteBatch)
+		{
+			GroundEffect.Parameters["View"].SetValue(World.Camera.ViewMatrix *
+				Matrix.CreateTranslation(-World.Game.Resolution.X / 2, -World.Game.Resolution.Y / 2, 0));
+			GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
+
+			for (int i = 0; i < ActiveChunks.Length; ++i)
+			{
+				var chunk = ActiveChunks[i];
+				if (chunk == null || chunk.State != ChunkStateEnum.Placed)
+					continue;
+
+				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+				{
+					pass.Apply();
+					World.Game.GraphicsDevice.DrawUserPrimitives(
+						PrimitiveType.TriangleList,
+						chunk.TriangulatedBackgroundVertices,
+						0, chunk.TriangulatedBackgroundVertices.Length / 3);
+				}
+			}
+		}
+
+		public override void DrawForeground(SpriteBatch spriteBatch)
+		{
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, 
+			                  SamplerState.PointClamp, null, null, null, 
+			                  World.Camera != null ? World.Camera.ViewMatrix : Matrix.Identity);
+			for (int i = 0; i < ActiveChunks.Length; ++i)
+			{
+				var chunk = ActiveChunks[i];
+				if (chunk == null || chunk.State != ChunkStateEnum.Placed)
+					continue;
+
+				foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
+				{
+					pass.Apply();
+					World.Game.GraphicsDevice.DrawUserPrimitives(
+						PrimitiveType.TriangleList, 
+						chunk.TriangulatedForegroundVertices,
+						0, chunk.TriangulatedForegroundVertices.Length / 3);
+				}
+				foreach (Chunk.GrassPoint g in chunk.GrassPoints)
+				{
+					var texture = ContentLoader.Textures["grass"];
+					spriteBatch.Draw(texture, g.Position, null, Color.Green, g.Rotation, 
+					                 new Vector2(texture.Width / 2, texture.Height), 
+					                 1.2f, SpriteEffects.None, 1f);
+				}
+			}
+			spriteBatch.End();
 		}
 
 		/// <summary>
@@ -153,7 +212,7 @@ namespace Mff.Totem.Core
 		/// </summary>
 		/// <returns>The height.</returns>
 		/// <param name="x">The x coordinate.</param>
-		public float HeightMap(float x)
+		public override float HeightMap(float x)
 		{
 			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * 
 			                             BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
@@ -212,7 +271,7 @@ namespace Mff.Totem.Core
 		/// Sets a region around a point as active.
 		/// </summary>
 		/// <param name="center">Center.</param>
-		public void ActiveRegion(Vector2 center, bool multithreading = true)
+		public override void ActiveRegion(Vector2 center, bool multithreading = true)
 		{
 			_activeX = Helper.NegDivision((int)center.X, Chunk.SIZE);
 			_activeY = Helper.NegDivision((int)center.Y, Chunk.SIZE);
@@ -416,7 +475,7 @@ namespace Mff.Totem.Core
 			chunk.State = ChunkStateEnum.Generated;
 		}
 
-		public void Serialize(BinaryWriter writer)
+		public override void Serialize(BinaryWriter writer)
 		{
 			writer.Write(Seed);
 			List<Chunk> toSave = new List<Chunk>(ChunkCache.Count);
@@ -434,7 +493,7 @@ namespace Mff.Totem.Core
 			});
 		}
 
-		public void Deserialize(BinaryReader reader)
+		public override void Deserialize(BinaryReader reader)
 		{
 			Seed = reader.ReadInt64();
 			int cCount = reader.ReadInt32();
@@ -624,7 +683,7 @@ namespace Mff.Totem.Core
 			}
 
 			public Chunk(int x, int y) :
-				this(Terrain.TerrainHelper.PackCoordinates(x, y))
+				this(PlanetTerrain.TerrainHelper.PackCoordinates(x, y))
 			{
 
 			}

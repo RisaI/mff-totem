@@ -53,40 +53,38 @@ namespace Mff.Totem.Core
 			return Entities.Find(e => e.UID == uid) ?? EntityQueue.Find(e => e.UID == uid);
 		}
 
-		public IEnumerable<Entity> FindEntities(Func<Entity, bool> f)
-		{
-			for (int i = 0; i < Entities.Count; ++i)
-				if (f.Invoke(Entities[i]))
-					yield return Entities[i];
-		}
-
-		public IEnumerable<Entity> FindEntitiesInRange(Vector2 position, float range)
+		public void EntitiesInRange(Vector2 position, float range, Predicate<Entity> cont)
 		{
 			for (int i = 0; i < Entities.Count; ++i)
 			{
 				var p = Entities[i].Position;
-				if (p.HasValue && Math.Abs(p.Value.X - position.X) < range && Math.Abs(p.Value.Y - position.Y) < range)
-					yield return Entities[i];
+				if (p.HasValue && 
+				    Math.Abs(p.Value.X - position.X) < range && 
+				    Math.Abs(p.Value.Y - position.Y) < range)
+					if (!cont(Entities[i]))
+						return;
 			}
 		}
 
-		public IEnumerable<Entity> FindEntitiesAt(Vector2 position)
+		public void EntitiesAt(Vector2 position, Predicate<Entity> cont)
 		{
 			for (int i = 0; i < Entities.Count; ++i)
 			{
 				var body = Entities[i].GetComponent<BodyComponent>();
 				if (body.BoundingBox.Contains(position.ToPoint()))
-					yield return Entities[i];
+					if (!cont(Entities[i]))
+						return;
 			}
 		}
 
-		public IEnumerable<Entity> FindEntitiesAt(Rectangle area)
+		public void EntitiesAt(Rectangle area, Predicate<Entity> cont)
 		{
 			for (int i = 0; i < Entities.Count; ++i)
 			{
 				var body = Entities[i].GetComponent<BodyComponent>();
 				if (body.BoundingBox.Intersects(area))
-					yield return Entities[i];
+					if (!cont(Entities[i]))
+						return;
 			}
 		}
 

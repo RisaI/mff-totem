@@ -20,12 +20,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Camera.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Attributes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DeserializationRegister.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\PlayerInputComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Particle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Sprite.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\SpriteComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Background.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Weather.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\GuiManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\MessageBox.cs" />
@@ -45,7 +43,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\ProjectileBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\StaticBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\PropBodyComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Parallax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Entities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\CharacterComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Character\DamagableComponent.cs" />
@@ -58,6 +55,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\LightingManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\TotemComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain\PlanetTerrain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain\Terrain.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Background.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Parallax.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
@@ -67,5 +68,7 @@
     <Folder Include="$(MSBuildThisFileDirectory)Menu\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Physics\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Character\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\Terrain\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\Backgrounds\" />
   </ItemGroup>
 </Project>

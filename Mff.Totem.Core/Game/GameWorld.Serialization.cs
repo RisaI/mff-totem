@@ -42,7 +42,7 @@ namespace Mff.Totem.Core
 			Planet = p;
 
 			// Terrain
-			Terrain = new Terrain(this);
+			Terrain = new PlanetTerrain(this);
 			Terrain.Deserialize(reader);
 
 			// Entities
@@ -69,16 +69,18 @@ namespace Mff.Totem.Core
 			_info.Randomize(planetId);
 			w.Planet = _info;
 
-			w._camera.Position.Y = w.Terrain.HeightMap(0);
+			var terrain = w.Terrain as PlanetTerrain;
+
+			w._camera.Position.Y = terrain.HeightMap(0);
 
 			// Make the world less empty
 			{
 				var player = w.CreateEntity("player");
-				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, w.Terrain.HeightMap(0));
+				player.GetComponent<BodyComponent>().LegPosition = new Vector2(0, terrain.HeightMap(0));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_axe"));
 				player.GetComponent<InventoryComponent>().AddItem(Item.Create("test_bow"));
 				var slime = w.CreateEntity("slime");
-				slime.GetComponent<BodyComponent>().LegPosition = new Vector2(600, w.Terrain.HeightMap(600));
+				slime.GetComponent<BodyComponent>().LegPosition = new Vector2(600, terrain.HeightMap(600));
 			}
 			//CameraControls = true;
 

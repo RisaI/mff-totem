@@ -199,15 +199,15 @@ namespace Mff.Totem.Core
 		{
 			if (_cooldown <= 0 && ent.Targeting.HasValue)
 			{
-				foreach (Entity candidate in ent.World.FindEntitiesAt(ent.Targeting.Value + ent.Position.Value))
+				ent.World.EntitiesAt(ent.Targeting.Value + ent.Position.Value, (candidate) =>
 				{
 					if (!candidate.Tags.Contains("tree") || candidate.GetComponent<TreeComponent>() == null)
-						continue;
+						return true;
 
 					_cooldown = 1f;
 					candidate.GetComponent<TreeComponent>().Damage(ent, 10);
-					break;
-				}
+					return false;
+				});
 			}
 		}
 

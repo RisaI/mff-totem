@@ -207,14 +207,16 @@ namespace Mff.Totem.Ai
 			if (pos.HasValue)
 			{
 				Entity candidate = null;
-				foreach (Entity eval in ent.World.FindEntitiesInRange(pos.Value, Range))
+				ent.World.EntitiesInRange(pos.Value, Range, (eval) =>
 				{
 					if (eval == ent || !eval.Tags.Any(t => TargetedTags.Contains(t)))
-						continue;
+						return true;
 
 					if (candidate == null || (pos.Value - eval.Position.Value).LengthSquared() < (pos.Value - candidate.Position.Value).LengthSquared())
 						candidate = eval;
-				}
+					
+					return true;
+				});
 
 				if (candidate != null)
 					Target = candidate;

@@ -80,14 +80,15 @@ namespace Mff.Totem.Core
 
 				if (World.Game.Input.GetInput(Inputs.Use, InputState.Pressed))
 				{
-					foreach (Entity ent in World.FindEntitiesAt(body.BoundingBox))
+					World.EntitiesAt(body.BoundingBox, (ent) =>
 					{
 						if (ent.Interact(Parent))
 						{
 							sprite.PlayAnim("use", true);
-							break;
+							return false;
 						}
-					}
+						return true;
+					});
 				}
             }
 

@@ -112,7 +112,7 @@ namespace Mff.Totem.Core
 				_info = value;
 				System.Threading.Tasks.Task.Run(() => { _info.GenerateTextures(this);});
 				Physics.Gravity = new Vector2(0, _info.Gravity);
-				Terrain.Generate(_info.TerrainSeed);
+				(Terrain as PlanetTerrain).Generate(_info.TerrainSeed);
 			}
 		}
 
@@ -129,14 +129,14 @@ namespace Mff.Totem.Core
 			Lighting = new LightingManager(session.Game);
 
 			// Physics
-			Physics = new World(new Vector2(0, 0));
+			Physics = new World(new Vector2(0, 0)) { Tag = this };
 
 			// Physical engine debug view
 			DebugView = new DebugView(Physics) { Enabled = true };
 			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
 			// Load basic terrain for debugging
-			Terrain = new Terrain(this);
+			Terrain = new PlanetTerrain(this);
 
 			// Default camera
 			_camera = new Camera(Game);
@@ -153,7 +153,7 @@ namespace Mff.Totem.Core
             GTime = gameTime;
 			Session.UniverseTime = Session.UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
-			Terrain.Update();
+			Terrain?.Update(gameTime);
 
 			lock (EntityQueue)
 			{
@@ -233,23 +233,16 @@ namespace Mff.Totem.Core
 					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
 
-			Physics.Tag = this;
-
 			Terrain.ActiveRegion(Camera.Position);
 
 			if (Background != null)
 				Background.Update(gameTime);
 		}
 
-		Effect GroundEffect;
 		RenderTarget2D ForegroundTexture, BackgroundTexture;
 
 		private void PrepareRenderData(int width, int height)
 		{
-			if (GroundEffect == null)
-				GroundEffect = ContentLoader.Shaders["ground"];
-			GroundEffect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(width, -height, 0, 1));
-
 			if (ForegroundTexture != null)
 				ForegroundTexture.Dispose();
 			ForegroundTexture = new RenderTarget2D(Game.GraphicsDevice, width, height);
@@ -268,74 +261,40 @@ namespace Mff.Totem.Core
 				_reloaded = true;
 			}
 
+			// Draw background
             if (Background != null)
             {
                 Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)BackgroundTexture);
                 Background.Draw(spriteBatch);
             }
 
+			// Draw foreground
             Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
+
+			// Prepare lighting
 			Game.Lighting.Debug = DebugView.Enabled;
 			Lighting.BeginDraw(Color.Lerp(Color.White, Color.Black, NightTint(Session.UniverseTime.TimeOfDay.TotalHours)), Camera.ViewMatrix);
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
-			{
-				GroundEffect.Parameters["View"].SetValue(Camera.ViewMatrix *
-					Matrix.CreateTranslation(-Game.Resolution.X / 2, -Game.Resolution.Y / 2, 0));
-				GroundEffect.Parameters["Texture"].SetValue(ContentLoader.Textures["dirt"]);
+			Terrain?.DrawBackground(spriteBatch);
 
-				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
-				{
-					var chunk = Terrain.ActiveChunks[i];
-					if (chunk == null || chunk.State != Terrain.ChunkStateEnum.Placed)
-						continue;
-
-					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
-					{
-						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedBackgroundVertices,
-																0, chunk.TriangulatedBackgroundVertices.Length / 3);
-					}
-				}
-			}
-
+			// Draw weather
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			Weather.DrawWeatherEffects(this, spriteBatch);
 			spriteBatch.End();
 
+			// Draw entities and particles
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
 			Entities.ForEach(e => e.Draw(spriteBatch));
 			Particles.ForEach(p => p.Draw(spriteBatch));
 			spriteBatch.End();
 
 			// Ground rendering
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-			{
-				for (int i = 0; i < Terrain.ActiveChunks.Length; ++i)
-				{
-					var chunk = Terrain.ActiveChunks[i];
-					if (chunk == null || chunk.State != Terrain.ChunkStateEnum.Placed)
-						continue;
-
-					foreach (EffectPass pass in GroundEffect.Techniques[0].Passes)
-					{
-						pass.Apply();
-						Game.GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, chunk.TriangulatedForegroundVertices,
-															   0, chunk.TriangulatedForegroundVertices.Length / 3);
-					}
-					foreach (Terrain.Chunk.GrassPoint g in chunk.GrassPoints)
-					{
-						var texture = ContentLoader.Textures["grass"];
-						spriteBatch.Draw(texture, g.Position, null, Color.Green, g.Rotation, new Vector2(texture.Width / 2, texture.Height), 1.2f, SpriteEffects.None, 1f);
-					}
-				}
-			}
-			spriteBatch.End();
+			Terrain?.DrawForeground(spriteBatch);
 			Lighting.Draw();
 
-
-
+			// Draw to screen
             Game.GraphicsDevice.SetRenderTarget(null);
 			Game.GraphicsDevice.Clear(Color.Black);
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
