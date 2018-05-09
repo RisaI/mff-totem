@@ -32,9 +32,9 @@ namespace Mff.Totem.Gui
 			Position = Manager.Game.Resolution / 2 - Size / 2;
 		}
 
-		protected override void OnInput(Core.PointerInput input)
+		protected void OnInput(PointerInput input)
 		{
-			if (input.State == Core.InputState.Pressed)
+			if (input.State == InputState.Pressed)
 			{
 				for (int i = 0; i < buttons.Length; ++i)
 				{

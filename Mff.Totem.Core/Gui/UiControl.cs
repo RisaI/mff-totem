@@ -20,7 +20,7 @@ namespace Mff.Totem.Core
 			Parent = parent;
 		}
 
-		public Vector2 Position;
+		public IResolver<Vector2> Position;
 		public abstract Vector2 Size
 		{
 			get;
@@ -95,7 +95,9 @@ namespace Mff.Totem.Core
 
 		public Rectangle Area
 		{
-			get { return new Rectangle((int)Position.X, (int)Position.Y, Width, Height); }
+			get {
+				var pos = Position.Resolve();
+				return new Rectangle((int)pos.X, (int)pos.Y, Width, Height); }
 		}
 
 		public SpriteFont Font
@@ -105,7 +107,7 @@ namespace Mff.Totem.Core
 
 		public override void Draw(SpriteBatch spriteBatch)
 		{
-			spriteBatch.DrawRectangle(Area, Game.Input.InputInsideRectangle(Area, InputState.Down) ? Color.Gray : Color.Black, 0);
+			// spriteBatch.DrawRectangle(Area, Game.Input.InputInsideRectangle(Area, InputState.Down) ? Color.Gray : Color.Black, 0);
 			if (Text != null)
 			{
 				var size = Font.MeasureString(Text);

@@ -9,31 +9,21 @@ using System.IO;
 
 namespace Mff.Totem.Core
 {
-    public abstract class TotemGame : Game
-    {
-        static TotemGame()
-        {
-            DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
-            Random = new Random();
-        }
+	public abstract class TotemGame : Game
+	{
+		static TotemGame()
+		{
+			DeserializationRegister.ScanAssembly(typeof(TotemGame).Assembly);
+			Random = new Random();
+		}
 
-        public static Random Random
-        {
-            get;
-            private set;
-        }
+		public static Random Random
+		{
+			get;
+			private set;
+		}
 
-        public static string ProjectName
-        {
-            get { return "mff-totem"; }
-        }
-
-        public static string Version
-        {
-            get { return "dev"; }
-        }
-
-        protected GraphicsDeviceManager graphics;
+		protected GraphicsDeviceManager graphics;
 		public GraphicsDeviceManager GraphicsManager
 		{
 			get { return graphics; }
@@ -58,19 +48,20 @@ namespace Mff.Totem.Core
 		}
 
 		public Penumbra.Penumbra Lighting
-        {
-            get;
-            private set;
-        }
+		{
+			get;
+			private set;
+		}
 
-        protected SpriteBatch spriteBatch;
-        protected DeveloperConsole Console;
+		protected SpriteBatch spriteBatch;
+		protected DeveloperConsole Console;
 
 		private GameStateEnum _gameState = GameStateEnum.Game;
 		public GameStateEnum GameState
 		{
 			get { return _gameState; }
-			set {
+			set
+			{
 				if (value == _gameState)
 					return;
 
@@ -82,7 +73,10 @@ namespace Mff.Totem.Core
 						// Loading stuff
 						break;
 					case GameStateEnum.Menu:
-						MenuState.CurrentState = "main";
+						MenuState.Initialize();
+						break;
+					case GameStateEnum.Intro:
+						Intro.Initialize(this);
 						break;
 				}
 			}
@@ -96,25 +90,25 @@ namespace Mff.Totem.Core
 
 		public event Action<int, int> OnResolutionChange;
 
-        /// <summary>
-        /// Returns screen size as a Vector2
-        /// </summary>
-        /// <value>The resolution.</value>
-        public Vector2 Resolution
-        {
-            get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
-        }
+		/// <summary>
+		/// Returns screen size as a Vector2
+		/// </summary>
+		/// <value>The resolution.</value>
+		public Vector2 Resolution
+		{
+			get { return new Vector2(graphics.PreferredBackBufferWidth, graphics.PreferredBackBufferHeight); }
+		}
 
-        public GameSession Session
-        {
-            get;
-            private set;
-        }
+		public GameSession Session
+		{
+			get;
+			private set;
+		}
 
-        public bool InputEnabled
-        {
-            get { return !Console.Enabled; }
-        }
+		public bool InputEnabled
+		{
+			get { return !Console.Enabled; }
+		}
 
 		public TotemGame()
 		{
@@ -122,7 +116,7 @@ namespace Mff.Totem.Core
 			Content.RootDirectory = "Content";
 			Console = new DeveloperConsole(this);
 			GuiManager = new Gui.GuiManager(this);
-			Input = new DesktopInput(this);
+			Input = new Input(this);
 			Hud = new HUD(this);
 			Lighting = new Penumbra.Penumbra(this) { Debug = true, SpriteBatchTransformEnabled = true };
 			IsMouseVisible = true;
@@ -153,14 +147,15 @@ namespace Mff.Totem.Core
 			ContentLoader.RefreshShaders(this);
 			Lighting.Initialize();
 
-			LoadNewGame();
+			// LoadNewGame();
+			GameState = GameStateEnum.Intro;
 		}
 
 		public void SaveSession(string filename)
 		{
 			if (Session == null)
 				return;
-			
+
 			using (FileStream file = new FileStream(filename, FileMode.Create))
 			using (BinaryWriter writer = new BinaryWriter(file))
 			{
@@ -190,9 +185,7 @@ namespace Mff.Totem.Core
 		protected override void Update(GameTime gameTime)
 		{
 			base.Update(gameTime);
-
 			Input.Update(gameTime);
-
 
 			switch (_gameState)
 			{
@@ -229,13 +222,16 @@ namespace Mff.Totem.Core
 					GuiManager.Update(gameTime);
 					break;
 				case GameStateEnum.Menu:
-					MenuState.CurrentMenu.Update(gameTime);
-					ContentLoader.Shaders["menu"].Parameters["Time"].SetValue((float)gameTime.TotalGameTime.TotalSeconds);
+					MenuState.Update(gameTime);
+					break;
+				case GameStateEnum.Intro:
+					Intro.Update(gameTime);
 					break;
 			}
 
 			Console.Update(gameTime);
 		}
+
 
 		protected override void Draw(GameTime gameTime)
 		{
@@ -252,62 +248,21 @@ namespace Mff.Totem.Core
 					GuiManager.Draw(spriteBatch);
 					break;
 				case GameStateEnum.Menu:
-					GraphicsDevice.Clear(Color.Black);
-					foreach (EffectPass pass in ContentLoader.Shaders["menu"].Techniques[0].Passes)
-					{
-						pass.Apply();
-						GraphicsDevice.DrawUserPrimitives(PrimitiveType.TriangleList, new VertexPositionColor[]
-						{ new VertexPositionColor(new Vector3(-1, 1,0), Color.White),
-						  new VertexPositionColor(new Vector3(1, 1,0), Color.White),
-						  new VertexPositionColor(new Vector3(-1,-1,0), Color.White),
-						  new VertexPositionColor(new Vector3(-1,-1,0), Color.White),
-						  new VertexPositionColor(new Vector3(1,1,0), Color.White),
-						  new VertexPositionColor(new Vector3(1,-1,0), Color.White)}, 0, 2);
-					}
-					MenuState.CurrentMenu.Draw(spriteBatch);
+					MenuState.Draw(spriteBatch);
+					break;
+				case GameStateEnum.Intro:
+					Intro.Draw(spriteBatch);
 					break;
 			}
 
 			if (Console.Enabled)
 				Console.Draw(spriteBatch);
-        }
-
-		public class MenuStateManager
-		{
-			string _state = "main";
-			public string CurrentState
-			{
-				get { return _state; }
-				set
-				{
-					if (Menus.ContainsKey(value))
-						_state = value;
-				}
-			}
-
-			public Menu CurrentMenu
-			{
-				get { return Menus.ContainsKey(CurrentState) ? Menus[CurrentState] : null; }
-			}
-
-			public Dictionary<string, Menu> Menus;
-
-			public MenuStateManager(TotemGame game)
-			{
-				Menus = new Dictionary<string, Menu>()
-				{
-					{ "main", new Menu(game) }
-				};
-
-				// Building main menu
-				Menus["main"].Controls.Add(new MenuButton(game) { OnClick = () => { game.LoadNewGame(); }, Text = "New Game" });
-				Menus["main"].Controls.Add(new MenuButton(game) { OnClick = () => { game.Exit(); }, Text = "Exit", Position = new Vector2(0, 64) });
-			}
 		}
 	}
 
 	public enum GameStateEnum
 	{
+		Intro,
 		Menu,
 		Game
 	}

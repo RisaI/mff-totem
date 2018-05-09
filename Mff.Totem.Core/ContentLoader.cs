@@ -84,10 +84,19 @@ namespace Mff.Totem
 				}
 			}
 
+			// Load Fonts
+			var fontsFolder = "Content/fonts/";
+			foreach (string file in FindAllFiles(fontsFolder, ".xnb"))
+			{
+				var dir = Path.GetDirectoryName(file);
+				var name = Path.Combine(
+					dir.Remove(0, Math.Min(fontsFolder.Length, dir.Length)),
+					Path.GetFileNameWithoutExtension(file)
+				).Replace('\\', '/');
 
-			// Load SpriteFonts
-			Fonts.Add("console", game.Content.Load<SpriteFont>("fonts/console"));
-			Fonts.Add("menu", game.Content.Load<SpriteFont>("fonts/menu"));
+				Console.WriteLine("Loading font: {0}", name);
+				Fonts.Add(name, game.Content.Load<SpriteFont>("fonts/" + name));
+			}
 
             // Load shaders
 			Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));

@@ -63,7 +63,8 @@ namespace Mff.Totem.Core
 
                 character.Target = World.Camera.ToWorldSpace(World.Game.Input.GetPointerInput(0).Position) - body.Position;
 
-				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) && inventory != null)
+				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) && 
+				    !World.Game.GuiManager.PointerInGui(World.Game.Input.GetPointerInput(0)) && inventory != null)
                 {
 					inventory.Use(0);
                 }

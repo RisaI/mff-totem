@@ -75,6 +75,11 @@ namespace Mff.Totem.Gui
 			return f;
 		}
 
+		public bool PointerInGui(PointerInput pointer)
+		{
+			return GuiAt(pointer.Position) != null;
+		}
+
 		/// <summary>
 		/// Sort the gui list according to layers.
 		/// </summary>

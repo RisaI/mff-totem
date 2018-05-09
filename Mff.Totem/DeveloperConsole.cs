@@ -34,11 +34,6 @@ namespace Mff.Totem.Core
 			get { return Game?.Session?.CurrentInstance; }
 		}
 
-		DesktopInput KInput
-		{
-			get { return (DesktopInput)Game.Input; }
-		}
-
 		/// <summary>
 		/// A reference to the console font from ContentLoader for code clarity.
 		/// </summary>
@@ -124,7 +119,7 @@ namespace Mff.Totem.Core
 			{
 				if (args.Length == 0)
 				{
-					WriteLine(TotemGame.ProjectName + ", ver: " + TotemGame.Version);
+					WriteLine(Constants.ProjectName + ", ver: " + Constants.Version);
 					Commands.ToList().ForEach(pair =>
 					{
 						Console.WriteLine("{0} - {1} {2}", pair.Key, pair.Value.Description,
@@ -277,23 +272,23 @@ namespace Mff.Totem.Core
 			// Repeating input on key hold
 			if (_inputTimer > 0)
 			{
-				if (KInput.KBState.IsKeyDown(Keys.Back) ||
-					KInput.KBState.IsKeyDown(Keys.Delete) ||
-					KInput.KBState.IsKeyDown(Keys.Left) ||
-					KInput.KBState.IsKeyDown(Keys.Right))
+				if (Game.Input.KBState.IsKeyDown(Keys.Back) ||
+				    Game.Input.KBState.IsKeyDown(Keys.Delete) ||
+					Game.Input.KBState.IsKeyDown(Keys.Left) ||
+					Game.Input.KBState.IsKeyDown(Keys.Right))
 					_inputTimer -= (float)gameTime.ElapsedGameTime.TotalSeconds;
 				else
 					_inputTimer = 0;
 			}
 
 			// Last input
-			if (KInput.GetKeyState(Keys.Up) == InputState.Pressed && !string.IsNullOrWhiteSpace(PreviousInput))
+			if (Game.Input.GetKeyState(Keys.Up) == InputState.Pressed && !string.IsNullOrWhiteSpace(PreviousInput))
 			{
 				Input = PreviousInput; // Restores the last input
 			}
 			if (Input != null)
 			{
-				if (KInput.GetKeyState(Keys.Enter) == InputState.Pressed) // Should the input be executed?
+				if (Game.Input.GetKeyState(Keys.Enter) == InputState.Pressed) // Should the input be executed?
 				{
 					Input = Input.Trim();
 
@@ -317,9 +312,9 @@ namespace Mff.Totem.Core
 				else
 				{
 					// Backspace and delete
-					if (KInput.KBState.IsKeyDown(Keys.Back) && Input.Length - _cursorIndex > 0 && _inputTimer <= 0)
+					if (Game.Input.KBState.IsKeyDown(Keys.Back) && Input.Length - _cursorIndex > 0 && _inputTimer <= 0)
 					{
-						_inputTimer += KInput.GetKeyState(Keys.Back) == InputState.Pressed ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += Game.Input.GetKeyState(Keys.Back) == InputState.Pressed ? INPUT_TIME_F : INPUT_TIME;
 						if (_cursorIndex == 0)
 							Input = Input.Substring(0, Input.Length - 1); // Remove a character
 						else
@@ -327,9 +322,9 @@ namespace Mff.Totem.Core
 
 						RefreshCursor();
 					}
-					else if (KInput.KBState.IsKeyDown(Keys.Delete) && _cursorIndex > 0 && _inputTimer <= 0)
+					else if (Game.Input.KBState.IsKeyDown(Keys.Delete) && _cursorIndex > 0 && _inputTimer <= 0)
 					{
-						_inputTimer += KInput.GetKeyState(Keys.Delete) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += Game.Input.GetKeyState(Keys.Delete) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						Input = Input.Substring(0, Input.Length - _cursorIndex) + Input.Substring(Input.Length - _cursorIndex + 1);
 						if (Input.Length != _cursorIndex)
 							--_cursorIndex;
@@ -337,30 +332,30 @@ namespace Mff.Totem.Core
 					}
 
 					// Cursor navigation
-					if (KInput.KBState.IsKeyDown(Keys.Left) && _inputTimer <= 0)
+					if (Game.Input.KBState.IsKeyDown(Keys.Left) && _inputTimer <= 0)
 					{
-						_inputTimer += KInput.GetKeyState(Keys.Left) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += Game.Input.GetKeyState(Keys.Left) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						_cursorIndex = (int)MathHelper.Min(Input.Length, _cursorIndex + 1);
 						RefreshCursor();
 					}
-					if (KInput.KBState.IsKeyDown(Keys.Right) && _inputTimer <= 0)
+					if (Game.Input.KBState.IsKeyDown(Keys.Right) && _inputTimer <= 0)
 					{
-						_inputTimer += KInput.GetKeyState(Keys.Right) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
+						_inputTimer += Game.Input.GetKeyState(Keys.Right) == InputState.Released ? INPUT_TIME_F : INPUT_TIME;
 						_cursorIndex = (int)MathHelper.Max(0, _cursorIndex - 1);
 						RefreshCursor();
 					}
 				}
 
-				if (KInput.GetKeyState(Keys.End) == InputState.Released)
+				if (Game.Input.GetKeyState(Keys.End) == InputState.Released)
 				{
 					_cursorIndex = 0; // Go to end
 				}
-				else if (KInput.GetKeyState(Keys.Home) == InputState.Released)
+				else if (Game.Input.GetKeyState(Keys.Home) == InputState.Released)
 				{
 					_cursorIndex = Input.Length; // Go to the beginning
 				}
 
-				if (KInput.GetKeyState(Keys.Escape) == InputState.Released)
+				if (Game.Input.GetKeyState(Keys.Escape) == InputState.Released)
 				{
 					Input = null; // Clear input
 				}
@@ -368,17 +363,17 @@ namespace Mff.Totem.Core
 			}
 
 			// Scrolling
-			if (KInput.GetKeyState(Keys.PageUp) == InputState.Released)
+			if (Game.Input.GetKeyState(Keys.PageUp) == InputState.Released)
 			{
 				Offset += SCROLL; // Scroll up
 			}
-			else if (KInput.GetKeyState(Keys.PageDown) == InputState.Released)
+			else if (Game.Input.GetKeyState(Keys.PageDown) == InputState.Released)
 			{
 				Offset -= SCROLL; // Scroll down
 			}
 
 			// Autocomplete
-			if (KInput.GetKeyState(Keys.Tab) == InputState.Released && !string.IsNullOrEmpty(Input))
+			if (Game.Input.GetKeyState(Keys.Tab) == InputState.Released && !string.IsNullOrEmpty(Input))
 			{
 				Input = Input.TrimStart();
 				if (!string.IsNullOrEmpty(Input))
@@ -423,7 +418,7 @@ namespace Mff.Totem.Core
 			}
 
 			// Toggle the console
-			if (KInput.GetKeyState(Keys.F12) == InputState.Pressed) 
+			if (Game.Input.GetKeyState(Keys.F12) == InputState.Pressed) 
 			{
 				Enabled = !Enabled;
 			}

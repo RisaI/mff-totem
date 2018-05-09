@@ -66,7 +66,7 @@ namespace Mff.Totem.Core
 					if (random.Next(280) != 0)
 						continue;
 
-					float intensity = 0.3f + 0.7f * (float)Core.TotemGame.Random.NextDouble();
+					float intensity = 0.3f + 0.7f * (float)TotemGame.Random.NextDouble();
 					Color main = Color.Lerp(Color.Transparent, Color.White, intensity),
 						secondary = Color.Lerp(main, Color.Transparent, 0.75f);
 

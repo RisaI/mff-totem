@@ -12,7 +12,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContentLoader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TotemGame.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Entity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\EntityComponent.cs" />
@@ -59,6 +58,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain\Terrain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Background.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Parallax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Gui\PositionResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Menu\Intro.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuStateManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
