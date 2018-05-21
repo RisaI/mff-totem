@@ -1,23 +1,18 @@
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
-
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using ClipperLib;
 using Microsoft.Xna.Framework;
-using Physics2D.Dynamics;
-// using Physics2D.Factories;
+using Microsoft.Xna.Framework.Graphics;
 using Physics2D.Common;
 using Physics2D.Common.Decomposition;
-
-using ClipperLib;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Xna.Framework.Graphics;
-using System.IO;
-using Mff.Totem;
+using Physics2D.Dynamics;
 
 namespace Mff.Totem.Core
 {
-	public class PlanetTerrain : Terrain
+	public class TerrainComponent : WorldBuilderComponent, IUpdatable, IDrawable
 	{
 		const int CHUNK_CACHE = 15;
 
@@ -30,36 +25,28 @@ namespace Mff.Totem.Core
 			private set;
 		}
 
-		long _seed;
-		public long Seed
-		{
-			get { return _seed; }
-			set { _seed = value; NoiseMap = new OpenSimplexNoise(value); }
-		}
-
 		public Dictionary<ulong, Chunk> ChunkCache = new Dictionary<ulong, Chunk>();
 		public Chunk[] ActiveChunks = new Chunk[CHUNK_CACHE * CHUNK_CACHE];
 
 		Clipper c;
 
-		public PlanetTerrain(GameWorld world) : base(world)
+		public TerrainComponent()
 		{
 			c = new Clipper();
-			PrepareEffect(
-				(int)world.Game.Resolution.X,
-				(int)world.Game.Resolution.Y
-			);
-			world.Game.OnResolutionChange += PrepareEffect;
 		}
 
-		/// <summary>
-		/// Sets generation data from a seed.
-		/// </summary>
-		/// <returns>The generate.</returns>
-		/// <param name="seed">Seed.</param>
-		public void Generate(long seed = 0)
+		public override void Initialize()
 		{
-			Seed = seed;
+			World.Game.OnResolutionChange += PrepareEffect;
+			PrepareEffect(
+				(int)Parent.World.Game.Resolution.X,
+				(int)Parent.World.Game.Resolution.Y
+			);
+		}
+
+		public override void Generate()
+		{
+			NoiseMap = new OpenSimplexNoise(Parent.Seed);
 			c.Clear();
 		}
 
@@ -87,7 +74,7 @@ namespace Mff.Totem.Core
 		/// <param name="damage">Damage.</param>
 		private void ApplyDamage(List<IntPoint> damage)
 		{
-			long minX = long.MaxValue, minY = long.MaxValue, 
+			long minX = long.MaxValue, minY = long.MaxValue,
 				maxX = long.MinValue, maxY = long.MinValue;
 
 			for (int i = 0; i < damage.Count; ++i)
@@ -96,7 +83,7 @@ namespace Mff.Totem.Core
 					minX = damage[i].X;
 				if (damage[i].X > maxX)
 					maxX = damage[i].X;
-				
+
 				if (damage[i].Y < minY)
 					minY = damage[i].Y;
 				if (damage[i].Y > maxY)
@@ -124,8 +111,8 @@ namespace Mff.Totem.Core
 					}, PolyType.ptSubject);
 					clipper.AddPolygon(damage, PolyType.ptClip);
 					clipper.AddPolygons(chunk.Damage, PolyType.ptClip);
-					clipper.Execute(ClipType.ctIntersection, chunk.Damage, 
-					                PolyFillType.pftNonZero, PolyFillType.pftNonZero);
+					clipper.Execute(ClipType.ctIntersection, chunk.Damage,
+									PolyFillType.pftNonZero, PolyFillType.pftNonZero);
 
 					chunk.Recalculate = true;
 					if (ActiveChunks.Contains(chunk))
@@ -139,7 +126,7 @@ namespace Mff.Totem.Core
 		/// <summary>
 		/// Updates the terrain.
 		/// </summary>
-		public override void Update(GameTime gameTime)
+		public void Update(GameTime gameTime)
 		{
 			// Apply damage from the damage queue
 			damageQueue.ForEach(d => ApplyDamage(d));
@@ -154,7 +141,20 @@ namespace Mff.Totem.Core
 			GroundEffect.Parameters["Projection"].SetValue(Matrix.CreateOrthographic(width, -height, 0, 1));
 		}
 
-		public override void DrawBackground(SpriteBatch spriteBatch)
+		public void Draw(SpriteBatch spriteBatch)
+		{
+			switch (Parent.DrawLayer)
+			{
+				case 0:
+					DrawBackground(spriteBatch);
+					break;
+				case 1:
+					DrawForeground(spriteBatch);
+					break;
+			}
+		}
+
+		public void DrawBackground(SpriteBatch spriteBatch)
 		{
 			GroundEffect.Parameters["View"].SetValue(World.Camera.ViewMatrix *
 				Matrix.CreateTranslation(-World.Game.Resolution.X / 2, -World.Game.Resolution.Y / 2, 0));
@@ -177,11 +177,11 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		public override void DrawForeground(SpriteBatch spriteBatch)
+		public void DrawForeground(SpriteBatch spriteBatch)
 		{
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, 
-			                  SamplerState.PointClamp, null, null, null, 
-			                  World.Camera != null ? World.Camera.ViewMatrix : Matrix.Identity);
+			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend,
+							  SamplerState.PointClamp, null, null, null,
+							  World.Camera != null ? World.Camera.ViewMatrix : Matrix.Identity);
 			for (int i = 0; i < ActiveChunks.Length; ++i)
 			{
 				var chunk = ActiveChunks[i];
@@ -192,16 +192,16 @@ namespace Mff.Totem.Core
 				{
 					pass.Apply();
 					World.Game.GraphicsDevice.DrawUserPrimitives(
-						PrimitiveType.TriangleList, 
+						PrimitiveType.TriangleList,
 						chunk.TriangulatedForegroundVertices,
 						0, chunk.TriangulatedForegroundVertices.Length / 3);
 				}
 				foreach (Chunk.GrassPoint g in chunk.GrassPoints)
 				{
 					var texture = ContentLoader.Textures["grass"];
-					spriteBatch.Draw(texture, g.Position, null, Color.Green, g.Rotation, 
-					                 new Vector2(texture.Width / 2, texture.Height), 
-					                 1.2f, SpriteEffects.None, 1f);
+					spriteBatch.Draw(texture, g.Position, null, Color.Green, g.Rotation,
+									 new Vector2(texture.Width / 2, texture.Height),
+									 1.2f, SpriteEffects.None, 1f);
 				}
 			}
 			spriteBatch.End();
@@ -212,10 +212,10 @@ namespace Mff.Totem.Core
 		/// </summary>
 		/// <returns>The height.</returns>
 		/// <param name="x">The x coordinate.</param>
-		public override float HeightMap(float x)
+		public float HeightMap(float x)
 		{
-			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) * 
-			                             BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
+			return BASE_HEIGHT + (float)((NoiseMap.Evaluate(x / (Chunk.SIZE * 32), 0) - 0.5) *
+										 BASE_STEP + 8 * NoiseMap.Evaluate(x / 128, Chunk.SIZE));
 		}
 
 		/// <summary>
@@ -232,7 +232,7 @@ namespace Mff.Totem.Core
 
 		public float[] TreesInChunkX(int chunkX)
 		{
-			Random rand = new Random((int)(chunkX * Seed));
+			Random rand = new Random((int)(chunkX * Parent.Seed));
 			float[] result = new float[rand.Next(0, 8)];
 			for (int i = 0; i < result.Length; ++i)
 			{
@@ -262,16 +262,17 @@ namespace Mff.Totem.Core
 		/// <param name="y">The y coordinate.</param>
 		public ulong ChunkID(float x, float y)
 		{
-			return TerrainHelper.PackCoordinates(Helper.NegDivision((int)x, Chunk.SIZE), 
-			                                     Helper.NegDivision((int)y, Chunk.SIZE));
+			return TerrainHelper.PackCoordinates(Helper.NegDivision((int)x, Chunk.SIZE),
+												 Helper.NegDivision((int)y, Chunk.SIZE));
 		}
 
+		public bool Multithreaded = true;
 		int _activeX, _activeY;
 		/// <summary>
 		/// Sets a region around a point as active.
 		/// </summary>
 		/// <param name="center">Center.</param>
-		public override void ActiveRegion(Vector2 center, bool multithreading = true)
+		public override void SetActiveArea(Vector2 center)
 		{
 			_activeX = Helper.NegDivision((int)center.X, Chunk.SIZE);
 			_activeY = Helper.NegDivision((int)center.Y, Chunk.SIZE);
@@ -292,7 +293,7 @@ namespace Mff.Totem.Core
 					else
 					{
 						chunk = GetChunk(id);
-						if (multithreading)
+						if (Multithreaded)
 							Task.Run(() => { PlaceChunk(chunk); });
 						else
 							PlaceChunk(chunk);
@@ -347,7 +348,7 @@ namespace Mff.Totem.Core
 			chunk.Polygons = new List<List<IntPoint>>();
 
 			// Add chunk bounding rectangle
-			clipper.AddPolygon(new List<IntPoint>() { 
+			clipper.AddPolygon(new List<IntPoint>() {
 				new IntPoint(left, top),
 				new IntPoint(left + Chunk.SIZE, top),
 				new IntPoint(left + Chunk.SIZE, top + Chunk.SIZE),
@@ -370,10 +371,10 @@ namespace Mff.Totem.Core
 			}
 
 			// Add solution to chunk data
-			clipper.Execute(ClipType.ctIntersection, 
-			                chunk.Polygons, 
-			                PolyFillType.pftNonZero,
-			                PolyFillType.pftNonZero);
+			clipper.Execute(ClipType.ctIntersection,
+							chunk.Polygons,
+							PolyFillType.pftNonZero,
+							PolyFillType.pftNonZero);
 
 			// Cave generation
 			chunk.Cavities = new List<List<IntPoint>>();
@@ -384,7 +385,8 @@ namespace Mff.Totem.Core
 				var y = HeightMap(x) + 4;
 				if (chunk.ContainsHeight(y))
 				{
-					chunk.GrassPoints.Add(new Chunk.GrassPoint() { 
+					chunk.GrassPoints.Add(new Chunk.GrassPoint()
+					{
 						Position = new Vector2(x, y),
 						Rotation = MathHelper.PiOver2 - Helper.DirectionToAngle(Normal(x))
 					});
@@ -404,8 +406,8 @@ namespace Mff.Totem.Core
 			if (chunk.State == ChunkStateEnum.Emtpy) // Skip if empty
 				GenerateChunk(chunk);
 
-			chunk.Hulls.ForEach(h => 
-			                    World.Lighting.Hulls.Remove(h));
+			chunk.Hulls.ForEach(h =>
+								World.Lighting.Hulls.Remove(h));
 
 			if (chunk.Recalculate) // Recalculate if needed
 				chunk.Calculate(World);
@@ -447,7 +449,7 @@ namespace Mff.Totem.Core
 			{
 				var totem = World.CreateEntity("totem");
 				totem.GetComponent<BodyComponent>().Position =
-					     new Vector2(1, HeightMap(1));
+						 new Vector2(1, HeightMap(1));
 				chunk.Entities.Add(totem);
 			}
 
@@ -477,7 +479,6 @@ namespace Mff.Totem.Core
 
 		public override void Serialize(BinaryWriter writer)
 		{
-			writer.Write(Seed);
 			List<Chunk> toSave = new List<Chunk>(ChunkCache.Count);
 			foreach (KeyValuePair<ulong, Chunk> pair in ChunkCache)
 			{
@@ -495,18 +496,17 @@ namespace Mff.Totem.Core
 
 		public override void Deserialize(BinaryReader reader)
 		{
-			Seed = reader.ReadInt64();
 			int cCount = reader.ReadInt32();
 			for (int i = 0; i < cCount; ++i)
 			{
 				ulong id = reader.ReadUInt64();
-				Chunk c = new Chunk(id);
+				Chunk chunk = new Chunk(id);
 				int dmgCount = reader.ReadInt32();
 				for (int x = 0; x < dmgCount; ++x)
 				{
-					c.Damage.Add(reader.ReadPolygon());
+					chunk.Damage.Add(reader.ReadPolygon());
 				}
-				ChunkCache.Add(id, c);
+				ChunkCache.Add(id, chunk);
 			}
 		}
 
@@ -683,7 +683,7 @@ namespace Mff.Totem.Core
 			}
 
 			public Chunk(int x, int y) :
-				this(PlanetTerrain.TerrainHelper.PackCoordinates(x, y))
+				this(TerrainHelper.PackCoordinates(x, y))
 			{
 
 			}

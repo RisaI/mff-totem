@@ -66,9 +66,8 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		protected override void OnSerialize(BinaryWriter writer)
+		public override void Serialize(BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
 			writer.Write(StopMovementOnDeath);
 			writer.Write(Elements.Count);
 			for (int i = 0; i < Elements.Count; ++i)
@@ -77,9 +76,8 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		protected override void OnDeserialize(BinaryReader reader)
+		public override void Deserialize(BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
 			StopMovementOnDeath = reader.ReadBoolean();
 			int a = reader.ReadInt32();
 			for (int i = 0; i < a; ++i)

@@ -170,7 +170,8 @@ namespace Mff.Totem.Core
 			});
 			AddCommand("ent_spawn", "Spawns an entity loaded from assets.", args =>
 			{
-				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : WorldInstance.Terrain.HeightMap(float.Parse(args[1])));
+				var terrain = WorldInstance.Builder.GetComponent<TerrainComponent>();
+				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : terrain != null ? terrain.HeightMap(float.Parse(args[1])) : 0);
 				var ent = WorldInstance.CreateEntity(args[0]);
 				var body = ent.GetComponent<BodyComponent>();
 				if (body != null)
@@ -196,7 +197,8 @@ namespace Mff.Totem.Core
 			AddCommand("heightmap", "Get the height for specified x.", args =>
 			{
 				var x = float.Parse(args[0]);
-				Console.WriteLine("Height on {0}: {1}", x, WorldInstance.Terrain.HeightMap(x));
+				var terrain = WorldInstance.Builder.GetComponent<TerrainComponent>();
+				Console.WriteLine("Height on {0}: {1}", x, terrain?.HeightMap(x));
 			}, "x");
 
 			AddCommand("weather", "Set the weather.", args =>

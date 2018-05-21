@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace Mff.Totem.Core
@@ -53,9 +53,9 @@ namespace Mff.Totem.Core
 		}
 
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
+			base.Serialize(writer);
 			writer.Write(TechnologyLevel);
 			writer.Write(MagicLevel);
 
@@ -63,9 +63,9 @@ namespace Mff.Totem.Core
 			writer.Write(_magExp);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
+			base.Deserialize(reader);
 			TechnologyLevel = reader.ReadInt32();
 			MagicLevel = reader.ReadInt32();
 

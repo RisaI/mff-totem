@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
@@ -77,17 +77,15 @@ namespace Mff.Totem.Core
 			writer.WriteEnd();
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
 			writer.Write(Position);
 			writer.Write(Rotation);
 			writer.Write(Size);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
 			Position = reader.ReadVector2();
 			Rotation = reader.ReadSingle();
 			Size = reader.ReadVector2();

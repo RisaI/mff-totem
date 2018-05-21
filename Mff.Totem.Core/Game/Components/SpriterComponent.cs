@@ -81,7 +81,7 @@ namespace Mff.Totem.Core
 			writer.WriteValue(DefaultPlaybackSpeed);
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(_spriterAsset);
 			// Sprite.SerializeState(writer);
@@ -90,7 +90,7 @@ namespace Mff.Totem.Core
 			writer.Write(DefaultPlaybackSpeed);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			SpriterAsset = reader.ReadString();
 			// Sprite.DeserializeState(reader);

@@ -104,7 +104,7 @@ namespace Mff.Totem.Core
 			return this;
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(Position);
 			writer.Write(Rotation);
@@ -115,7 +115,7 @@ namespace Mff.Totem.Core
 				writer.Write(BindedTo.UID);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			Position = reader.ReadVector2();
 			Rotation = reader.ReadSingle();

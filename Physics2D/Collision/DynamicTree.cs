@@ -338,30 +338,33 @@ namespace Physics2D.Collision
 
             while (_queryStack.Count > 0)
             {
-                int nodeId = _queryStack.Pop();
-                if (nodeId == NullNode)
-                {
-                    continue;
-                }
+				lock (_queryStack)
+				{
+					int nodeId = _queryStack.Pop();
+					if (nodeId == NullNode)
+					{
+						continue;
+					}
 
-                TreeNode<T> node = _nodes[nodeId];
+					TreeNode<T> node = _nodes[nodeId];
 
-                if (AABB.TestOverlap(ref node.AABB, ref aabb))
-                {
-                    if (node.IsLeaf())
-                    {
-                        bool proceed = callback(nodeId);
-                        if (proceed == false)
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        _queryStack.Push(node.Child1);
-                        _queryStack.Push(node.Child2);
-                    }
-                }
+					if (AABB.TestOverlap(ref node.AABB, ref aabb))
+					{
+						if (node.IsLeaf())
+						{
+							bool proceed = callback(nodeId);
+							if (proceed == false)
+							{
+								return;
+							}
+						}
+						else
+						{
+							_queryStack.Push(node.Child1);
+							_queryStack.Push(node.Child2);
+						}
+					}
+				}
             }
         }
 

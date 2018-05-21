@@ -18,5 +18,15 @@ namespace Mff.Totem.Core
 		{
 			World.Game.Hud.Chat("This doesn't do anything yet ;)", Color.LightBlue);	
 		}
+
+	    public override void Serialize(System.IO.BinaryWriter writer)
+		{
+			return;
+		}
+
+		public override void Deserialize(System.IO.BinaryReader reader)
+		{
+			return;
+		}
 	}
 }

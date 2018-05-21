@@ -84,7 +84,7 @@ namespace Mff.Totem.Core
 				var rf = this;
 				World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 				{
-					if (arg1.Body.Tag is Terrain)
+					if (arg1.Body.Tag is TerrainComponent)
 					{
 						Position = arg2 * 64f;
 						LinearVelocity = Vector2.Zero;
@@ -183,7 +183,7 @@ namespace Mff.Totem.Core
 			writer.WriteEndArray();
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(Position);
 			writer.Write(Rotation);
@@ -199,7 +199,7 @@ namespace Mff.Totem.Core
 			TargetedTags.ForEach(t => writer.Write(t));
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			Position = reader.ReadVector2();
 			Rotation = reader.ReadSingle();

@@ -165,7 +165,7 @@ namespace Mff.Totem
 			writer.Write(color.PackedValue);
 		}
 
-		public static void Write(this BinaryWriter writer, Core.ISerializable serializable)
+		public static void Write(this BinaryWriter writer, ISerializable serializable)
 		{
 			serializable.Serialize(writer);
 		}
@@ -213,12 +213,12 @@ namespace Mff.Totem
 		}
 		#endregion
 
-		public static Microsoft.Xna.Framework.Point ToPoint(this Vector2 vec)
+		public static Point ToPoint(this Vector2 vec)
 		{
-			return new Microsoft.Xna.Framework.Point((int)vec.X, (int)vec.Y);
+			return new Point((int)vec.X, (int)vec.Y);
 		}
 
-		public static Vector2 ToVector2(this Microsoft.Xna.Framework.Point p)
+		public static Vector2 ToVector2(this Point p)
 		{
 			return new Vector2(p.X, p.Y);
 		}

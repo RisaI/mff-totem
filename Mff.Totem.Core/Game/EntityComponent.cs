@@ -41,11 +41,11 @@ namespace Mff.Totem.Core
 		/// <summary>
 		/// Attach an entity to this component.
 		/// </summary>
-		/// <param name="ent">Entity.</param>
-		public void Attach(Entity ent)
+		/// <param name="parent">The new parent entity.</param>
+		public void Attach(Entity parent)
 		{
-			OnEntityAttach(ent);
-			Parent = ent;
+			OnEntityAttach(parent);
+			Parent = parent;
 		}
 
 		/// <summary>
@@ -106,42 +106,15 @@ namespace Mff.Totem.Core
 		protected virtual void ReadFromJson(JObject obj) { return; }
 
 		/// <summary>
-		/// Creates a component from a JObject.
-		/// </summary>
-		/// <returns>A deserialized component.</returns>
-		/// <param name="obj">JObject.</param>
-		public static EntityComponent CreateFromBinary(BinaryReader reader)
-		{
-			var cc = reader.ReadString();
-			EntityComponent component = (EntityComponent)DeserializationRegister.CreateInstance(cc);
-			component.Deserialize(reader);
-			return component;
-		}
-
-		/// <summary>
 		/// Serialize component to a binary format.
 		/// </summary>
 		/// <param name="writer">Writer.</param>
-		public void Serialize(BinaryWriter writer)
-		{
-			var attributes = GetType().GetCustomAttributes(typeof(SerializableAttribute), false);
-			if (attributes.Length == 0)
-				return;
-			writer.Write(((SerializableAttribute)attributes[0]).ID);
-			OnSerialize(writer);
-		}
-
-		protected virtual void OnSerialize(BinaryWriter writer) { return; }
+		public abstract void Serialize(BinaryWriter writer);
 
 		/// <summary>
 		/// Deserialize component from a binary format.
 		/// </summary>
 		/// <param name="reader">Reader.</param>
-		public void Deserialize(BinaryReader reader)
-		{
-			OnDeserialize(reader);
-		}
-
-		protected virtual void OnDeserialize(BinaryReader reader) { return; }
+		public abstract void Deserialize(BinaryReader reader);
 	}
 }

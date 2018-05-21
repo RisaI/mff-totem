@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -194,9 +194,8 @@ namespace Mff.Totem.Core
 				UseItems = new Item[0];
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
 			writer.Write(Size);
 			writer.Write(Items.Count);
 			for (int i = 0; i < Items.Count; ++i)
@@ -221,9 +220,8 @@ namespace Mff.Totem.Core
 			}
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
 			Size = reader.ReadInt32();
 			int a = reader.ReadInt32();
 			for (int i = 0; i < a; ++i)

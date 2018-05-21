@@ -18,7 +18,7 @@ namespace Mff.Totem.Core
 			writer.Write(Planet.Seed);
 
 			// Terrain
-			this.Terrain.Serialize(writer);
+			writer.Write(Builder);
 
 			//TODO: weather
 
@@ -42,8 +42,8 @@ namespace Mff.Totem.Core
 			Planet = p;
 
 			// Terrain
-			Terrain = new PlanetTerrain(this);
-			Terrain.Deserialize(reader);
+			Builder = new WorldBuilder(this);
+			Builder.Deserialize(reader);
 
 			// Entities
 			var count = reader.ReadInt16();
@@ -57,7 +57,12 @@ namespace Mff.Totem.Core
 			TimeScale = reader.ReadSingle();
 
 			// Load camera region to prevent entities falling out of the world
-			Terrain.ActiveRegion(Camera.Position, false);
+			var terrain = Builder.GetComponent<TerrainComponent>();
+			if (terrain != null)
+				terrain.Multithreaded = false;
+			Builder.SetActiveArea(Camera.Position);
+			if (terrain != null)
+				terrain.Multithreaded = true;
 		}
 
 		public static GameWorld CreatePlanet(GameSession session, int planetId)
@@ -69,8 +74,7 @@ namespace Mff.Totem.Core
 			_info.Randomize(planetId);
 			w.Planet = _info;
 
-			var terrain = w.Terrain as PlanetTerrain;
-
+			var terrain = w.Builder.GetComponent<TerrainComponent>();
 			w._camera.Position.Y = terrain.HeightMap(0);
 
 			// Make the world less empty

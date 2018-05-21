@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+
 namespace Mff.Totem.Core
 {
 	[Serializable("component_item")]
@@ -45,6 +47,16 @@ namespace Mff.Totem.Core
 			var inventory = Parent.GetComponent<InventoryComponent>();
 			if (inventory != null)
 				inventory.AddItem(i);
+		}
+
+		public override void Serialize(BinaryWriter writer)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void Deserialize(BinaryReader reader)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

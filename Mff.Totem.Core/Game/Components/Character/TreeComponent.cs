@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
@@ -76,15 +76,15 @@ namespace Mff.Totem.Core
 				leafArea = Helper.JTokenToRectangle(obj["leaf_area"]);
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
+			base.Serialize(writer);
 			writer.Write(leafArea);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
+			base.Deserialize(reader);
 			leafArea = reader.ReadRectangle();
 		}
 

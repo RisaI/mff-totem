@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -57,14 +57,14 @@ namespace Mff.Totem.Core
 			writer.WriteValue(Depth);
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(_spriteAsset);
 			Sprite.SerializeState(writer);
 			writer.Write(Depth);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			SpriteAsset = reader.ReadString();
 			Sprite.DeserializeState(reader);

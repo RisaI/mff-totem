@@ -328,7 +328,8 @@ namespace Mff.Totem.Core
 
 			// Components
 			writer.Write((byte)Components.Count);
-			Components.ForEach(c => c.Serialize(writer));
+			Components.ForEach(c => 
+			                   DeserializationRegister.WriteObject(writer, c));
 		}
 
 		public void Deserialize(BinaryReader reader)
@@ -347,7 +348,7 @@ namespace Mff.Totem.Core
 			var count = reader.ReadByte();
 			for (int i = 0; i < count; ++i)
 			{
-				var component = EntityComponent.CreateFromBinary(reader);
+				var component = DeserializationRegister.ReadObject<EntityComponent>(reader);
 				AddComponent(component);
 			}
 		}

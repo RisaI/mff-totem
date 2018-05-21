@@ -152,7 +152,7 @@ namespace Mff.Totem.Core
 
 			World.Physics.RayCast((Fixture arg1, Vector2 arg2, Vector2 arg3, float arg4) =>
 			{
-				if (arg1.Body.Tag is Terrain && frac > arg4)
+				if (arg1.Body.Tag is TerrainComponent && frac > arg4)
 				{
 					groundPos = arg2;
 					frac = arg4;
@@ -181,7 +181,7 @@ namespace Mff.Totem.Core
 			b.Tag = Parent;
 			b.OnCollision += (sender, other, contact) =>
 			{
-				return other.Body.Tag is Terrain;
+				return other.Body.Tag is TerrainComponent;
 			};
 		}
 
@@ -206,7 +206,7 @@ namespace Mff.Totem.Core
 			writer.WriteValue(Height);
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
 			writer.Write(Width);
 			writer.Write(Height);
@@ -215,7 +215,7 @@ namespace Mff.Totem.Core
 
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			Width = reader.ReadSingle();
 			Height = reader.ReadSingle();

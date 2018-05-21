@@ -58,7 +58,7 @@ namespace Mff.Totem.Core
 			get { return Session?.Game; }
 		}
 
-		public Terrain Terrain
+		public WorldBuilder Builder
 		{
 			get;
 			private set;
@@ -112,7 +112,7 @@ namespace Mff.Totem.Core
 				_info = value;
 				System.Threading.Tasks.Task.Run(() => { _info.GenerateTextures(this);});
 				Physics.Gravity = new Vector2(0, _info.Gravity);
-				(Terrain as PlanetTerrain).Generate(_info.TerrainSeed);
+				Builder.Generate(_info.TerrainSeed);
 			}
 		}
 
@@ -136,7 +136,9 @@ namespace Mff.Totem.Core
 			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
 			// Load basic terrain for debugging
-			Terrain = new PlanetTerrain(this);
+			Builder = new WorldBuilder(this);
+			Builder.AddComponent(new TerrainComponent());
+
 
 			// Default camera
 			_camera = new Camera(Game);
@@ -153,7 +155,7 @@ namespace Mff.Totem.Core
             GTime = gameTime;
 			Session.UniverseTime = Session.UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
-			Terrain?.Update(gameTime);
+			Builder.Update(gameTime);
 
 			lock (EntityQueue)
 			{
@@ -233,7 +235,7 @@ namespace Mff.Totem.Core
 					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
 
-			Terrain.ActiveRegion(Camera.Position);
+			Builder.SetActiveArea(Camera.Position);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -277,7 +279,7 @@ namespace Mff.Totem.Core
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
-			Terrain?.DrawBackground(spriteBatch);
+			Builder.Draw(spriteBatch, 0);
 
 			// Draw weather
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
@@ -291,7 +293,7 @@ namespace Mff.Totem.Core
 			spriteBatch.End();
 
 			// Ground rendering
-			Terrain?.DrawForeground(spriteBatch);
+			Builder.Draw(spriteBatch, 1);
 			Lighting.Draw();
 
 			// Draw to screen

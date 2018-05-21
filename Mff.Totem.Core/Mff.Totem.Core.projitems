@@ -54,8 +54,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\Physics\HumanoidBodyComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\LightingManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Components\TotemComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain\PlanetTerrain.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\Terrain\Terrain.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Background.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\Backgrounds\Parallax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Gui\PositionResolver.cs" />
@@ -63,6 +61,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuStateManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\WorldBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\WorldBuilderComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\TerrainComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
@@ -72,7 +73,7 @@
     <Folder Include="$(MSBuildThisFileDirectory)Menu\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Physics\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Character\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Game\Terrain\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Backgrounds\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\" />
   </ItemGroup>
 </Project>

@@ -31,7 +31,7 @@ namespace Mff.Totem.Core
 
 		public void Update(GameTime gameTime)
 		{
-			var body   = Parent.GetComponent<BodyComponent>();
+			var body = Parent.GetComponent<BodyComponent>();
 			var sprite = Parent.GetComponent<SpriterComponent>();
 
 			World.Camera.MoveTo(body.Position, 0.3f);
@@ -39,18 +39,18 @@ namespace Mff.Totem.Core
 
 			Vector2 movement = Vector2.Zero;
 			var character = Parent.GetComponent<CharacterComponent>();
-            var inventory = Parent.GetComponent<InventoryComponent>();
+			var inventory = Parent.GetComponent<InventoryComponent>();
 
-            if (World.Game.InputEnabled)
-            {
+			if (World.Game.InputEnabled)
+			{
 				if (World.Game.Input.GetInput(Inputs.Right, InputState.Down))
 					movement.X += character != null ? character.Speed : 120;
 
-                if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
+				if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
 					movement.X -= character != null ? character.Speed : 120;
 
 				if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed))
-                    movement.Y = -100;
+					movement.Y = -100;
 
 				if (World.Game.Input.GetInput(Inputs.Inventory, InputState.Pressed))
 				{
@@ -61,13 +61,13 @@ namespace Mff.Totem.Core
 						g.Closing = true;
 				}
 
-                character.Target = World.Camera.ToWorldSpace(World.Game.Input.GetPointerInput(0).Position) - body.Position;
+				character.Target = World.Camera.ToWorldSpace(World.Game.Input.GetPointerInput(0).Position) - body.Position;
 
-				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) && 
-				    !World.Game.GuiManager.PointerInGui(World.Game.Input.GetPointerInput(0)) && inventory != null)
-                {
+				if (World.Game.Input.GetInput(Inputs.A, InputState.Down) &&
+					!World.Game.GuiManager.PointerInGui(World.Game.Input.GetPointerInput(0)) && inventory != null)
+				{
 					inventory.Use(0);
-                }
+				}
 
 				if (World.Game.Input.GetInput(Inputs.Swap, InputState.Pressed) && inventory != null)
 				{
@@ -91,7 +91,7 @@ namespace Mff.Totem.Core
 						return true;
 					});
 				}
-            }
+			}
 
 			if (!(body is HumanoidBody) || (body as HumanoidBody).OnGround().HasValue)
 			{
@@ -120,6 +120,16 @@ namespace Mff.Totem.Core
 
 			body.Move(movement);
 			light.Position = body.Position;
+		}
+
+		public override void Serialize(System.IO.BinaryWriter writer)
+		{
+			return;
+		}
+
+		public override void Deserialize(System.IO.BinaryReader reader)
+		{
+			return;
 		}
 	}
 }

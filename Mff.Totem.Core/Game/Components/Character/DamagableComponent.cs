@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
@@ -48,16 +48,14 @@ namespace Mff.Totem.Core
 			writer.WriteValue(_baseMaxHp);
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
 			writer.Write(_baseMaxHp);
 			writer.Write(_hp);
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
 			_baseMaxHp = reader.ReadInt32();
 			_hp = reader.ReadInt32();
 		}

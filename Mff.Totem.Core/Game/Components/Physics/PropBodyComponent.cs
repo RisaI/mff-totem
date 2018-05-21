@@ -1,6 +1,7 @@
 using System;
 using Physics2D.Dynamics;
 using Microsoft.Xna.Framework;
+using System.IO;
 
 namespace Mff.Totem.Core
 {
@@ -134,7 +135,7 @@ namespace Mff.Totem.Core
 			Body.SetFriction(Friction);
 			Body.OnCollision += (fixtureA, fixtureB, contact) =>
 			{
-				return fixtureB.Tag is Terrain || (fixtureB.Tag is Entity && (fixtureB.Tag as Entity).GetComponent<PropBodyComponent>() != null);
+				return fixtureB.Tag is TerrainComponent || (fixtureB.Tag is Entity && (fixtureB.Tag as Entity).GetComponent<PropBodyComponent>() != null);
 			};
 		}
 
@@ -176,6 +177,16 @@ namespace Mff.Totem.Core
 		public override void Move(Vector2 direction)
 		{
 			return;
+		}
+
+		public override void Serialize(BinaryWriter writer)
+		{
+			throw new NotImplementedException();
+		}
+
+		public override void Deserialize(BinaryReader reader)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

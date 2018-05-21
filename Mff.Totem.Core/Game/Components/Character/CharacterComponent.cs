@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -76,9 +76,9 @@ namespace Mff.Totem.Core
 			writer.WriteEndArray();
 		}
 
-		protected override void OnSerialize(System.IO.BinaryWriter writer)
+		public override void Serialize(System.IO.BinaryWriter writer)
 		{
-			base.OnSerialize(writer);
+			base.Serialize(writer);
 			writer.Write(_baseSpeed);
 			writer.Write(_baseMaxStamina);
 			writer.Write(_stamina);
@@ -89,9 +89,9 @@ namespace Mff.Totem.Core
 			TargetedTags.ForEach(t => writer.Write(t));
 		}
 
-		protected override void OnDeserialize(System.IO.BinaryReader reader)
+		public override void Deserialize(System.IO.BinaryReader reader)
 		{
-			base.OnDeserialize(reader);
+			base.Deserialize(reader);
 			_baseSpeed = reader.ReadSingle();
 			_baseMaxStamina = reader.ReadSingle();
 			_stamina = reader.ReadSingle();
