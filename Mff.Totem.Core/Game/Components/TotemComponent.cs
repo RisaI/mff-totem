@@ -28,5 +28,13 @@ namespace Mff.Totem.Core
 		{
 			return;
 		}
+
+		public override bool DisableEntitySaving
+		{
+			get
+			{
+				return true;
+			}
+		}
 	}
 }

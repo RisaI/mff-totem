@@ -60,7 +60,7 @@ namespace Mff.Totem.Core
 			x -= Helper.NegModulo(x, X_DELTA);
 			for (int dx = 0; x + dx < world.Camera.BoundingBox.Right; dx += X_DELTA)
 			{
-				var terrain = world.Builder.GetComponent<TerrainComponent>();
+				var terrain = world.GetComponent<TerrainComponent>();
 				float height = terrain != null ? terrain.HeightMap(x + dx) : 0;
 				float offset = Y_DELTA * ( 1 - ((Time + (float)Math.Sin(Helper.Hash(x + dx))) % 1f));
 

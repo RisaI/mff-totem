@@ -12,7 +12,8 @@ using Physics2D.Dynamics;
 
 namespace Mff.Totem.Core
 {
-	public class TerrainComponent : WorldBuilderComponent, IUpdatable, IDrawable
+	[Serializable("terrain_wcomponent")]
+	public class TerrainComponent : WorldComponent, IUpdatable, IDrawable
 	{
 		const int CHUNK_CACHE = 15;
 
@@ -30,6 +31,12 @@ namespace Mff.Totem.Core
 
 		Clipper c;
 
+		public long Seed
+		{
+			get;
+			set;
+		}
+
 		public TerrainComponent()
 		{
 			c = new Clipper();
@@ -37,17 +44,16 @@ namespace Mff.Totem.Core
 
 		public override void Initialize()
 		{
-			World.Game.OnResolutionChange += PrepareEffect;
-			PrepareEffect(
-				(int)Parent.World.Game.Resolution.X,
-				(int)Parent.World.Game.Resolution.Y
-			);
-		}
-
-		public override void Generate()
-		{
-			NoiseMap = new OpenSimplexNoise(Parent.Seed);
+			NoiseMap = new OpenSimplexNoise(Seed);
 			c.Clear();
+
+			World.Game.OnResolutionChange -= PrepareEffect;
+			World.Game.OnResolutionChange += PrepareEffect;
+
+			PrepareEffect(
+				(int)World.Game.Resolution.X,
+				(int)World.Game.Resolution.Y
+			);
 		}
 
 		/// <summary>
@@ -143,7 +149,7 @@ namespace Mff.Totem.Core
 
 		public void Draw(SpriteBatch spriteBatch)
 		{
-			switch (Parent.DrawLayer)
+			switch (World.DrawLayer)
 			{
 				case 0:
 					DrawBackground(spriteBatch);
@@ -232,7 +238,7 @@ namespace Mff.Totem.Core
 
 		public float[] TreesInChunkX(int chunkX)
 		{
-			Random rand = new Random((int)(chunkX * Parent.Seed));
+			Random rand = new Random((int)(chunkX * Seed));
 			float[] result = new float[rand.Next(0, 8)];
 			for (int i = 0; i < result.Length; ++i)
 			{
@@ -479,6 +485,7 @@ namespace Mff.Totem.Core
 
 		public override void Serialize(BinaryWriter writer)
 		{
+			writer.Write(Seed);
 			List<Chunk> toSave = new List<Chunk>(ChunkCache.Count);
 			foreach (KeyValuePair<ulong, Chunk> pair in ChunkCache)
 			{
@@ -496,6 +503,7 @@ namespace Mff.Totem.Core
 
 		public override void Deserialize(BinaryReader reader)
 		{
+			Seed = reader.ReadInt64();
 			int cCount = reader.ReadInt32();
 			for (int i = 0; i < cCount; ++i)
 			{

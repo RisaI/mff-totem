@@ -18,7 +18,8 @@ namespace Mff.Totem.Core
 			writer.Write(Planet.Seed);
 
 			// Terrain
-			writer.Write(Builder);
+			writer.Write((Int16)Components.Count);
+			Components.ForEach(c => DeserializationRegister.WriteObject(writer, c));
 
 			//TODO: weather
 
@@ -42,25 +43,30 @@ namespace Mff.Totem.Core
 			Planet = p;
 
 			// Terrain
-			Builder = new WorldBuilder(this);
-			Builder.Deserialize(reader);
+			{
+				var count = reader.ReadInt16();
+				for (int i = 0; i < count; ++i)
+					AddComponent(DeserializationRegister.ReadObject<WorldComponent>(reader));
+			}
 
 			// Entities
-			var count = reader.ReadInt16();
-			for (int i = 0; i < count; ++i)
 			{
-				var ent = CreateEntity();
-				ent.Deserialize(reader);
+				var count = reader.ReadInt16();
+				for (int i = 0; i < count; ++i)
+				{
+					var ent = CreateEntity();
+					ent.Deserialize(reader);
+				}
 			}
 
 			// Time
 			TimeScale = reader.ReadSingle();
 
 			// Load camera region to prevent entities falling out of the world
-			var terrain = Builder.GetComponent<TerrainComponent>();
+			var terrain = GetComponent<TerrainComponent>();
 			if (terrain != null)
 				terrain.Multithreaded = false;
-			Builder.SetActiveArea(Camera.Position);
+			SetActiveArea(Camera.Position);
 			if (terrain != null)
 				terrain.Multithreaded = true;
 		}
@@ -74,7 +80,8 @@ namespace Mff.Totem.Core
 			_info.Randomize(planetId);
 			w.Planet = _info;
 
-			var terrain = w.Builder.GetComponent<TerrainComponent>();
+			w.AddComponent(new TerrainComponent() { Seed = _info.TerrainSeed });
+			var terrain = w.GetComponent<TerrainComponent>();
 			w._camera.Position.Y = terrain.HeightMap(0);
 
 			// Make the world less empty

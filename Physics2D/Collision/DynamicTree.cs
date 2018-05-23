@@ -333,12 +333,12 @@ namespace Physics2D.Collision
         /// <param name="aabb">The aabb.</param>
         public void Query(Func<int, bool> callback, ref AABB aabb)
         {
-            _queryStack.Clear();
-            _queryStack.Push(_root);
+			lock (_queryStack)
+			{
+				_queryStack.Clear();
+				_queryStack.Push(_root);
 
-            while (_queryStack.Count > 0)
-            {
-				lock (_queryStack)
+				while (_queryStack.Count > 0)
 				{
 					int nodeId = _queryStack.Pop();
 					if (nodeId == NullNode)
@@ -365,7 +365,7 @@ namespace Physics2D.Collision
 						}
 					}
 				}
-            }
+			}
         }
 
         /// <summary>

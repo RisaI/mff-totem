@@ -61,9 +61,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuStateManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\WorldBuilder.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\WorldBuilderComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\TerrainComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Components.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

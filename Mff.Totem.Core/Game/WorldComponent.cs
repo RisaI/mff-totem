@@ -4,25 +4,19 @@ using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
-	public abstract class WorldBuilderComponent : ISerializable
+	public abstract class WorldComponent : ISerializable
 	{
-		public WorldBuilder Parent
+		public GameWorld World
 		{
 			get;
 			private set;
 		}
 
-		public GameWorld World
+		public virtual void Attach(GameWorld parent)
 		{
-			get { return Parent?.World; }
+			World = parent;
 		}
 
-		public virtual void Attach(WorldBuilder parent)
-		{
-			Parent = parent;
-		}
-
-		public abstract void Generate();
 		public abstract void Initialize();
 		public abstract void SetActiveArea(Vector2 pos);
 

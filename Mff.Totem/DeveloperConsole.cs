@@ -170,7 +170,7 @@ namespace Mff.Totem.Core
 			});
 			AddCommand("ent_spawn", "Spawns an entity loaded from assets.", args =>
 			{
-				var terrain = WorldInstance.Builder.GetComponent<TerrainComponent>();
+				var terrain = WorldInstance.GetComponent<TerrainComponent>();
 				Vector2 pos = new Vector2(float.Parse(args[1]), args.Length >= 3 ? float.Parse(args[2]) : terrain != null ? terrain.HeightMap(float.Parse(args[1])) : 0);
 				var ent = WorldInstance.CreateEntity(args[0]);
 				var body = ent.GetComponent<BodyComponent>();
@@ -197,7 +197,7 @@ namespace Mff.Totem.Core
 			AddCommand("heightmap", "Get the height for specified x.", args =>
 			{
 				var x = float.Parse(args[0]);
-				var terrain = WorldInstance.Builder.GetComponent<TerrainComponent>();
+				var terrain = WorldInstance.GetComponent<TerrainComponent>();
 				Console.WriteLine("Height on {0}: {1}", x, terrain?.HeightMap(x));
 			}, "x");
 

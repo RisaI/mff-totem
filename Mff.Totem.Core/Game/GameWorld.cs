@@ -58,12 +58,6 @@ namespace Mff.Totem.Core
 			get { return Session?.Game; }
 		}
 
-		public WorldBuilder Builder
-		{
-			get;
-			private set;
-		}
-
 		public Background Background
 		{
 			get;
@@ -112,7 +106,6 @@ namespace Mff.Totem.Core
 				_info = value;
 				System.Threading.Tasks.Task.Run(() => { _info.GenerateTextures(this);});
 				Physics.Gravity = new Vector2(0, _info.Gravity);
-				Builder.Generate(_info.TerrainSeed);
 			}
 		}
 
@@ -135,11 +128,6 @@ namespace Mff.Totem.Core
 			DebugView = new DebugView(Physics) { Enabled = true };
 			DebugView.LoadContent(Game.GraphicsDevice, Game.Content);
 
-			// Load basic terrain for debugging
-			Builder = new WorldBuilder(this);
-			Builder.AddComponent(new TerrainComponent());
-
-
 			// Default camera
 			_camera = new Camera(Game);
 
@@ -155,7 +143,14 @@ namespace Mff.Totem.Core
             GTime = gameTime;
 			Session.UniverseTime = Session.UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
 
-			Builder.Update(gameTime);
+			Components.ForEach(c =>
+			{
+				var upd = c as IUpdatable;
+				if (upd != null)
+				{
+					upd.Update(gameTime);
+				}
+			});
 
 			lock (EntityQueue)
 			{
@@ -235,7 +230,7 @@ namespace Mff.Totem.Core
 					Camera.Zoom = Math.Max(0.1f, Camera.Zoom - 0.01f);
 			}
 
-			Builder.SetActiveArea(Camera.Position);
+			SetActiveArea(Camera.Position);
 
 			if (Background != null)
 				Background.Update(gameTime);
@@ -279,7 +274,15 @@ namespace Mff.Totem.Core
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
-			Builder.Draw(spriteBatch, 0);
+			DrawLayer = 0;
+			Components.ForEach(c =>
+			{
+				var draw = c as IDrawable;
+				if (draw != null)
+				{
+					draw.Draw(spriteBatch);
+				}
+			});
 
 			// Draw weather
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
@@ -293,7 +296,15 @@ namespace Mff.Totem.Core
 			spriteBatch.End();
 
 			// Ground rendering
-			Builder.Draw(spriteBatch, 1);
+			DrawLayer = 1;
+			Components.ForEach(c =>
+			{
+				var draw = c as IDrawable;
+				if (draw != null)
+				{
+					draw.Draw(spriteBatch);
+				}
+			});
 			Lighting.Draw();
 
 			// Draw to screen
