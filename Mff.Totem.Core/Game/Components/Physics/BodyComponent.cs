@@ -35,5 +35,9 @@ namespace Mff.Totem.Core
 		}
 
 		public abstract void Move(Vector2 direction);
+		public abstract bool Grounded
+		{
+			get;
+		}
 	}
 }

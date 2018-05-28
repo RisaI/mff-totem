@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Xna.Framework;
 
 namespace Mff.Totem.Core
 {
 	[Serializable("component_character")]
-	public class CharacterComponent : DamagableComponent
+	public class CharacterComponent : DamagableComponent, IUpdatable
 	{
 		public List<string> TargetedTags = new List<string>();
 
@@ -121,6 +122,8 @@ namespace Mff.Totem.Core
 			};
 		}
 
+		public bool IsCrouching, IsJumping, IsWalking;
+
 		protected int _expReward = 0;
 		protected override void Death(object source)
 		{
@@ -134,6 +137,69 @@ namespace Mff.Totem.Core
 					player.TechExperience += _expReward;
 				}
 			}
+		}
+
+		List<CharacterAction> Actions = new List<CharacterAction>(8);
+
+		public void Update(GameTime gameTime)
+		{
+			if (Actions.Count > 0)
+			{
+				Actions[0].Update(gameTime);
+				if (Actions[0].Remove)
+				{
+					Actions.RemoveAt(0);
+					if (Actions.Count > 0)
+						Actions[0].Start(this);
+				}
+			}
+		}
+
+		public bool QueueEmpty
+		{
+			get { return Actions.Count <= 0; }
+		}
+
+		public void AddToQueue(CharacterAction action)
+		{
+			if (Actions.Count < 8)
+			{
+				Actions.Add(action);
+				if (Actions.Count == 1)
+					action.Start(this);
+			}
+		}
+
+		public bool QueueContains<T>() where T : CharacterAction
+		{
+			return Actions.Any(a => a is T);
+		}
+	}
+
+	public abstract class CharacterAction
+	{
+		public CharacterComponent ParentComponent;
+		public Entity Parent
+		{
+			get { return ParentComponent?.Parent; }
+		}
+
+		public GameWorld World
+		{
+			get { return Parent?.World; }
+		}
+
+		public void Start(CharacterComponent parent)
+		{
+			ParentComponent = parent;
+			Initialize();
+		}
+
+		protected abstract void Initialize();
+		public abstract void Update(GameTime gameTime);
+		public abstract bool Remove
+		{
+			get;
 		}
 	}
 }

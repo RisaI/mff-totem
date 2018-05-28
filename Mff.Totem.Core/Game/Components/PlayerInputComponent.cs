@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -18,6 +19,7 @@ namespace Mff.Totem.Core
 		{
 			return new PlayerInputComponent();
 		}
+
 
 		Penumbra.PointLight light;
 		public override void Initialize()
@@ -41,17 +43,76 @@ namespace Mff.Totem.Core
 			var character = Parent.GetComponent<CharacterComponent>();
 			var inventory = Parent.GetComponent<InventoryComponent>();
 
+			character.IsWalking = false;
+			if (character.IsJumping && body.Grounded)
+				character.IsJumping = false;
+
 			if (World.Game.InputEnabled)
 			{
-				if (World.Game.Input.GetInput(Inputs.Right, InputState.Down))
-					movement.X += character != null ? character.Speed : 120;
+				// Crouch
+				if (World.Game.Input.GetInput(Inputs.Down, InputState.Pressed))
+				{
+					if (!character.IsCrouching && !character.QueueContains<CrouchAction>())
+						character.AddToQueue(new CrouchAction());
+				}
+				else if (World.Game.Input.GetInput(Inputs.Down, InputState.Released))
+				{
+					if (character.IsCrouching && !character.QueueContains<StandUpAction>())
+						character.AddToQueue(new StandUpAction());
+				}
 
-				if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
-					movement.X -= character != null ? character.Speed : 120;
+				if (!character.IsCrouching && character.QueueEmpty)
+				{
+					if (World.Game.Input.GetInput(Inputs.Right, InputState.Down))
+						movement.X += character != null ? character.Speed : 120;
 
-				if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed))
-					movement.Y = -100;
+					if (World.Game.Input.GetInput(Inputs.Left, InputState.Down))
+						movement.X -= character != null ? character.Speed : 120;
 
+					// Jump
+					if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed) && !character.IsJumping)
+					{
+						movement.Y = -100;
+						character.IsJumping = true;
+					}
+					else if (character.IsJumping)
+					{
+						if (body.Grounded)
+							character.IsJumping = false;
+					}
+
+					if (body.Grounded)
+					{
+						if (Math.Abs(movement.X) > Helper.EPSILON)
+						{
+							character.IsWalking = true;
+							sprite.PlayAnim("walk", false, 200);
+							sprite.Effect = movement.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
+						}
+						else
+						{
+							if ((sprite.Sprite.CurrentAnimation?.Name != "use" && sprite.Sprite.NextAnimation?.Name != "use") || sprite.Sprite.Progress >= 1f)
+								sprite.PlayAnim("idle", false, 200);
+						}
+					}
+					else
+					{
+						if (body.LinearVelocity.Y < -4)
+						{
+							sprite.PlayAnim("jump_start", false, 0);
+						}
+						else if (body.LinearVelocity.Y > 4)
+						{
+							sprite.PlayAnim("fall_start", false, 0);
+						}
+					}
+
+					body.Move(movement);
+				}
+
+				// --- REGION: State independent ---
+
+				// Open inventory screen
 				if (World.Game.Input.GetInput(Inputs.Inventory, InputState.Pressed))
 				{
 					var g = World.Game.GuiManager.GetGuiOfType<Gui.InventoryScreen>();
@@ -69,6 +130,7 @@ namespace Mff.Totem.Core
 					inventory.Use(0);
 				}
 
+				// Swap weapons
 				if (World.Game.Input.GetInput(Inputs.Swap, InputState.Pressed) && inventory != null)
 				{
 					if (inventory.UseItems.Length >= 2)
@@ -79,6 +141,7 @@ namespace Mff.Totem.Core
 					}
 				}
 
+				// Use entity
 				if (World.Game.Input.GetInput(Inputs.Use, InputState.Pressed))
 				{
 					World.EntitiesAt(body.BoundingBox, (ent) =>
@@ -93,32 +156,7 @@ namespace Mff.Totem.Core
 				}
 			}
 
-			if (!(body is HumanoidBody) || (body as HumanoidBody).OnGround().HasValue)
-			{
-				if (Math.Abs(movement.X) > Helper.EPSILON)
-				{
-					sprite.PlayAnim("walk", false, 200);
-					sprite.Effect = movement.X > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
-				}
-				else
-				{
-					if ((sprite.Sprite.CurrentAnimation?.Name != "use" && sprite.Sprite.NextAnimation?.Name != "use") || sprite.Sprite.Progress >= 1f)
-						sprite.PlayAnim("idle", false, 200);
-				}
-			}
-			else
-			{
-				if (body.LinearVelocity.Y < -4)
-				{
-					sprite.PlayAnim("jump_start", false, 0);
-				}
-				else if (body.LinearVelocity.Y > 4)
-				{
-					sprite.PlayAnim("fall_start", false, 0);
-				}
-			}
-
-			body.Move(movement);
+			// Final positioning things regardles of state and input
 			light.Position = body.Position;
 		}
 
@@ -130,6 +168,73 @@ namespace Mff.Totem.Core
 		public override void Deserialize(System.IO.BinaryReader reader)
 		{
 			return;
+		}
+	}
+
+	public class CrouchAction : CharacterAction
+	{
+		const float CROUCH_TIME = 0.25f;
+		public override bool Remove
+		{
+			get
+			{
+				return LifeTime >= CROUCH_TIME;
+			}
+		}
+
+		float LifeTime;
+		public override void Update(GameTime gameTime)
+		{
+			float prevLifeTime = LifeTime;
+			LifeTime += (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale;
+			if (LifeTime >= CROUCH_TIME && prevLifeTime < CROUCH_TIME)
+			{
+				var sprite = Parent.GetComponent<SpriterComponent>();
+				if (sprite != null)
+					sprite.PlayAnim("crouch_idle", false);
+			}
+		}
+
+		protected override void Initialize()
+		{
+			ParentComponent.IsCrouching = true;
+
+			var sprite = Parent.GetComponent<SpriterComponent>();
+			if (sprite != null)
+				sprite.PlayAnim("crouch_down", true);
+		}
+	}
+
+	public class StandUpAction : CharacterAction
+	{
+		const float STANDUP_TIME = 0.35f;
+		public override bool Remove
+		{
+			get
+			{
+				return LifeTime >= STANDUP_TIME;
+			}
+		}
+
+		float LifeTime;
+		public override void Update(GameTime gameTime)
+		{
+			float prevLifeTime = LifeTime;
+			LifeTime += (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale;
+			if (LifeTime >= STANDUP_TIME && prevLifeTime < STANDUP_TIME)
+			{
+				var sprite = Parent.GetComponent<SpriterComponent>();
+				if (sprite != null)
+					sprite.PlayAnim("idle", true);
+			}
+		}
+
+		protected override void Initialize()
+		{
+			ParentComponent.IsCrouching = false;
+			var sprite = Parent.GetComponent<SpriterComponent>();
+			if (sprite != null)
+				sprite.PlayAnim("stand_up", true);
 		}
 	}
 }

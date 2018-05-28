@@ -88,7 +88,10 @@ namespace Mff.Totem.Core
 		public void Update(GameTime gameTime)
 		{
 			if (CurrentInstance != null)
+			{
+				UniverseTime = UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * CurrentInstance.TimeScale);
 				CurrentInstance.Update(gameTime);
+			}
 		}
 
 		/// <summary>

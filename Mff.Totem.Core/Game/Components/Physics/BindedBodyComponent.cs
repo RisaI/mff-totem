@@ -80,6 +80,15 @@ namespace Mff.Totem.Core
 			return;
 		}
 
+		public override bool Grounded
+		{
+			get
+			{
+				var pc = Parent?.GetComponent<BodyComponent>();
+				return pc?.Grounded ?? false;
+			}
+		}
+
 		public override EntityComponent Clone()
 		{
 			return new BindedBodyComponent()

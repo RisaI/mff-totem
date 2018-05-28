@@ -139,6 +139,14 @@ namespace Mff.Totem.Core
 			};
 		}
 
+		public override bool Grounded
+		{
+			get
+			{
+				return Body?.LinearVelocity == Vector2.Zero;
+			}
+		}
+
 		public override EntityComponent Clone()
 		{
 			return new PropBodyComponent()

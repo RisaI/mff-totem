@@ -203,13 +203,16 @@ namespace Mff.Totem.Core
 
 			AddCommand("weather", "Set the weather.", args =>
 			{
+				var weather = WorldInstance?.GetComponent<WeatherComponent>();
+				if (weather == null)
+					return;
 				switch (args[0].ToLower())
 				{
 					case "rain":
-						WorldInstance.Weather = new RainWeather();
+						weather.CurrentWeather = new RainWeather();
 						break;
 					default:
-						WorldInstance.Weather = null;
+						weather.CurrentWeather = null;
 						break;
 				}
 			}, "float");

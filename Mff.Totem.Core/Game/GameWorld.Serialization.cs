@@ -80,6 +80,9 @@ namespace Mff.Totem.Core
 			_info.Randomize(planetId);
 			w.Planet = _info;
 
+			w.AddComponent(new BackgroundComponent());
+			w.AddComponent(new WeatherComponent());
+
 			w.AddComponent(new TerrainComponent() { Seed = _info.TerrainSeed });
 			var terrain = w.GetComponent<TerrainComponent>();
 			w._camera.Position.Y = terrain.HeightMap(0);

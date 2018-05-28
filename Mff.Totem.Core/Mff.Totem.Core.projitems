@@ -61,9 +61,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Input.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Menu\MenuStateManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\TerrainComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\TerrainComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\GameWorld.Components.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\WorldComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\BackgroundComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\WeatherComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />
@@ -74,6 +76,6 @@
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Physics\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Components\Character\" />
     <Folder Include="$(MSBuildThisFileDirectory)Game\Backgrounds\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Game\WorldBuilder\" />
+    <Folder Include="$(MSBuildThisFileDirectory)Game\WorldComponents\" />
   </ItemGroup>
 </Project>

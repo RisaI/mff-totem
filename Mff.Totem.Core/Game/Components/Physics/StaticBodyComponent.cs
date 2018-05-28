@@ -62,6 +62,14 @@ namespace Mff.Totem.Core
 			Position += direction;
 		}
 
+		public override bool Grounded
+		{
+			get
+			{
+				return true;
+			}
+		}
+
 		protected override void ReadFromJson(Newtonsoft.Json.Linq.JObject obj)
 		{
 			base.ReadFromJson(obj);

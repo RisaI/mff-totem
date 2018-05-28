@@ -127,6 +127,14 @@ namespace Mff.Totem.Core
 			return;
 		}
 
+		public override bool Grounded
+		{
+			get
+			{
+				return false;
+			}
+		}
+
 		public override EntityComponent Clone()
 		{
 			List<string> tags = new List<string>();

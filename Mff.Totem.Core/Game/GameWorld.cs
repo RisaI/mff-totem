@@ -58,22 +58,6 @@ namespace Mff.Totem.Core
 			get { return Session?.Game; }
 		}
 
-		public Background Background
-		{
-			get;
-			set;
-		}
-
-		private Weather _weather = Weather.DefaultWeather;
-		public Weather Weather
-		{
-			get { return _weather; }
-			set
-			{
-				_weather = value ?? Weather.DefaultWeather;
-			}
-		}
-
 		public GameSession Session
 		{
 			get;
@@ -131,27 +115,12 @@ namespace Mff.Totem.Core
 			// Default camera
 			_camera = new Camera(Game);
 
-			Background = new Backgrounds.OutsideBG(this);
-
 			PrepareRenderData((int)Game.Resolution.X, (int)Game.Resolution.Y);
 			Game.OnResolutionChange += PrepareRenderData;
 		}
 
-        private GameTime GTime;
 		public void Update(GameTime gameTime)
 		{
-            GTime = gameTime;
-			Session.UniverseTime = Session.UniverseTime.AddMinutes(gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
-
-			Components.ForEach(c =>
-			{
-				var upd = c as IUpdatable;
-				if (upd != null)
-				{
-					upd.Update(gameTime);
-				}
-			});
-
 			lock (EntityQueue)
 			{
 				EntityQueue.ForEach(e =>
@@ -162,10 +131,15 @@ namespace Mff.Totem.Core
 				EntityQueue.Clear();
 			}
 
-			lock (Physics)
+			// Update components
+			Components.ForEach(c =>
 			{
-				Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
-			}
+				var upd = c as IUpdatable;
+				if (upd != null)
+				{
+					upd.Update(gameTime);
+				}
+			});
 
 			// Update entities
 			var activeArea = ActiveArea;
@@ -182,11 +156,14 @@ namespace Mff.Totem.Core
 					Entities.RemoveAt(i);
 			}
 
+			lock (Physics)
+			{
+				Physics.Step((float)gameTime.ElapsedGameTime.TotalSeconds * TimeScale);
+			}
+
 			/// Clear and update particles
 			Particles.ForEach(p => p.Update(gameTime));
 			Particles.RemoveAll(p => p.Remove);
-
-			Weather.Update(this, gameTime);
 
 			if (Game.InputEnabled)
 			{
@@ -231,13 +208,9 @@ namespace Mff.Totem.Core
 			}
 
 			SetActiveArea(Camera.Position);
-
-			if (Background != null)
-				Background.Update(gameTime);
 		}
 
 		RenderTarget2D ForegroundTexture, BackgroundTexture;
-
 		private void PrepareRenderData(int width, int height)
 		{
 			if (ForegroundTexture != null)
@@ -259,14 +232,11 @@ namespace Mff.Totem.Core
 			}
 
 			// Draw background
-            if (Background != null)
-            {
-                Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)BackgroundTexture);
-                Background.Draw(spriteBatch);
-            }
+			Game.GraphicsDevice.SetRenderTarget(BackgroundTexture);
+			DrawComponentLayer(spriteBatch, -1);
 
 			// Draw foreground
-            Game.GraphicsDevice.SetRenderTarget((RenderTarget2D)ForegroundTexture);
+            Game.GraphicsDevice.SetRenderTarget(ForegroundTexture);
 
 			// Prepare lighting
 			Game.Lighting.Debug = DebugView.Enabled;
@@ -274,20 +244,11 @@ namespace Mff.Totem.Core
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering
-			DrawLayer = 0;
-			Components.ForEach(c =>
-			{
-				var draw = c as IDrawable;
-				if (draw != null)
-				{
-					draw.Draw(spriteBatch);
-				}
-			});
+			DrawComponentLayer(spriteBatch, 0);
 
-			// Draw weather
-			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, null, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
-			Weather.DrawWeatherEffects(this, spriteBatch);
-			spriteBatch.End();
+			// Draw weather 
+			// TODO: better layer numbering
+			DrawComponentLayer(spriteBatch, 10);
 
 			// Draw entities and particles
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera != null ? Camera.ViewMatrix : Matrix.Identity);
@@ -296,20 +257,13 @@ namespace Mff.Totem.Core
 			spriteBatch.End();
 
 			// Ground rendering
-			DrawLayer = 1;
-			Components.ForEach(c =>
-			{
-				var draw = c as IDrawable;
-				if (draw != null)
-				{
-					draw.Draw(spriteBatch);
-				}
-			});
+			DrawComponentLayer(spriteBatch, 1);
 			Lighting.Draw();
 
 			// Draw to screen
             Game.GraphicsDevice.SetRenderTarget(null);
 			Game.GraphicsDevice.Clear(Color.Black);
+
 			spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
             spriteBatch.Draw(BackgroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 0f);
             spriteBatch.Draw(ForegroundTexture, Vector2.Zero, null, Color.White, 0, Vector2.Zero, Vector2.One, SpriteEffects.None, 1f);

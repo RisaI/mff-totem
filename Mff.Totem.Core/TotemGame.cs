@@ -147,8 +147,8 @@ namespace Mff.Totem.Core
 			ContentLoader.RefreshShaders(this);
 			Lighting.Initialize();
 
-			// LoadNewGame();
-			GameState = GameStateEnum.Intro;
+			LoadNewGame();
+			// GameState = GameStateEnum.Game;
 		}
 
 		public void SaveSession(string filename)

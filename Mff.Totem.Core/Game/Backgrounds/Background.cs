@@ -6,10 +6,15 @@ namespace Mff.Totem.Core
 {
 	public abstract class Background
 	{
-		public GameWorld World
+		public BackgroundComponent Parent
 		{
 			get;
 			private set;
+		}
+
+		public GameWorld World
+		{
+			get { return Parent.World; }
 		}
 
 		public Color ClearColor
@@ -18,9 +23,8 @@ namespace Mff.Totem.Core
 			protected set;
 		}
 
-		public Background(GameWorld world, Color clearColor)
+		public Background(Color clearColor)
 		{
-			World = world;
 			ClearColor = clearColor;
 		}
 
@@ -28,6 +32,12 @@ namespace Mff.Totem.Core
 		{
 			World.Game.GraphicsDevice.Clear(ClearColor);
 			OnDraw(spriteBatch);
+		}
+
+		public Background Attach(BackgroundComponent component)
+		{
+			Parent = component;
+			return this;
 		}
 
 		public abstract void Update(GameTime gameTime);
@@ -42,7 +52,7 @@ namespace Mff.Totem.Core
 			Color SkyTintColor;
 			float SkyTint, MovableOffset = 0;
 
-			public OutsideBG(GameWorld world) : base(world, Color.LightSkyBlue)
+			public OutsideBG() : base(Color.LightSkyBlue)
 			{
 				Parallax = ContentLoader.Parallaxes["standard"];
 			}
@@ -54,8 +64,8 @@ namespace Mff.Totem.Core
 
 			public override void Update(GameTime gameTime)
 			{
-				SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
-				SkyTint = MathHelper.Lerp(SkyTint, World.Weather.SkyTint, 0.07f);
+				// SkyTintColor = Color.Lerp(SkyTintColor, World.Weather.SkyTintColor, 0.05f);
+				// SkyTint = MathHelper.Lerp(SkyTint, World.Weather.SkyTint, 0.07f);
 				ClearColor = Color.Lerp(Color.Black, SkyColor, 1f - World.NightTint(World.Session.UniverseTime.TimeOfDay.TotalHours));
 				MovableOffset += (float)gameTime.ElapsedGameTime.TotalSeconds * World.TimeScale / 60f;
 				MovableOffset = MovableOffset % 1f;

@@ -18,11 +18,6 @@ namespace Mff.Totem.Core
 			set;
 		}
 
-		public static Weather DefaultWeather
-		{
-			get { return new Weather() { SkyTint = 0f, SkyTintColor = Color.White }; }
-		}
-
 		public Weather()
 		{
 

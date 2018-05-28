@@ -103,7 +103,7 @@ namespace Mff.Totem.Core
 		private bool _moved = false, _jumped = false;
 		public override void Move(Vector2 direction)
 		{
-			if ((LinearVelocity.Y >= 0 || !_jumped) && OnGround().HasValue)
+			if (Grounded)
 			{
 				var horizontal = direction.X;
 				if (Math.Abs(horizontal) > 0.5f)
@@ -183,6 +183,14 @@ namespace Mff.Totem.Core
 			{
 				return other.Body.Tag is TerrainComponent;
 			};
+		}
+
+		public override bool Grounded
+		{
+			get
+			{
+				return (LinearVelocity.Y >= 0 || !_jumped) && OnGround().HasValue;
+			}
 		}
 
 		public override EntityComponent Clone()
