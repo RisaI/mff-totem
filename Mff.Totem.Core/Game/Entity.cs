@@ -10,6 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
+	[Serializable("entity")]
 	public sealed class Entity : IUpdatable, IDrawable, IJsonSerializable, ICloneable<Entity>, ISerializable
 	{
 		/// <summary>

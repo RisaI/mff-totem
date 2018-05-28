@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Media;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,7 +22,7 @@ namespace Mff.Totem.Core
 			return new PlayerInputComponent();
 		}
 
-
+		SoundEffectInstance jump;
 		Penumbra.PointLight light;
 		public override void Initialize()
 		{
@@ -29,6 +31,8 @@ namespace Mff.Totem.Core
 			light.Color = Color.White;
 			light.ShadowType = Penumbra.ShadowType.Solid;
 			World.Lighting.Lights.Add(light);
+
+			jump = ContentLoader.Sounds["jump"].CreateInstance();
 		}
 
 		public void Update(GameTime gameTime)
@@ -72,6 +76,8 @@ namespace Mff.Totem.Core
 					// Jump
 					if (World.Game.Input.GetInput(Inputs.Up, InputState.Pressed) && !character.IsJumping)
 					{
+						sprite.PlayAnim("jump_start", false, 0);
+						jump.Play();
 						movement.Y = -100;
 						character.IsJumping = true;
 					}
@@ -97,11 +103,7 @@ namespace Mff.Totem.Core
 					}
 					else
 					{
-						if (body.LinearVelocity.Y < -4)
-						{
-							sprite.PlayAnim("jump_start", false, 0);
-						}
-						else if (body.LinearVelocity.Y > 4)
+						if (body.LinearVelocity.Y > 4)
 						{
 							sprite.PlayAnim("fall_start", false, 0);
 						}

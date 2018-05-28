@@ -66,6 +66,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\WorldComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\BackgroundComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\WeatherComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Game\WorldComponents\DaylightComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)Game\" />

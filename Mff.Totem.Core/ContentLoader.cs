@@ -31,6 +31,7 @@ namespace Mff.Totem
 		public static Dictionary<string, Texture2D> Textures = new Dictionary<string, Texture2D>();
 		public static Dictionary<string, Parallax> Parallaxes = new Dictionary<string, Parallax>();
 		public static Dictionary<string, SpriteFont> Fonts = new Dictionary<string, SpriteFont>();
+		public static Dictionary<string, SoundEffect> Sounds = new Dictionary<string, SoundEffect>();
         public static Dictionary<string, Effect> Shaders = new Dictionary<string, Effect>();
 
         public static Dictionary<string, Core.Entity> Entities = new Dictionary<string, Core.Entity>();
@@ -46,18 +47,10 @@ namespace Mff.Totem
 			Pixel.SetData<Color>(new Color[] { Color.White });
 
 			// Load Textures
-			var textureFolder = "Content/textures/";
-			foreach (string file in FindAllFiles(textureFolder, ".xnb"))
-			{
-				var dir = Path.GetDirectoryName(file);
-				var name = Path.Combine(
-                    dir.Remove(0, Math.Min(textureFolder.Length, dir.Length)),
-                    Path.GetFileNameWithoutExtension(file)
-                ).Replace('\\', '/');
+			LoadContentFile(game, "textures/", ".xnb", Textures);
 
-				Console.WriteLine("Loading texture: {0}", name);
-				Textures.Add(name, game.Content.Load<Texture2D>("textures/" + name));
-			}
+			// Load Sounds
+			LoadContentFile(game, "sounds/", ".xnb", Sounds);
 
 			// Load Parallaxes
 			foreach (string file in FindAllFiles("Content/assets/parallaxes", ".parallax"))
@@ -85,34 +78,13 @@ namespace Mff.Totem
 			}
 
 			// Load Fonts
-			var fontsFolder = "Content/fonts/";
-			foreach (string file in FindAllFiles(fontsFolder, ".xnb"))
-			{
-				var dir = Path.GetDirectoryName(file);
-				var name = Path.Combine(
-					dir.Remove(0, Math.Min(fontsFolder.Length, dir.Length)),
-					Path.GetFileNameWithoutExtension(file)
-				).Replace('\\', '/');
-
-				Console.WriteLine("Loading font: {0}", name);
-				Fonts.Add(name, game.Content.Load<SpriteFont>("fonts/" + name));
-			}
+			LoadContentFile(game, "fonts/", ".xnb", Fonts);
 
             // Load shaders
 			Shaders.Add("ground", game.Content.Load<Effect>("shaders/GroundShader"));
 			Shaders.Add("menu", game.Content.Load<Effect>("shaders/MenuShader"));
 		
-			foreach (string file in FindAllFiles("Content/assets/sprites", ".sprite"))
-			{
-				var name = Path.GetFileNameWithoutExtension(file);
-				Console.WriteLine("Loading a sprite: {0}", name);
-				using (FileStream stream = new FileStream(file, FileMode.Open))
-				using (StreamReader sReader = new StreamReader(stream))
-				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
-				{
-					Sprites.Add(name, new Core.Sprite(JObject.Load(reader)));
-				}
-            }
+			LoadAssetFile(game, "Content/assets/sprites", ".sprite", Sprites, null, "sprite");
 
 			{
 				var file = "Content/textures/sprites.scml";
@@ -136,60 +108,53 @@ namespace Mff.Totem
 				}
 			}
 
-            // SPRITEs
-            foreach (string file in FindAllFiles("Content/sprites", ".scml"))
-            {
-                var name = Path.GetFileNameWithoutExtension(file);
-                Console.WriteLine("Loading a sprite: {0}", name);
-                using (FileStream stream = new FileStream(file, FileMode.Open))
-                using (StreamReader sReader = new StreamReader(stream))
-                {
-                    var spriter = SpriterReader.Default.Read(sReader.ReadToEnd());
-					var provider = new SpriterDotNet.Providers.DefaultProviderFactory<Texture2D, SoundEffect>(new Config() { SoundsEnabled = false });
-					foreach (SpriterEntity ent in spriter.Entities) {
-						var wrapper = new SpriteWrapper(ent, provider as IProviderFactory<ISprite, SoundEffect>);
+			LoadAssetFile(game, "Content/assets/items", ".item", Items, "id");
+			LoadAssetFile(game, "Content/assets/entities", ".entity", Entities, null, "entity");
+			LoadAssetFile(game, "Content/assets/particles", ".particle", Particles);
+		}
+
+		static void LoadContentFile<T>(TotemGame game, string path, string extension, Dictionary<string, T> output)
+		{
+			var content = "Content/" + path;
+			foreach (string file in FindAllFiles(content, extension))
+			{
+				var dir = Path.GetDirectoryName(file);
+				var name = Path.Combine(
+					dir.Remove(0, Math.Min(content.Length, dir.Length)),
+					Path.GetFileNameWithoutExtension(file)
+				).Replace('\\', '/');
+
+				Console.WriteLine("Loading content: {0}", name);
+				output.Add(name, game.Content.Load<T>(path + "/" + name));
+			}
+		}
+
+		static void LoadAssetFile<T>(
+			TotemGame game, 
+			string path, 
+			string extension, 
+			Dictionary<string, T> output,
+			string customName = null, 
+			string forceClass = null) where T : IJsonSerializable
+		{
+			foreach (string file in FindAllFiles(path, extension))
+			{
+				var name = Path.GetFileNameWithoutExtension(file);
+				Console.WriteLine("Loading asset: {0}", name);
+				using (FileStream stream = new FileStream(file, FileMode.Open))
+				using (StreamReader sReader = new StreamReader(stream))
+				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
+				{
+					var obj = JObject.Load(reader);
+					var qualifiedName = customName != null ? (string)obj[customName] : name;
+					if (forceClass != null)
+					{
+						var ent = DeserializationRegister.CreateInstance<T>(forceClass);
+						ent.FromJson(obj);
+						output.Add(qualifiedName, ent);
 					}
-                }
-            }
-
-			foreach (string file in FindAllFiles("Content/assets/items", ".item"))
-			{
-				var name = Path.GetFileNameWithoutExtension(file);
-				Console.WriteLine("Loading item: {0}", name);
-				using (FileStream stream = new FileStream(file, FileMode.Open))
-				using (StreamReader sReader = new StreamReader(stream))
-				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
-				{
-					var jobj = JObject.Load(reader);
-					var item = Core.DeserializationRegister.ObjectFromJson<Core.Item>(jobj);
-					Items.Add(item.ID, item);
-				}
-			}
-
-			foreach (string file in FindAllFiles("Content/assets/entities", ".entity"))
-			{
-				var name = Path.GetFileNameWithoutExtension(file);
-				Console.WriteLine("Loading entity: {0}", name);
-				using (FileStream stream = new FileStream(file, FileMode.Open))
-				using (StreamReader sReader = new StreamReader(stream))
-				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
-				{
-					var ent = new Core.Entity();
-					ent.FromJson(JObject.Load(reader));
-					Entities.Add(name, ent);
-				}
-			}
-
-			foreach (string file in FindAllFiles("Content/assets/particles", ".particle"))
-			{
-				var name = Path.GetFileNameWithoutExtension(file);
-				Console.WriteLine("Loading particle: {0}", name);
-				using (FileStream stream = new FileStream(file, FileMode.Open))
-				using (StreamReader sReader = new StreamReader(stream))
-				using (Newtonsoft.Json.JsonTextReader reader = new Newtonsoft.Json.JsonTextReader(sReader))
-				{
-					var par = DeserializationRegister.ObjectFromJson<Particle>(JObject.Load(reader));
-					Particles.Add(name, par);
+					else
+						output.Add(qualifiedName, DeserializationRegister.ObjectFromJson<T>(obj));
 				}
 			}
 		}

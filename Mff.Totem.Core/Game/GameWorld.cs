@@ -240,7 +240,7 @@ namespace Mff.Totem.Core
 
 			// Prepare lighting
 			Game.Lighting.Debug = DebugView.Enabled;
-			Lighting.BeginDraw(Color.Lerp(Color.White, Color.Black, NightTint(Session.UniverseTime.TimeOfDay.TotalHours)), Camera.ViewMatrix);
+			Lighting.BeginDraw(Camera.ViewMatrix);
 			Game.GraphicsDevice.Clear(Color.Transparent);
 
 			// Ground rendering

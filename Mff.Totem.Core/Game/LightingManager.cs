@@ -12,6 +12,8 @@ namespace Mff.Totem.Core
 		public List<Light> Lights = new List<Light>();
 		public HullList Hulls = new HullList();
 
+		public Color AmbientColor = Color.White;
+
 		public TotemGame Game
 		{
 			get;
@@ -23,12 +25,12 @@ namespace Mff.Totem.Core
 			Game = game;
 		}
 
-		public void BeginDraw(Color ambient, Matrix matrix)
+		public void BeginDraw(Matrix matrix)
 		{
 			Game.Lighting.Lights = Lights; 
 			Game.Lighting.Hulls = Hulls;
 
-			Game.Lighting.AmbientColor = ambient;
+			Game.Lighting.AmbientColor = AmbientColor;
 			Game.Lighting.Transform = matrix;
 
 			Game.Lighting.BeginDraw();

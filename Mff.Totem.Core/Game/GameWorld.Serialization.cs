@@ -82,6 +82,7 @@ namespace Mff.Totem.Core
 
 			w.AddComponent(new BackgroundComponent());
 			w.AddComponent(new WeatherComponent());
+			w.AddComponent(new DaylightComponent());
 
 			w.AddComponent(new TerrainComponent() { Seed = _info.TerrainSeed });
 			var terrain = w.GetComponent<TerrainComponent>();

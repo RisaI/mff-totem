@@ -57,6 +57,19 @@ namespace Mff.Totem.Core
 			return null;
 		}
 
+		/// <summary>
+		/// Create an instance of an object with a specified identifier
+		/// </summary>
+		/// <returns>A new instance.</returns>
+		/// <param name="identifier">Identifier.</param>
+		public static T CreateInstance<T>(string identifier)
+		{
+			if (Register.ContainsKey(identifier))
+				return (T)Register[identifier]();
+
+			return default(T);
+		}
+
 		public static T ObjectFromJson<T>(JObject obj) where T : IJsonSerializable
 		{
 			var instance = (IJsonSerializable)CreateInstance((string)obj["class"]);

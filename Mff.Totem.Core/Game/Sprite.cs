@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Mff.Totem.Core
 {
+	[Serializable("sprite")]
 	public class Sprite : ICloneable<Sprite>, IJsonSerializable
 	{
 		private string _textureAsset;
@@ -75,13 +76,9 @@ namespace Mff.Totem.Core
 		// Internal values
 		private int _frameWidth, _frameHeight, _totalFrames, _framesInRow;
 
-		/// <summary>
-		/// Create a sprite from JSON.
-		/// </summary>
-		/// <param name="obj">JObject.</param>
-		public Sprite(JObject obj)
+		public Sprite()
 		{
-			FromJson(obj);
+
 		}
 
 		/// <summary>

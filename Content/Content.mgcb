@@ -37,6 +37,12 @@
 /processorParam:TextureFormat=Compressed
 /build:fonts/menu.spritefont
 
+#begin sounds/jump.ogg
+/importer:OggImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:sounds/jump.ogg
+
 #begin textures/arms/p_arm_idle.png
 /importer:TextureImporter
 /processor:TextureProcessor
